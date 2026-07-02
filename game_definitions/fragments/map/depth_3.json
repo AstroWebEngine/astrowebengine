@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "name": "3-Tier Map (Galaxy → System → Slot)",
+    "version": "1.0",
+    "description": "Flatter coordinate space: galaxy, system, then orbital slot. flat coordinate addressing.",
+    "component_type": "map"
+  },
+  "engine": {
+    "map_depth": 3
+  }
+}

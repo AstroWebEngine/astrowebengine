@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AstroWebEngine — Server List</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body { background: var(--bg-deep, #0a0e1a); color: var(--text, #c8d0e0); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+    .lobby-header { text-align: center; padding: 40px 20px 20px; }
+    .lobby-header h1 { font-size: 2rem; color: var(--accent, #5af); margin: 0; }
+    .lobby-header p { color: var(--text-dim, #8899aa); margin-top: 8px; font-size: 14px; }
+    .server-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .server-card { background: var(--bg-card, #141825); border: 1px solid var(--border, #2a3040); border-radius: 8px; padding: 20px; transition: border-color 0.2s; }
+    .server-card:hover { border-color: var(--accent, #5af); }
+    .server-name { font-size: 1.3rem; font-weight: bold; color: var(--text-bright, #e0e8f0); margin-bottom: 6px; }
+    .server-desc { color: var(--text-dim, #8899aa); font-size: 12px; margin-bottom: 12px; min-height: 18px; }
+    .server-stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; font-size: 12px; }
+    .server-stat { display: flex; flex-direction: column; }
+    .server-stat-label { color: var(--text-dim, #8899aa); text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; }
+    .server-stat-value { color: var(--accent, #5af); font-weight: bold; font-size: 14px; }
+    .server-status { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4f4; margin-right: 6px; vertical-align: middle; }
+    .btn-play { display: inline-block; background: var(--accent, #5af); color: #000; font-weight: bold; padding: 8px 24px; border-radius: 4px; text-decoration: none; font-size: 13px; cursor: pointer; border: none; }
+    .btn-play:hover { opacity: 0.85; }
+    .no-servers { text-align: center; padding: 60px 20px; color: var(--text-dim, #8899aa); font-size: 14px; }
+    .lobby-footer { text-align: center; padding: 30px; color: var(--text-dim, #8899aa); font-size: 11px; }
+    @media (max-width: 640px) {
+      .lobby-header { padding: 30px 16px 12px; }
+      .lobby-header h1 { font-size: 1.55rem; }
+      .server-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+        padding: 14px;
+      }
+      .server-card { padding: 16px; border-radius: 7px; }
+      .server-name { font-size: 1.1rem; }
+      .server-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .server-stat { min-width: 0; }
+      .server-stat-value { overflow-wrap: anywhere; }
+      .btn-play {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 42px;
+      }
+      .no-servers { padding: 36px 16px; }
+      .lobby-footer { padding: 22px 14px 34px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="lobby-header">
+    <h1>AstroWebEngine</h1>
+    <p>Choose a server to play on</p>
+  </div>
+
+  <div id="server-list" class="server-grid">
+    <div class="no-servers">Loading servers...</div>
+  </div>
+
+  <div class="lobby-footer">
+    Powered by AstroWebEngine
+  </div>
+
+  <script>
+    async function loadServers() {
+      try {
+        const res = await fetch('/api/lobby/servers');
+        const data = await res.json();
+        const servers = data.servers || [];
+        const container = document.getElementById('server-list');
+
+        if (servers.length === 0) {
+          container.innerHTML = '<div class="no-servers">No servers are currently running.<br>Check back later!</div>';
+          return;
+        }
+
+        let html = '';
+        for (const s of servers) {
+          const speedLabel = s.game_speed === 1 ? 'Normal' : `${s.game_speed}x`;
+          const defLabel = (s.game_definition || '').replace('.json', '').replace(/_/g, ' ');
+          // Build the server URL: use subdomain if configured, otherwise port-based
+          let serverUrl;
+          if (s.subdomain) {
+            // e.g., speed.starfrontier.com — strip any existing subdomain from current host
+            const baseDomain = window.location.hostname.split('.').slice(-2).join('.');
+            serverUrl = `${window.location.protocol}//${s.subdomain}.${baseDomain}`;
+          } else {
+            serverUrl = `${window.location.protocol}//${window.location.hostname}:${s.port}`;
+          }
+
+          html += `
+            <div class="server-card">
+              <div class="server-name"><span class="server-status"></span>${escHtml(s.name)}</div>
+              <div class="server-desc">${escHtml(s.description || '')}</div>
+              <div class="server-stats">
+                <div class="server-stat">
+                  <span class="server-stat-label">Game Type</span>
+                  <span class="server-stat-value">${escHtml(defLabel)}</span>
+                </div>
+                <div class="server-stat">
+                  <span class="server-stat-label">Speed</span>
+                  <span class="server-stat-value">${speedLabel}</span>
+                </div>
+                <div class="server-stat">
+                  <span class="server-stat-label">Max Players</span>
+                  <span class="server-stat-value">${s.max_players}</span>
+                </div>
+              </div>
+              <a class="btn-play" href="${serverUrl}" target="_blank">Play</a>
+            </div>`;
+        }
+        container.innerHTML = html;
+      } catch (e) {
+        document.getElementById('server-list').innerHTML =
+          '<div class="no-servers">Could not load server list. Try refreshing.</div>';
+        console.error(e);
+      }
+    }
+
+    function escHtml(s) {
+      const d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
+
+    loadServers();
+    // Auto-refresh every 30 seconds
+    setInterval(loadServers, 30000);
+  </script>
+</body>
+</html>

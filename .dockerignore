@@ -1,0 +1,40 @@
+# Keep the image lean and free of local/private material.
+
+# Version control & caches
+.git
+.gitattributes
+__pycache__/
+*.pyc
+
+# Local databases and their WAL/-shm sidecars (a fresh DB is created on first run)
+*.db
+*.db-wal
+*.db-shm
+
+# Logs
+*.log
+
+# Virtualenvs
+venv/
+.venv/
+
+# PRIVATE / never-ship material (AE-derived assets, runbooks, backups)
+_private/
+uploads/
+
+# Per-operator runtime state (generated, not shipped)
+universes/
+universes.json
+
+# Windows launchers
+*.bat
+
+# Tests and developer docs are not needed in a distribution image
+test_*.py
+test_*.html
+test_*.log
+docs/
+
+# Local env / compose artifacts
+.env
+docker-compose.override.yml

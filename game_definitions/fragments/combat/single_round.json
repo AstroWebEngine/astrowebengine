@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "name": "Single-Round Combat",
+    "version": "1.0",
+    "description": "Resolve each battle in one simultaneous exchange.",
+    "component_type": "combat"
+  },
+  "engine": {
+    "combat_model": "simultaneous",
+    "combat_max_rounds": 1
+  }
+}

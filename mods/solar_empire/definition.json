@@ -1,0 +1,219 @@
+{
+  "meta": {
+    "name": "Solar Empire",
+    "version": "0.1",
+    "description": "A Solar Empire-like adaptation (Generic-engine lineage). Captures the ship roster, commodity economy, and module-flavored weapons of SolarEmpireReborn as a loadable AstroWebEngine definition. Approximate, not a line-for-line clone — see docs/example_mods.md for the mapping and the engine-feature gaps (turns economy, graph map, bombs/bounty) that remain mod-hook/roadmap work.",
+    "author": "AstroWebEngine example (from the user's SolarEmpireReborn)"
+  },
+  "engine": {
+    "resource_model": "multi",
+    "resource_types": ["credits", "metal", "fuel", "electronics", "organics"],
+    "defense_model": "count",
+    "defenses_destructible": true,
+    "defense_repair_percent": 0.0,
+    "buildings_destructible": false,
+    "ships_always_destroyed": true,
+    "combat_model": "simultaneous",
+    "combat_max_rounds": 1,
+    "economy_actions": "action_points",
+    "action_points": {
+      "start": 40,
+      "regen_per_hour": 10,
+      "max": 250,
+      "apply_to_bots": false,
+      "costs": {
+        "fleet_send": 1, "fleet_recall": 1, "fleet_attack": 2, "fleet_conquer": 3,
+        "colonize": 3, "ship_build": 1, "building_upgrade": 1, "defense_build": 1,
+        "research_start": 1, "trade_create": 1, "trade_accept": 1, "trade_plunder": 2,
+        "autoscout_enable": 1, "autoscout_hop": 1
+      }
+    },
+    "map_topology": "graph",
+    "graph": {
+      "links_per_system": [2, 5],
+      "wormhole_ratio": 0.05,
+      "link_cost_model": "hops",
+      "hop_distance": 20
+    },
+    "map_depth": 3,
+    "map_levels": ["galaxy", "system", "slot"],
+    "construction_queue_max": 6,
+    "research_queue_max": 6,
+    "production_queue_max": 12,
+    "report_categories": ["scanners", "player", "guild", "galaxy", "trade", "astros"]
+  },
+  "tutorial": false,
+  "economy": {
+    "construction_bonus_base": 20,
+    "construction_bonus_homeworld": 20,
+    "base_energy_bonus": 2,
+    "capital_empire_bonus": 1,
+    "occupation_time_penalty": 1.3,
+    "min_build_time_seconds": 5,
+    "min_research_time_seconds": 5
+  },
+  "combat": {
+    "damage_allocation_exponent": 0.85,
+    "loot_percent": 0.2,
+    "debris_percent": 0.4
+  },
+  "fleet": {
+    "travel_divisor": 200,
+    "base_fleet_count": 5,
+    "size_limit_multiplier": 2500
+  },
+  "weapon_types": {
+    "fighter": { "name": "Fighter Swarm", "shield_passthrough": 0.05 },
+    "turret": { "name": "Defensive Turret", "shield_passthrough": 0.1 },
+    "plasma": { "name": "Plasma Cannon", "shield_passthrough": 0.5 },
+    "ew": { "name": "Electronic Warfare", "shield_passthrough": 0.75 }
+  },
+  "ships": {
+    "escape_pod": {
+      "name": "Escape Pod", "desc": "Death fallback; barely armed survivor.",
+      "cost": 10, "attack": 1, "armour": 1, "shield": 1, "speed": 1,
+      "weapon": "fighter", "rounding": 0
+    },
+    "scout_ship": {
+      "name": "Scout Ship", "desc": "Stealth scout; cannot meaningfully attack.",
+      "cost": 3, "attack": 2, "armour": 2, "shield": 3, "speed": 1,
+      "weapon": "fighter", "rounding": 0, "can_autoscout": true
+    },
+    "merchant_freighter": {
+      "name": "Merchant Freighter", "desc": "Early bulk trade and mining hull.",
+      "cost": 10, "attack": 2, "armour": 4, "shield": 15, "speed": 2,
+      "weapon": "fighter", "rounding": 0
+    },
+    "stealth_trader": {
+      "name": "Stealth Trader", "desc": "Default starter; stealthy trade/mining/colonizing.",
+      "cost": 30, "attack": 4, "armour": 5, "shield": 15, "speed": 3,
+      "weapon": "fighter", "rounding": 0, "can_colonize": true
+    },
+    "harvester_mammoth": {
+      "name": "Harvester Mammoth", "desc": "Heavy cargo, mining, and debris recycling.",
+      "cost": 50, "attack": 3, "armour": 10, "shield": 30, "speed": 4,
+      "weapon": "fighter", "rounding": 0, "can_recycle": true
+    },
+    "attack_battleship": {
+      "name": "Attack Battleship", "desc": "Light warship with turrets.",
+      "cost": 50, "attack": 8, "armour": 8, "shield": 10, "speed": 3,
+      "weapon": "turret", "req": { "turret_tech": 1 }, "rounding": 0
+    },
+    "warmonger": {
+      "name": "Warmonger", "desc": "Mid warship, scanner + turrets.",
+      "cost": 95, "attack": 15, "armour": 14, "shield": 20, "speed": 4,
+      "weapon": "turret", "req": { "turret_tech": 1 }, "rounding": 0
+    },
+    "skirmisher": {
+      "name": "Skirmisher", "desc": "Heavy warship, multi-turret.",
+      "cost": 200, "attack": 25, "armour": 28, "shield": 50, "speed": 5,
+      "weapon": "turret", "req": { "turret_tech": 2 }, "rounding": 1
+    },
+    "gunship": {
+      "name": "GunShip", "desc": "Advanced black-market warship with plasma.",
+      "cost": 65, "attack": 30, "armour": 18, "shield": 15, "speed": 5,
+      "weapon": "plasma", "req": { "plasma_cannon": 1 }, "rounding": 1
+    },
+    "brobdingnagian": {
+      "name": "Brobdingnagian", "desc": "One-per-player flagship superweapon.",
+      "cost": 1000, "attack": 60, "armour": 60, "shield": 100, "speed": 7,
+      "weapon": "plasma", "req": { "plasma_cannon": 3 }, "rounding": 2
+    }
+  },
+  "buildings": {
+    "mining_facility": {
+      "name": "Mining Facility", "base_cost": 5, "cost_mult": 1.5, "time": 60,
+      "desc": "Extracts metal from the system.", "area_req": 1, "max_level": 0,
+      "tech_req": {}, "advanced": false,
+      "contributions": { "economy": { "type": "flat", "per_level": 2 } }
+    },
+    "refinery": {
+      "name": "Refinery", "base_cost": 6, "cost_mult": 1.5, "time": 70,
+      "desc": "Produces fuel.", "area_req": 1, "max_level": 0,
+      "tech_req": {}, "advanced": false,
+      "contributions": { "economy": { "type": "flat", "per_level": 2 } }
+    },
+    "electronics_plant": {
+      "name": "Electronics Plant", "base_cost": 10, "cost_mult": 1.6, "time": 90,
+      "desc": "Fabricates electronics from fuel and metal.", "area_req": 1, "max_level": 0,
+      "tech_req": {}, "advanced": false,
+      "contributions": { "economy": { "type": "flat", "per_level": 3 } }
+    },
+    "organics_farm": {
+      "name": "Organics Farm", "base_cost": 4, "cost_mult": 1.4, "time": 50,
+      "desc": "Grows organics and supports colonists.", "area_req": 1, "max_level": 0,
+      "tech_req": {}, "advanced": false, "start_level": 1,
+      "contributions": { "population": { "type": "planet_stat", "stat": "fertility", "per_level": 1 } }
+    },
+    "research_facility": {
+      "name": "Research Facility", "base_cost": 100, "cost_mult": 2.0, "time": 600,
+      "desc": "Generates Tech Support Units (max 2 per player).", "area_req": 2, "max_level": 2,
+      "tech_req": {}, "advanced": false,
+      "contributions": { "research": { "type": "flat", "per_level": 5 } }
+    },
+    "shield_generator": {
+      "name": "Shield Generator", "base_cost": 50, "cost_mult": 1.8, "time": 300,
+      "desc": "Stores shield charges to refill fleet shields.", "area_req": 1, "max_level": 5,
+      "tech_req": {}, "advanced": false,
+      "contributions": { "economy": { "type": "flat", "per_level": 1 } }
+    }
+  },
+  "research": {
+    "fighter_capacity": {
+      "name": "Fighter Capacity", "base_cost": 5, "cost_mult": 1.5, "base_time": 80,
+      "lab_req": 1, "prereqs": {}, "icon": "✈",
+      "bonus": "+fighter bays per level",
+      "bonuses": [ { "type": "stat_multiplier", "stat": "attack", "per_level": 0.05 } ]
+    },
+    "shield_tech": {
+      "name": "Shield Capacity", "base_cost": 5, "cost_mult": 1.5, "base_time": 80,
+      "lab_req": 1, "prereqs": {}, "icon": "🛡",
+      "bonus": "+5% shield per level",
+      "bonuses": [ { "type": "stat_multiplier", "stat": "shield", "per_level": 0.05 } ]
+    },
+    "turret_tech": {
+      "name": "Turret Systems", "base_cost": 8, "cost_mult": 1.6, "base_time": 120,
+      "lab_req": 1, "prereqs": {}, "icon": "🔫",
+      "bonus": "Unlocks and improves turret warships",
+      "bonuses": [ { "type": "stat_multiplier", "stat": "attack", "per_level": 0.05 } ]
+    },
+    "scanner_tech": {
+      "name": "Scanner Tech", "base_cost": 6, "cost_mult": 1.5, "base_time": 90,
+      "lab_req": 1, "prereqs": {}, "icon": "📡",
+      "bonus": "Reveals stealth ships",
+      "bonuses": []
+    },
+    "plasma_cannon": {
+      "name": "Plasma Cannon", "base_cost": 20, "cost_mult": 1.8, "base_time": 200,
+      "lab_req": 2, "prereqs": { "turret_tech": 3 }, "icon": "☢",
+      "bonus": "Unlocks plasma warships (black-market tech)",
+      "bonuses": [ { "type": "stat_multiplier", "stat": "attack", "per_level": 0.05 } ]
+    },
+    "silicon_armour": {
+      "name": "Silicon Armour", "base_cost": 20, "cost_mult": 1.8, "base_time": 200,
+      "lab_req": 2, "prereqs": { "turret_tech": 3 }, "icon": "🧱",
+      "bonus": "+5% armour per level",
+      "bonuses": [ { "type": "stat_multiplier", "stat": "armour", "per_level": 0.05 } ]
+    }
+  },
+  "defenses": {
+    "planet_fighters": {
+      "name": "Planet Fighters", "desc": "Built in counts; defend the planet and friendly ships.",
+      "cost": 1, "cost_mult": 1.0, "pop_req": 0, "area_req": 0,
+      "attack": 3, "armour": 2, "shield": 0, "weapon": "fighter", "max_level": 100000,
+      "req": {}
+    },
+    "shield_battery": {
+      "name": "Shield Battery", "desc": "Planet shield array.",
+      "cost": 50, "cost_mult": 1.5, "pop_req": 1, "area_req": 1,
+      "attack": 0, "armour": 20, "shield": 40, "weapon": "turret", "max_level": 1000,
+      "req": { "shield_tech": 1 }
+    },
+    "missile_pad": {
+      "name": "Missile Launch Pad", "desc": "Enables Omega Missile strikes on other systems.",
+      "cost": 100, "cost_mult": 2.0, "pop_req": 1, "area_req": 2,
+      "attack": 50, "armour": 10, "shield": 0, "weapon": "plasma", "max_level": 10,
+      "req": { "plasma_cannon": 1 }
+    }
+  }
+}

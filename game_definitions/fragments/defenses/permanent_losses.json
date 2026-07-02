@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "name": "Permanent Defense Losses",
+    "version": "1.0",
+    "description": "Destroyed defenses stay destroyed after battle.",
+    "component_type": "defenses"
+  },
+  "engine": {
+    "defenses_destructible": true,
+    "defense_repair_percent": 0.0
+  }
+}

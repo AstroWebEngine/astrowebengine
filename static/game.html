@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0e17" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AstroWebEngine" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%230a2a4a'/><circle cx='16' cy='16' r='6' fill='%2300ccff'/></svg>" type="image/svg+xml" />
+  <title>AstroWebEngine</title>
+  <link rel="stylesheet" href="/static/style.css?v=161" />
+  <link rel="stylesheet" href="/static/style_base_detail.css?v=2" />
+  <link rel="stylesheet" href="/static/style_account_guild.css?v=2" />
+  <link rel="stylesheet" href="/static/style_mobile.css?v=3" />
+  <link rel="stylesheet" href="/static/style_neutral.css?v=4" />
+  <script>
+    // Apply skin/theme/shell before first paint to prevent flash. The active
+    // ruleset's defaults arrive with engine-config (applied in core.js); we cache
+    // the last-applied theme/shell so this early pass matches on return visits.
+    (function(){
+      var s=localStorage.getItem('engine_skin');if(s&&s!=='blue-nova'){document.documentElement.setAttribute('data-skin',s)}
+      var th=localStorage.getItem('awe_theme')||localStorage.getItem('awe_theme_applied');if(th){document.documentElement.setAttribute('data-theme',th)}
+      var sh=localStorage.getItem('awe_shell')||localStorage.getItem('awe_shell_applied');if(sh){document.documentElement.setAttribute('data-shell',sh)}
+    })();
+  </script>
+</head>
+<body class="text_normal">
+  <!-- WIN BANNER -->
+  <div class="win-banner" id="win-banner"></div>
+
+  <div id="game-page">
+
+    <!-- TOP HEADER ROW -->
+    <div id="top-header">
+      <div class="top-header-shell">
+        <div class="top-header-menu">
+          <a class="awe-btn" onclick="switchTab('rankings')">Ranks <span class="comment" id="hud-rank-count"></span></a>
+          <span class="awe-sep"></span>
+          <a class="awe-btn" onclick="switchTab('empire');switchEmpireSubtab('events');return false;">Updates</a>
+          <span class="awe-sep"></span>
+          <a class="awe-btn" onclick="switchTab('tutorial')">Rules</a>
+          <span class="awe-sep"></span>
+          <a class="awe-btn" onclick="switchTab('tutorial')">Help</a>
+          <span class="awe-sep"></span>
+          <a class="awe-btn" onclick="openShipSpecsModal()">Tables</a>
+          <span class="awe-sep"></span>
+          <a class="awe-btn" onclick="openBugReportModal()" title="Support / Feedback">Support</a>
+          <span class="awe-sep"></span>
+          <a class="awe-btn" href="/admin" id="btn-admin" style="display:none;">Admin</a>
+          <span class="awe-sep awe-sep-admin" id="sep-admin" style="display:none;"></span>
+          <a class="awe-btn" onclick="doLogout()">Logout</a>
+        </div>
+        <div class="top-header-time">
+          <span id="server-time"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN HEADER (engine style: nav + infobox, then news ticker + mini-nav) -->
+    <div id="main-header">
+      <!-- Row 1: Main nav + logo + infobox -->
+      <div class="main-header-row1">
+        <div class="main-header-nav">
+          <button class="awe-nav-btn active" data-tab="bases" onclick="openBasesHome()">Bases</button>
+          <span class="awe-sep"></span>
+          <button class="awe-nav-btn" data-tab="galaxy" onclick="switchTab('galaxy')">Map</button>
+          <span class="awe-sep"></span>
+          <button class="awe-nav-btn" data-tab="fleets" onclick="switchTab('fleets')">Fleets</button>
+          <span class="awe-sep"></span>
+          <button class="awe-nav-btn" data-tab="empire" onclick="switchTab('empire')">Empire</button>
+          <span class="awe-sep"></span>
+          <button class="awe-nav-btn" data-tab="commanders" onclick="switchTab('commanders')">Commanders</button>
+        </div>
+
+        <div class="main-header-logo">AstroWebEngine</div>
+
+        <div class="main-header-infobox">
+          <a class="awe-btn awe-info-btn mobile-hide-info" onclick="switchTab('account')" title="Account" style="cursor:pointer;font-weight:bold;">Account</a>
+          <a class="awe-btn awe-info-btn" onclick="loadCreditHistory();return false;" title="Credits" style="cursor:pointer">
+            <span id="hud-credits">0</span><span id="hud-credits-suffix"> cr</span>
+          </a>
+          <a class="awe-btn awe-info-btn" onclick="switchTab('messages')" title="Messages">
+            <span id="hud-messages">0 New</span>
+            <span class="notif-badge" id="notif-badge" style="display:none;">0</span>
+          </a>
+          <a class="awe-btn awe-info-btn mobile-hide-info" onclick="switchTab('board')" title="Board">
+            <span id="hud-board">0 New</span>
+          </a>
+          <a class="awe-btn awe-info-btn awe-info-btn-guild mobile-hide-info" onclick="switchTab('guild')" title="Guild">Guild</a>
+          <!-- Tools menu (neutral shell only): replaces the top utility link rail -->
+          <div class="awe-tools" id="awe-tools">
+            <button class="awe-btn awe-info-btn awe-tools-toggle" onclick="toggleToolsMenu(event)">Tools &#9662;</button>
+            <div class="awe-tools-menu" id="awe-tools-menu" style="display:none;">
+              <a class="awe-btn" onclick="closeToolsMenu();switchTab('rankings')">Ranks</a>
+              <a class="awe-btn" onclick="closeToolsMenu();switchTab('empire');switchEmpireSubtab('events');return false;">Updates</a>
+              <a class="awe-btn" onclick="closeToolsMenu();switchTab('tutorial')">Help</a>
+              <a class="awe-btn" onclick="closeToolsMenu();openShipSpecsModal()">Tables</a>
+              <a class="awe-btn" onclick="closeToolsMenu();openBugReportModal()">Support</a>
+              <a class="awe-btn btn-admin-item" href="/admin" style="display:none;">Admin</a>
+              <a class="awe-btn" onclick="closeToolsMenu();doLogout()">Logout</a>
+              <div class="awe-tools-time"><span class="js-server-time"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: News ticker + stats -->
+      <div class="main-header-row2">
+        <div class="news-ticker" id="news-ticker">
+          <span class="ticker-content" id="ticker-content"></span>
+        </div>
+        <div class="main-header-stats">
+          <span class="hstat"><span class="hlabel">Lvl</span> <span class="hval" id="hud-level">0</span></span>
+          <span class="hstat"><span class="hlabel">Econ</span> <span class="hval" id="hud-econ">0</span></span>
+          <span class="hstat"><span class="hlabel">Fleet</span> <span class="hval" id="hud-fleet">0/0</span></span>
+          <span class="hstat"><span class="hlabel">Tech</span> <span class="hval" id="hud-tech">0</span></span>
+          <span class="hstat"><span class="hlabel">XP</span> <span class="hval" id="hud-exp">0</span></span>
+          <span id="hud-newbie" class="hstat text-success" style="display:none;" title="Newbie Protection"></span>
+          <span class="hstat hstat-user"><span class="hlabel" id="hud-username"></span></span>
+          <span class="hstat hstat-mobile-time"><span class="hlabel" id="hud-server-time-mobile"></span></span>
+        </div>
+        <div class="mininav-container">
+          <a class="mininav-btn" title="Notes" onclick="openNotesPanel()">
+            <span class="mininav-icon">&#x1F4DD;</span>
+          </a>
+          <a class="mininav-btn" title="Bookmarks" onclick="openBookmarksPanel()">
+            <span class="mininav-icon">&#x2605;</span>
+            <span class="mininav-count" id="bookmark-count" style="display:none;">0</span>
+          </a>
+          <a class="mininav-btn" title="Notifications" onclick="switchTab('messages')">
+            <span class="mininav-icon">&#x1F514;</span>
+            <span class="mininav-count mininav-count-active" id="alert-count" style="display:none;">0</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTES SLIDE PANEL -->
+    <div class="slide-panel" id="notes-panel" style="display:none;">
+      <div class="slide-panel-header">
+        <span class="panel-title">Notes</span>
+        <button class="modal-close" onclick="closeSlidePanel('notes-panel')">&times;</button>
+      </div>
+      <div class="slide-panel-body">
+        <textarea id="player-notes" rows="12" placeholder="Personal notes â€” saved per browser..." style="width:100%;font-size:11px;font-family:Verdana,sans-serif;"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="saveNotes()" style="margin-top:6px;">Save Notes</button>
+      </div>
+    </div>
+
+    <!-- BOOKMARKS SLIDE PANEL -->
+    <div class="slide-panel" id="bookmarks-panel" style="display:none;">
+      <div class="slide-panel-header">
+        <span class="panel-title">Bookmarks</span>
+        <button class="modal-close" onclick="closeSlidePanel('bookmarks-panel')">&times;</button>
+      </div>
+      <div class="slide-panel-body" id="bookmarks-list">
+        <p class="text-dim" style="font-size:11px;">No bookmarks yet. Visit a system or planet and click &#x2605; to bookmark it.</p>
+      </div>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div class="game-body">
+
+      <!-- BASES TAB (default) -->
+      <div class="tab-panel active" id="tab-bases">
+        <div id="bases-loading" class="empty-state"><p>Loading bases...</p></div>
+        <div id="bases-container" style="display:none;"></div>
+      </div>
+
+      <!-- GALAXY MAP TAB â€” sidebar + drill-down: Region â†’ System -->
+      <div class="tab-panel" id="tab-galaxy">
+        <div class="map-layout">
+          <div class="map-sidebar" id="map-sidebar">
+            <div class="map-side-box">
+              <div class="map-side-header">Current Location</div>
+              <div class="map-side-body">
+                <div class="text-dim" style="font-size:11px;">Loading map...</div>
+              </div>
+            </div>
+          </div>
+          <div class="map-main">
+            <div class="map-breadcrumb" id="map-breadcrumb"></div>
+            <div class="map-view" id="map-view">
+              <div id="map-level-cluster" class="map-level">
+              </div>
+              <div id="map-level-galaxy" class="map-level active">
+                <div id="region-grid"></div>
+              </div>
+              <div id="map-level-region" class="map-level">
+                <div id="system-list"></div>
+              </div>
+              <div id="map-level-system" class="map-level">
+                <div id="planet-detail"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESEARCH TAB (also accessible via Empire > Technologies) -->
+      <div class="tab-panel" id="tab-research">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Research Tree</span>
+            <span class="text-dim" style="font-size:11px;">Requires Research Lab &middot; Each level multiplies cost</span>
+          </div>
+          <div class="panel-body">
+            <div class="grid-3" id="research-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FLEETS TAB -->
+      <div class="tab-panel" id="tab-fleets">
+        <div id="ship-queue-container" style="margin-bottom:8px;"></div>
+        <div id="fleets-container"></div>
+      </div>
+
+      <!-- TRADE ROUTES TAB -->
+      <div class="tab-panel" id="tab-trade">
+        <div class="panel mb-12">
+          <div class="panel-header">
+            <span class="panel-title">Create Trade Route</span>
+          </div>
+          <div class="panel-body">
+            <p class="text-dim" style="font-size:11px;margin-bottom:12px;">
+              Trade routes generate income based on distance between bases. Both bases need Spaceports.
+              You can also create routes from each base's Trade subtab.
+            </p>
+            <div class="trade-create-row" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+              <div class="form-group trade-create-field" style="margin:0;min-width:200px;">
+                <label>Your Base</label>
+                <select id="trade-base-a"></select>
+              </div>
+              <div class="form-group trade-create-field" style="margin:0;min-width:200px;">
+                <label>Destination (your base)</label>
+                <select id="trade-base-b"></select>
+              </div>
+              <span class="text-dim trade-create-or" style="padding-bottom:6px;">or</span>
+              <div class="form-group trade-create-field" style="margin:0;min-width:200px;">
+                <label>Destination (coordinates)</label>
+                <input type="text" id="trade-coords-input" placeholder="e.g. A12:45:Star:20" />
+              </div>
+              <button class="btn btn-primary" onclick="createTradeRoute()">Create Route</button>
+            </div>
+            <div id="trade-error" class="alert alert-error mt-8" style="display:none;"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Active Trade Routes</span>
+            <span class="text-dim" style="font-size:11px;" id="trade-total-income"></span>
+            <button class="btn btn-ghost btn-sm" onclick="loadTradeRoutes()">Refresh</button>
+          </div>
+          <div class="panel-body">
+            <div id="trade-routes-container"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Trade Finder</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadTradeFinder()">Refresh</button>
+          </div>
+          <div class="panel-body">
+            <div id="trade-finder-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMPIRE TAB (Engine: 2 rows of sub-tabs) -->
+      <div class="tab-panel" id="tab-empire">
+        <div class="awe-tab-bar" id="empire-tab-row1">
+          <a href="#" class="active" onclick="switchEmpireSubtab('events');return false;">Events</a>
+          <a href="#" onclick="switchEmpireSubtab('production');return false;">Production</a>
+          <a href="#" onclick="switchEmpireSubtab('economy');return false;">Economy</a>
+          <a href="#" onclick="switchEmpireSubtab('trade');return false;">Trade</a>
+          <a href="#" onclick="switchEmpireSubtab('reports');return false;">Reports</a>
+        </div>
+        <div class="awe-tab-bar" id="empire-tab-row2" style="margin-top:-2px;">
+          <a href="#" onclick="switchEmpireSubtab('capacities');return false;">Capacities</a>
+          <a href="#" onclick="switchEmpireSubtab('structures');return false;">Structures</a>
+          <a href="#" onclick="switchEmpireSubtab('fleets');return false;">Fleets</a>
+          <a href="#" onclick="switchEmpireSubtab('units');return false;">Units</a>
+          <a href="#" onclick="switchEmpireSubtab('technologies');return false;">Technologies</a>
+        </div>
+        <div id="empire-content"></div>
+      </div>
+
+      <!-- BATTLES TAB -->
+      <div class="tab-panel" id="tab-battles">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Battle Reports</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadBattles()">Refresh</button>
+          </div>
+          <div class="panel-body">
+            <div id="battles-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RANKINGS TAB -->
+      <div class="tab-panel" id="tab-rankings">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">Leaderboard</span>
+              <button class="btn btn-ghost btn-sm" onclick="loadRankings()">Refresh</button>
+            </div>
+            <div class="panel-body" style="overflow-x:auto;">
+              <table class="data-table">
+                <thead><tr><th>#</th><th>Commander</th><th>Level</th><th>Bases</th><th>Economy</th><th>Fleet</th><th>Tech</th><th>Score</th></tr></thead>
+                <tbody id="rankings-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Guild Rankings</span></div>
+            <div class="panel-body" style="overflow-x:auto;">
+              <table class="data-table">
+                <thead><tr><th>#</th><th>Tag</th><th>Guild</th><th>Leader</th><th>Members</th><th>Level</th><th>Economy</th><th>Fleet</th></tr></thead>
+                <tbody id="guild-rankings-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Server Info</span></div>
+            <div class="panel-body" id="gameinfo-body"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGES TAB -->
+      <div class="tab-panel" id="tab-messages">
+        <div class="awe-tab-bar" id="msg-tab-bar">
+          <a href="#" class="active" onclick="switchMsgTab('inbox');return false;">Inbox</a>
+          <a href="#" onclick="switchMsgTab('sentbox');return false;">Sentbox</a>
+          <a href="#" onclick="switchMsgTab('savebox');return false;">Savebox</a>
+          <a href="#" onclick="switchMsgTab('contacts');return false;">Contacts</a>
+        </div>
+        <div id="messages-content"></div>
+      </div>
+
+      <!-- BOARD TAB -->
+      <div class="tab-panel" id="tab-board">
+        <div class="panel guild-board-panel" id="guild-board-panel">
+          <div class="panel-header">
+            <span class="panel-title">Board</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadGuild()">Refresh</button>
+          </div>
+          <div class="panel-body" id="guild-board"></div>
+        </div>
+      </div>
+
+      <!-- COMMANDERS TAB -->
+      <div class="tab-panel" id="tab-commanders">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Commanders</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadCommanders()">Refresh</button>
+          </div>
+          <div class="panel-body" id="commanders-container"></div>
+        </div>
+      </div>
+
+      <!-- ACCOUNT TAB -->
+      <div class="tab-panel" id="tab-account">
+        <div class="awe-heading">Account</div>
+        <div class="account-page-shell">
+          <div class="account-sidebar-stack" id="account-sidebar">
+            <div class="account-nav-group">
+              <a href="#" class="awe-sidebar-link active" data-account-sub="overview" onclick="switchAccountSub('overview');return false;">Overview</a>
+              <a href="#" class="awe-sidebar-link" data-account-sub="profile" onclick="switchAccountSub('profile');return false;">Profile</a>
+              <a href="#" class="awe-sidebar-link" data-account-sub="private" onclick="switchAccountSub('private');return false;">Private Information</a>
+              <a href="#" class="awe-sidebar-link" data-account-sub="display" onclick="switchAccountSub('display');return false;">Display</a>
+              <a href="#" class="awe-sidebar-link" data-account-sub="vacation" onclick="switchAccountSub('vacation');return false;">Vacation Mode</a>
+              <a href="#" class="awe-sidebar-link" data-account-sub="restart" onclick="switchAccountSub('restart');return false;">Restart Account</a>
+              <a href="#" class="awe-sidebar-link" data-account-sub="delete" onclick="switchAccountSub('delete');return false;">Delete Account</a>
+            </div>
+            <div class="account-nav-group">
+              <a href="#" class="awe-sidebar-link" data-account-sub="upgrade" onclick="switchAccountSub('upgrade');return false;">Upgrade</a>
+              <a href="#" class="awe-sidebar-link" data-account-sub="upgrades" onclick="switchAccountSub('upgrades');return false;">Upgrades History</a>
+            </div>
+            <div class="account-nav-group">
+              <a href="#" class="awe-sidebar-link" data-account-sub="recruit" onclick="switchAccountSub('recruit');return false;">Recruit</a>
+              <a href="#" class="awe-sidebar-link" data-account-sub="banners" onclick="switchAccountSub('banners');return false;">Banners</a>
+            </div>
+          </div>
+          <div class="account-content-shell" id="account-content"></div>
+        </div>
+      </div>
+
+      <!-- GUILD TAB -->
+      <div class="tab-panel" id="tab-guild">
+        <div class="guild-page-shell">
+          <div class="panel guild-profile-panel">
+            <div class="panel-header">
+              <span class="panel-title">Guild</span>
+              <button class="btn btn-ghost btn-sm" onclick="loadGuild()">Refresh</button>
+            </div>
+            <div class="panel-body" id="guild-my"></div>
+          </div>
+          <div class="panel guild-members-panel" id="guild-members-panel" style="display:none;">
+            <div class="panel-header">
+              <span class="panel-title">Guild Members</span>
+            </div>
+            <div class="panel-body" id="guild-members"></div>
+          </div>
+          <div class="panel guild-apps-panel" id="guild-apps-panel" style="display:none;">
+            <div class="panel-header">
+              <span class="panel-title">Pending Members</span>
+              <button class="btn btn-ghost btn-sm" onclick="loadGuildApplications()">Refresh</button>
+            </div>
+            <div class="panel-body" id="guild-apps"></div>
+          </div>
+          <div class="panel guild-create-panel" id="guild-create-panel">
+            <div class="panel-header">
+              <span class="panel-title">Guild Directory</span>
+            </div>
+            <div class="panel-body" id="guild-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TUTORIAL TAB -->
+      <div class="tab-panel" id="tab-tutorial">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Tutorial Missions</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadTutorialTab()">Refresh</button>
+          </div>
+          <div class="panel-body" style="padding:0;">
+            <div class="tutorial-layout">
+              <div class="tutorial-sidebar" id="tut-nav-sidebar">
+                <div id="tut-nav"></div>
+              </div>
+              <div class="tutorial-content" id="tut-content">
+                <div class="text-dim" style="padding:20px;">Loading tutorial...</div>
+              </div>
+            </div>
+            <div style="text-align:center;padding:8px;">
+              <span class="tut-skip-link" onclick="skipTutorialInGame()">Skip Tutorial</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SEND FLEET MODAL -->
+  <div class="modal-overlay" id="send-fleet-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Move Fleet</span>
+        <button class="modal-close" onclick="closeModal('send-fleet-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="send-dest-label" class="text-bright mb-8" style="font-size:12px;"></div>
+        <div class="form-group">
+          <label>Select Fleet to Send</label>
+          <select id="send-fleet-sel"></select>
+        </div>
+        <p class="text-dim" style="font-size:11px;">Select a fleet, then configure your move on the Fleets tab.</p>
+        <div id="send-info" class="alert alert-error" style="display:none;margin-top:8px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('send-fleet-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="doSendFleet()">Select Fleet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLONIZE MODAL -->
+  <div class="modal-overlay" id="colonize-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Colonize Planet</span>
+        <button class="modal-close" onclick="closeModal('colonize-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info mb-12">
+          Colonize <strong id="colonize-planet-name"></strong>
+        </div>
+        <div class="form-group">
+          <label>Select Fleet with Colony Ship</label>
+          <select id="colonize-fleet-sel"></select>
+        </div>
+        <p id="colonize-no-fleet-msg" class="text-warn" style="font-size:11px;display:none;"></p>
+        <p class="text-dim" style="font-size:11px;margin-top:4px;">
+          Colonization requires a fleet with a colonizer ship stationed at this planet.
+          One colonizer ship will be consumed. Colony cost is deducted from your credits.
+        </p>
+        <div id="colonize-info" class="alert" style="display:none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('colonize-modal')">Cancel</button>
+        <button class="btn btn-success" id="colonize-btn" onclick="doColonize()">Colonize</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERIC MODAL (used for home planet, reorder, etc.) -->
+  <div class="modal-overlay" id="generic-modal">
+    <div class="modal" style="width:min(420px,90vw);">
+      <div class="modal-header">
+        <span class="modal-title" id="generic-modal-title">Action</span>
+        <button class="modal-close" onclick="closeModal('generic-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="generic-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- RENAME BASE MODAL -->
+  <div class="modal-overlay" id="rename-modal">
+    <div class="modal" style="width:min(380px,90vw);">
+      <div class="modal-header">
+        <span class="modal-title">Rename Base</span>
+        <button class="modal-close" onclick="closeModal('rename-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="rename-base-id" />
+        <div class="form-group">
+          <label>New Name</label>
+          <input type="text" id="rename-base-input" maxlength="40" />
+        </div>
+        <div id="rename-error" class="alert alert-error" style="display:none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('rename-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="doRenameBase()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BASE DETAIL MODAL (engine-style) -->
+  <div class="modal-overlay" id="base-detail-modal">
+    <div class="modal" style="width:min(820px,95vw);">
+      <div class="modal-header">
+        <span class="modal-title" id="base-detail-title">Base Detail</span>
+        <button class="modal-close" onclick="closeModal('base-detail-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="base-detail-content" style="padding:0;">
+        <div class="text-dim" style="padding:20px;text-align:center;">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHIP SPECS MODAL -->
+  <div class="modal-overlay" id="ship-specs-modal">
+    <div class="modal" style="width:min(900px,95vw);">
+      <div class="modal-header">
+        <span class="modal-title">Tables</span>
+        <button class="modal-close" onclick="closeModal('ship-specs-modal')">&times;</button>
+      </div>
+      <div style="display:flex;gap:2px;padding:6px 12px 0;background:var(--bg-panel);flex-wrap:wrap;">
+        <button class="awe-nav-btn active" onclick="switchTablesTab('ships',this)">Ships</button>
+        <button class="awe-nav-btn" onclick="switchTablesTab('defenses',this)">Defenses</button>
+        <button class="awe-nav-btn" onclick="switchTablesTab('buildings',this)">Buildings</button>
+        <button class="awe-nav-btn" onclick="switchTablesTab('research',this)">Research</button>
+        <button class="awe-nav-btn" onclick="switchTablesTab('commanders',this)">Commanders</button>
+        <button class="awe-nav-btn" onclick="switchTablesTab('mechanics',this)">Game Mechanics</button>
+      </div>
+      <div class="modal-body" style="overflow-x:auto;max-height:70vh;">
+        <div id="ship-specs-content"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('ship-specs-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPLIT FLEET MODAL -->
+  <div class="modal-overlay" id="split-fleet-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Split Fleet</span>
+        <button class="modal-close" onclick="closeModal('split-fleet-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>New Fleet Name</label>
+          <input type="text" id="split-new-name" maxlength="40" />
+        </div>
+        <div id="split-ships-list"></div>
+        <div id="split-error" class="alert alert-error mt-8" style="display:none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('split-fleet-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="doSplitFleet()">Split Fleet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MERGE FLEET MODAL -->
+  <div class="modal-overlay" id="merge-fleet-modal">
+    <div class="modal" style="width:min(420px,90vw);">
+      <div class="modal-header">
+        <span class="modal-title">Merge Fleets</span>
+        <button class="modal-close" onclick="closeModal('merge-fleet-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="merge-source-label" class="text-bright mb-8" style="font-size:12px;"></div>
+        <div class="form-group">
+          <label>Target Fleet</label>
+          <select id="merge-target-sel"></select>
+        </div>
+        <p class="text-dim" style="font-size:11px;">All ships from the source fleet will be transferred to the target fleet. Source fleet will be deleted.</p>
+        <div id="merge-error" class="alert alert-error mt-8" style="display:none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('merge-fleet-modal')">Cancel</button>
+        <button class="btn btn-primary" id="merge-btn" onclick="doMergeFleets()">Merge</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLEET RENAME MODAL -->
+  <div class="modal-overlay" id="fleet-rename-modal">
+    <div class="modal" style="width:min(380px,90vw);">
+      <div class="modal-header">
+        <span class="modal-title">Rename Fleet</span>
+        <button class="modal-close" onclick="closeModal('fleet-rename-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="fleet-rename-id" />
+        <div class="form-group">
+          <label>New Fleet Name</label>
+          <input type="text" id="fleet-rename-input" maxlength="50" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('fleet-rename-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="doRenameFleet()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUILD EDIT MODAL (BBCode) -->
+  <div class="modal-overlay" id="guild-edit-modal">
+    <div class="modal" style="width:min(980px,95vw);">
+      <div class="modal-header">
+        <span class="modal-title">Edit guild</span>
+        <button class="modal-close" onclick="closeModal('guild-edit-modal')">&times;</button>
+      </div>
+      <div class="modal-body guild-edit-shell">
+        <input type="hidden" id="guild-edit-id" />
+        <div class="guild-edit-actions">
+          <button class="btn btn-primary btn-sm" type="button">Edit guild</button>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="openGuildLogModal()">Guild logs</button>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="openGuildGraphs()">Historical graphs</button>
+        </div>
+        <div class="guild-edit-meta">
+          <div class="guild-edit-field guild-edit-tag-field">
+            <label>Tag</label>
+            <input type="text" id="guild-edit-tag" maxlength="5" style="text-transform:uppercase;" />
+          </div>
+          <div class="guild-edit-field">
+            <label>Name</label>
+            <input type="text" id="guild-edit-name" maxlength="36" />
+          </div>
+          <div class="guild-edit-comment">(After you change guild tag or guild name you can only change it again after 7 days)</div>
+        </div>
+        <div class="guild-edit-toolbar">
+          <span class="guild-edit-toolbar-title">BBCode</span>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','b')" title="Bold"><b>b</b></button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','u')" title="Underline"><u>u</u></button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','i')" title="Italic"><i>i</i></button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','s')" title="Strike"><s>s</s></button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','code')" title="Code">code</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','quote')" title="Quote">quote</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','list')" title="List">list</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','list',true)" title="Numbered list">list=</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','*')" title="List item">*</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','url')" title="Link">url</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','url',true)" title="Named link">url=</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','left')" title="Left">left</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','center')" title="Center">center</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','right')" title="Right">right</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','img')" title="Image">img</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','size',true)" title="Size">size=</button>
+          <button class="btn btn-ghost btn-sm bbcode-btn" type="button" onclick="bbcodeInsertTag('guild-edit-desc','color',true)" title="Color">color=</button>
+        </div>
+        <div class="guild-edit-body-wrap">
+          <textarea id="guild-edit-desc" rows="12" class="guild-edit-desc" maxlength="1200" wrap="virtual"></textarea>
+          <div class="guild-edit-counter">(chars left: <span id="guild-edit-counter">1200</span>)</div>
+        </div>
+        <div class="guild-edit-links">
+          <div class="guild-edit-field">
+            <label>Homepage</label>
+            <input type="text" id="guild-edit-homepage" maxlength="64" placeholder="http://" />
+          </div>
+          <div class="guild-edit-field">
+            <label>Forum</label>
+            <input type="text" id="guild-edit-forum" maxlength="64" placeholder="http://" />
+          </div>
+        </div>
+        <div class="guild-edit-board-table-wrap">
+          <table class="guild-edit-board-table">
+            <tbody>
+              <tr><th>Board 0 name</th><td>General</td></tr>
+              <tr><th>Board 1 name</th><td>Announcements</td></tr>
+              <tr><th>Board 2 name</th><td>Combat</td></tr>
+              <tr>
+                <th>Board 3 name</th>
+                <td>
+                  <input type="text" id="guild-edit-board3" maxlength="20" placeholder="Trade" />
+                  <span class="guild-edit-inline-note">(leave empty for default name = Trade)</span>
+                </td>
+              </tr>
+              <tr>
+                <th>Board 4 name</th>
+                <td>
+                  <input type="text" id="guild-edit-board4" maxlength="20" placeholder="Strategy" />
+                  <span class="guild-edit-inline-note">(leave empty for default name = Strategy)</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="guild-edit-status" style="font-size:11px;margin-top:8px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" type="button" onclick="resetGuildEditForm()">Reset</button>
+        <button class="btn btn-primary" type="button" onclick="saveGuildEdit()">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="guild-graphs-modal">
+    <div class="modal guild-graphs-modal">
+      <div class="modal-header">
+        <span class="modal-title">Guild Graphs</span>
+        <button class="modal-close" onclick="closeModal('guild-graphs-modal')">&times;</button>
+      </div>
+      <div class="modal-body guild-graphs-shell">
+        <div class="guild-graphs-sidebar">
+          <div class="guild-graphs-menu" id="guild-graphs-menu"></div>
+          <div class="guild-graphs-compare">
+            <div class="guild-graphs-compare-title">Guilds Ids to compare:</div>
+            <div id="guild-graphs-compare"></div>
+            <div class="guild-graphs-scale-row">
+              <label for="guild-graphs-scale">Scale:</label>
+              <select id="guild-graphs-scale">
+                <option value="days">Days</option>
+                <option value="months">Months</option>
+              </select>
+            </div>
+            <div class="guild-graphs-actions">
+              <button class="btn btn-primary" type="button" onclick="submitGuildGraphs()">Submit</button>
+            </div>
+          </div>
+        </div>
+        <div class="guild-graphs-stage">
+          <div class="guild-graphs-chart-wrap" id="guild-graphs-chart-wrap">
+            <div class="text-dim" style="text-align:center;padding:24px;">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MESSAGE VIEW MODAL removed â€” messages now expand inline -->
+
+  <!-- BUG REPORT MODAL -->
+  <div class="modal-overlay" id="bug-report-modal">
+    <div class="modal" style="width:min(520px,90vw);">
+      <div class="modal-header">
+        <span class="modal-title">Report Bug / Request Feature</span>
+        <button class="modal-close" onclick="closeModal('bug-report-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Category</label>
+          <select id="bug-category">
+            <option value="bug">Bug Report</option>
+            <option value="request">Feature Request</option>
+            <option value="feedback">Feedback</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="bug-title" maxlength="200" placeholder="Brief summary..." />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="bug-description" rows="6" maxlength="2000" placeholder="What happened? Steps to reproduce? What did you expect?"></textarea>
+        </div>
+        <div id="bug-report-status" style="font-size:11px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('bug-report-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitBugReport()">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+    <button class="mobile-nav-btn active" data-tab="bases" onclick="openBasesHome()">
+      <span class="mobile-nav-icon">&#x1F3E0;</span><span class="mobile-nav-label">Bases</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="galaxy" onclick="switchTab('galaxy')">
+      <span class="mobile-nav-icon">&#x1F30D;</span><span class="mobile-nav-label">Map</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="fleets" onclick="switchTab('fleets')">
+      <span class="mobile-nav-icon">&#x1F680;</span><span class="mobile-nav-label">Fleets</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="empire" onclick="switchTab('empire')">
+      <span class="mobile-nav-icon">&#x2694;</span><span class="mobile-nav-label">Empire</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="more" onclick="toggleMobileMore()">
+      <span class="mobile-nav-icon">&#x2261;</span><span class="mobile-nav-label">More</span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MORE MENU -->
+  <div class="mobile-more-menu" id="mobile-more-menu" style="display:none;">
+    <button class="mobile-more-item" onclick="switchTab('commanders');closeMobileMore()">Commanders</button>
+    <button class="mobile-more-item" onclick="switchTab('rankings');closeMobileMore()">Rankings</button>
+    <button class="mobile-more-item" onclick="switchTab('messages');closeMobileMore()">Messages <span class="notif-badge" id="mobile-notif-badge" style="display:none;">0</span></button>
+    <button class="mobile-more-item" onclick="switchTab('board');closeMobileMore()">Board</button>
+    <button class="mobile-more-item" onclick="switchTab('account');closeMobileMore()">Account</button>
+    <button class="mobile-more-item" onclick="switchTab('guild');closeMobileMore()">Guild</button>
+    <button class="mobile-more-item" onclick="switchTab('tutorial');closeMobileMore()">Help</button>
+    <button class="mobile-more-item" onclick="openShipSpecsModal();closeMobileMore()">Tables</button>
+    <button class="mobile-more-item" onclick="openBugReportModal();closeMobileMore()">Report Bug</button>
+    <button class="mobile-more-item mobile-more-danger" onclick="doLogout()">Logout</button>
+  </div>
+
+  <!-- SNACKBAR -->
+  <div id="send-snack" style="display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--bg-panel);border:1px solid var(--success);border-radius:5px;padding:10px 20px;
+    color:var(--success);font-size:12px;z-index:2000;box-shadow:0 8px 30px rgba(0,0,0,.5);"></div>
+
+  <!-- TOOLTIP -->
+  <div class="map-tooltip" id="map-tooltip"></div>
+
+  <!-- CHANGELOG POPUP -->
+  <div class="modal-overlay" id="changelog-modal" style="display:none;">
+    <div class="modal" style="width:min(550px,95vw);max-height:80vh;">
+      <div class="modal-header">
+        <span class="modal-title">What's New</span>
+        <button class="modal-close" onclick="closeChangelogModal()">âœ•</button>
+      </div>
+      <div class="modal-body" id="changelog-modal-body" style="overflow-y:auto;max-height:calc(80vh - 100px);"></div>
+      <div class="modal-footer" style="display:flex;justify-content:space-between;">
+        <button class="btn btn-ghost btn-sm" onclick="showFullChangelog()">View Full History</button>
+        <button class="btn btn-primary btn-sm" onclick="closeChangelogModal()">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Split JS modules (load order matters) -->
+  <script src="/static/mobile.js?v=1"></script>
+  <script src="/static/i18n.js?v=104"></script>
+<script src="/static/core.js?v=159"></script>
+<script src="/static/core_empire.js?v=3"></script>
+  <script src="/static/map.js?v=153"></script>
+  <script src="/static/bases.js?v=157"></script>
+<script src="/static/fleets.js?v=148"></script>
+<script src="/static/fleets_move.js?v=2"></script>
+<script src="/static/fleets_build.js?v=2"></script>
+<script src="/static/fleets_attack.js?v=1"></script>
+<script src="/static/fleets_detail.js?v=2"></script>
+<script src="/static/social_reports.js?v=2"></script>
+<script src="/static/social_messages.js?v=1"></script>
+<script src="/static/social_commanders.js?v=1"></script>
+<script src="/static/social_scanners.js?v=1"></script>
+<script src="/static/social.js?v=165"></script>
+<script src="/static/social_account.js?v=1"></script>
+<script src="/static/social_guild.js?v=1"></script>
+  <div id="awe-attribution" style="position:fixed;bottom:4px;right:8px;z-index:50;font-size:10px;opacity:0.45;pointer-events:auto;">
+    <a href="https://astrowebengine.com" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">
+      Powered by AstroWebEngine
+    </a>
+  </div>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}</script>
+</body>
+</html>
+
+

@@ -1,0 +1,12 @@
+{
+  "id": "last_standing",
+  "name": "Last Standing (Annihilation)",
+  "version": "1.0",
+  "author": "AstroWebEngine example",
+  "engine_api": "1.0",
+  "kind": "behavioral",
+  "description": "Implements the 'annihilation' win condition that the core engine leaves to a mod: the last team still holding any base wins — your guild if you're in one, else you alone (so 'last guild standing' when guilds are in play, 'last player standing' otherwise). Pairs with the conquest engine flags (occupation_capture) that let players actually lose bases. Registers the compute_victory override hook. Runs code, so it only loads when the operator enables behavioral mods (AWE_ALLOW_BEHAVIORAL_MODS=true) and enables this mod.",
+  "requires": [],
+  "conflicts": [],
+  "load_order": 100
+}

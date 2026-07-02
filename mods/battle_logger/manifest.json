@@ -1,0 +1,12 @@
+{
+  "id": "battle_logger",
+  "name": "Battle Logger",
+  "version": "1.0",
+  "author": "AstroWebEngine example",
+  "engine_api": "1.0",
+  "kind": "behavioral",
+  "description": "Example behavioral mod: logs a one-line summary after every battle via the on_battle_resolved hook. Demonstrates the M3 hook path. Runs code, so it only loads when the operator enables behavioral mods (AWE_ALLOW_BEHAVIORAL_MODS=true) and enables this mod.",
+  "requires": [],
+  "conflicts": [],
+  "load_order": 100
+}

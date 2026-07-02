@@ -1,0 +1,1205 @@
+{
+  "meta": {
+    "name": "Stellar Conquest",
+    "version": "1.0",
+    "author": "AstroWebEngine showcase",
+    "description": "Neutral flat-economy 4X clone at the opposite engine flag corner from Classic Empire: differentiated metal/crystal/deuterium production, round-based combat (≤6 rounds), and count-built defenses. Original names; a faithful-named twin stays private."
+  },
+  "engine": {
+    "resource_model": "multi",
+    "resource_types": [
+      "metal",
+      "crystal",
+      "deuterium"
+    ],
+    "defense_model": "count",
+    "defenses_destructible": true,
+    "defense_repair_percent": 0.7,
+    "buildings_destructible": false,
+    "ships_always_destroyed": true,
+    "combat_model": "rounds",
+    "combat_max_rounds": 6,
+    "map_depth": 3,
+    "map_levels": [
+      "galaxy",
+      "system",
+      "orbit"
+    ],
+    "construction_queue_max": 6,
+    "research_queue_max": 6,
+    "production_queue_max": 12,
+    "world_model": "uniform",
+    "uniform_terrain": "earthly",
+    "uniform_positions": 15,
+    "moon_formation": true,
+    "moon_terrain": "craters",
+    "moon_chance_per_100k_debris": 0.01,
+    "moon_max_chance": 0.2,
+    "moon_destruction": true,
+    "rebuild_model": "binomial",
+    "fleet_rebuild_factor": 0.0,
+    "plunder_model": "cargo",
+    "plunder_percent": 0.5
+  },
+  "ui": {
+    "theme": "neutral",
+    "shell": "neutral",
+    "labels": {
+      "nav.bases": "Planets",
+      "nav.galaxy": "Galaxy",
+      "nav.fleets": "Fleet",
+      "nav.empire": "Overview",
+      "nav.commanders": "Officers"
+    }
+  },
+  "economy": {
+    "construction_bonus_base": 20,
+    "construction_bonus_homeworld": 20,
+    "base_energy_bonus": 2,
+    "capital_empire_bonus": 0,
+    "occupation_time_penalty": 1.3,
+    "min_build_time_seconds": 5,
+    "min_research_time_seconds": 5
+  },
+  "combat": {
+    "damage_allocation_exponent": 0.85,
+    "loot_percent": 0.2,
+    "debris_percent": 0.4
+  },
+  "fleet": {
+    "travel_divisor": 200,
+    "base_fleet_count": 1,
+    "size_limit_multiplier": 2500
+  },
+  "weapon_types": {
+    "ballistic": {
+      "name": "Mass Driver",
+      "shield_passthrough": 0.02
+    },
+    "laser": {
+      "name": "Laser Cannon",
+      "shield_passthrough": 0.05
+    },
+    "ion": {
+      "name": "Ion Cannon",
+      "shield_passthrough": 0.6
+    },
+    "plasma": {
+      "name": "Plasma Turret",
+      "shield_passthrough": 0.3
+    },
+    "antimatter": {
+      "name": "Antimatter Lance",
+      "shield_passthrough": 0.15
+    }
+  },
+  "terrains": {
+    "earthly": {
+      "name": "Planet",
+      "solar": 0,
+      "gas": 3,
+      "fertility": 6,
+      "area_planet": 85,
+      "area_moon": 75,
+      "metal": 3,
+      "crystal": 0
+    },
+    "craters": {
+      "name": "Moon",
+      "solar": 0,
+      "gas": 2,
+      "fertility": 4,
+      "area_planet": 85,
+      "area_moon": 40,
+      "metal": 4,
+      "crystal": 2
+    }
+  },
+  "ships": {
+    "light_hauler": {
+      "name": "Light Hauler",
+      "desc": "Small cargo runner; hauls resources.",
+      "cost": {
+        "metal": 2000,
+        "crystal": 2000
+      },
+      "attack": 5,
+      "armour": 40,
+      "shield": 0,
+      "speed": 6,
+      "hangar": -1,
+      "weapon": "ballistic",
+      "drive": "combustion",
+      "shipyard": 2,
+      "req": {
+        "combustion_drive": 2
+      },
+      "rounding": 0,
+      "cargo": 5000
+    },
+    "heavy_hauler": {
+      "name": "Heavy Hauler",
+      "desc": "Bulk freighter with a large hold.",
+      "cost": {
+        "metal": 6000,
+        "crystal": 6000
+      },
+      "attack": 5,
+      "armour": 120,
+      "shield": 0,
+      "speed": 5,
+      "hangar": -1,
+      "weapon": "ballistic",
+      "drive": "combustion",
+      "shipyard": 4,
+      "req": {
+        "combustion_drive": 6
+      },
+      "rounding": 0,
+      "cargo": 25000
+    },
+    "recon_drone": {
+      "name": "Recon Drone",
+      "desc": "Fast disposable probe for scouting.",
+      "cost": {
+        "crystal": 1000
+      },
+      "attack": 0,
+      "armour": 1,
+      "shield": 0,
+      "speed": 20,
+      "hangar": -1,
+      "weapon": "laser",
+      "drive": "combustion",
+      "shipyard": 3,
+      "req": {
+        "combustion_drive": 3,
+        "recon_tech": 1
+      },
+      "rounding": 0,
+      "can_autoscout": true,
+      "cargo": 0
+    },
+    "interceptor": {
+      "name": "Interceptor",
+      "desc": "Cheap mass-produced light fighter.",
+      "cost": {
+        "metal": 3000,
+        "crystal": 1000
+      },
+      "attack": 50,
+      "armour": 40,
+      "shield": 10,
+      "speed": 8,
+      "hangar": -1,
+      "weapon": "laser",
+      "drive": "combustion",
+      "shipyard": 1,
+      "req": {
+        "combustion_drive": 1
+      },
+      "rounding": 0,
+      "cargo": 50
+    },
+    "strike_fighter": {
+      "name": "Strike Fighter",
+      "desc": "Heavier fighter with a shield generator.",
+      "cost": {
+        "metal": 6000,
+        "crystal": 4000
+      },
+      "attack": 150,
+      "armour": 100,
+      "shield": 25,
+      "speed": 7,
+      "hangar": -1,
+      "weapon": "laser",
+      "drive": "impulse",
+      "shipyard": 3,
+      "req": {
+        "impulse_drive": 2,
+        "laser_tech": 2
+      },
+      "rounding": 0,
+      "cargo": 100
+    },
+    "reclaimer": {
+      "name": "Reclaimer",
+      "desc": "Collects debris fields into resources.",
+      "cost": {
+        "metal": 10000,
+        "crystal": 6000,
+        "deuterium": 2000
+      },
+      "attack": 1,
+      "armour": 160,
+      "shield": 10,
+      "speed": 4,
+      "hangar": -1,
+      "weapon": "laser",
+      "drive": "combustion",
+      "shipyard": 4,
+      "req": {
+        "combustion_drive": 6,
+        "shield_matrix": 2
+      },
+      "rounding": 1,
+      "can_recycle": true,
+      "cargo": 20000
+    },
+    "cruiser": {
+      "name": "Cruiser",
+      "desc": "Fast mid-line warship, strong vs fighters.",
+      "cost": {
+        "metal": 20000,
+        "crystal": 7000,
+        "deuterium": 2000
+      },
+      "attack": 400,
+      "armour": 270,
+      "shield": 50,
+      "speed": 6,
+      "hangar": 10,
+      "weapon": "ion",
+      "drive": "impulse",
+      "shipyard": 5,
+      "req": {
+        "impulse_drive": 4,
+        "ion_tech": 2
+      },
+      "rounding": 1,
+      "cargo": 800
+    },
+    "capital_ship": {
+      "name": "Capital Ship",
+      "desc": "Heavy line battleship.",
+      "cost": {
+        "metal": 45000,
+        "crystal": 15000
+      },
+      "attack": 1000,
+      "armour": 600,
+      "shield": 200,
+      "speed": 5,
+      "hangar": 20,
+      "weapon": "ion",
+      "drive": "hyper",
+      "shipyard": 7,
+      "req": {
+        "hyperdrive": 4,
+        "ion_tech": 5
+      },
+      "rounding": 2,
+      "cargo": 1500
+    },
+    "battlecruiser": {
+      "name": "Battlecruiser",
+      "desc": "Shielded raider; hunts capitals.",
+      "cost": {
+        "metal": 30000,
+        "crystal": 40000,
+        "deuterium": 15000
+      },
+      "attack": 700,
+      "armour": 700,
+      "shield": 400,
+      "speed": 5,
+      "hangar": 30,
+      "weapon": "plasma",
+      "drive": "hyper",
+      "shipyard": 8,
+      "req": {
+        "hyperdrive": 5,
+        "plasma_tech": 5,
+        "shield_matrix": 5
+      },
+      "rounding": 2,
+      "cargo": 750
+    },
+    "bomber": {
+      "name": "Bomber",
+      "desc": "Specialist; shreds planetary defenses.",
+      "cost": {
+        "metal": 50000,
+        "crystal": 25000,
+        "deuterium": 15000
+      },
+      "attack": 1000,
+      "armour": 500,
+      "shield": 500,
+      "speed": 4,
+      "hangar": 25,
+      "weapon": "plasma",
+      "drive": "impulse",
+      "shipyard": 8,
+      "req": {
+        "impulse_drive": 6,
+        "plasma_tech": 5
+      },
+      "rounding": 2,
+      "cargo": 500
+    },
+    "destroyer": {
+      "name": "Destroyer",
+      "desc": "Apex warship short of the Worldbreaker.",
+      "cost": {
+        "metal": 60000,
+        "crystal": 50000,
+        "deuterium": 15000
+      },
+      "attack": 2000,
+      "armour": 1100,
+      "shield": 500,
+      "speed": 5,
+      "hangar": 40,
+      "weapon": "plasma",
+      "drive": "hyper",
+      "shipyard": 9,
+      "req": {
+        "hyperdrive": 6,
+        "plasma_tech": 5
+      },
+      "rounding": 2,
+      "cargo": 2000
+    },
+    "worldbreaker": {
+      "name": "Worldbreaker",
+      "desc": "Mobile fortress; mounts an antimatter lance. Can crack moons.",
+      "cost": {
+        "metal": 5000000,
+        "crystal": 4000000,
+        "deuterium": 1000000
+      },
+      "attack": 200000,
+      "armour": 900000,
+      "shield": 50000,
+      "speed": 1,
+      "hangar": 1000,
+      "weapon": "antimatter",
+      "drive": "hyper",
+      "shipyard": 12,
+      "req": {
+        "hyperdrive": 7,
+        "graviton_theory": 1,
+        "plasma_tech": 6
+      },
+      "rounding": 3,
+      "can_destroy_moons": true,
+      "cargo": 1000000
+    },
+    "settler": {
+      "name": "Settler",
+      "desc": "Founds a new colony.",
+      "cost": {
+        "metal": 10000,
+        "crystal": 20000,
+        "deuterium": 10000
+      },
+      "attack": 1,
+      "armour": 100,
+      "shield": 100,
+      "speed": 4,
+      "hangar": 0,
+      "weapon": "laser",
+      "drive": "impulse",
+      "shipyard": 4,
+      "req": {
+        "impulse_drive": 3,
+        "astrophysics": 1
+      },
+      "rounding": 1,
+      "can_colonize": true,
+      "cargo": 7500
+    }
+  },
+  "buildings": {
+    "metal_extractor": {
+      "name": "Metal Extractor",
+      "desc": "Strip-mines metal from the planet crust.",
+      "base_cost": {
+        "metal": 60,
+        "crystal": 15
+      },
+      "cost_mult": 1.5,
+      "time": 60,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "metal": {
+          "type": "flat",
+          "per_level": 30
+        }
+      },
+      "start_level": 2
+    },
+    "crystal_extractor": {
+      "name": "Crystal Extractor",
+      "desc": "Refines crystalline ore.",
+      "base_cost": {
+        "metal": 48,
+        "crystal": 24
+      },
+      "cost_mult": 1.6,
+      "time": 70,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "crystal": {
+          "type": "flat",
+          "per_level": 20
+        }
+      },
+      "start_level": 1
+    },
+    "deuterium_synth": {
+      "name": "Deuterium Synthesizer",
+      "desc": "Condenses deuterium from the oceans.",
+      "base_cost": {
+        "metal": 225,
+        "crystal": 75
+      },
+      "cost_mult": 1.5,
+      "time": 90,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "deuterium": {
+          "type": "flat",
+          "per_level": 10
+        }
+      },
+      "start_level": 1
+    },
+    "solar_array": {
+      "name": "Photovoltaic Array",
+      "desc": "Converts starlight into grid energy.",
+      "base_cost": {
+        "metal": 75,
+        "crystal": 30
+      },
+      "cost_mult": 1.5,
+      "time": 60,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "energy": {
+          "type": "flat",
+          "per_level": 30
+        }
+      },
+      "start_level": 1
+    },
+    "fusion_plant": {
+      "name": "Fusion Plant",
+      "desc": "Burns deuterium for high energy output.",
+      "base_cost": {
+        "metal": 900,
+        "crystal": 360,
+        "deuterium": 180
+      },
+      "cost_mult": 1.8,
+      "time": 200,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "energy_theory": 3
+      },
+      "advanced": false,
+      "contributions": {
+        "energy": {
+          "type": "flat",
+          "per_level": 50
+        }
+      }
+    },
+    "robotics_bay": {
+      "name": "Robotics Bay",
+      "desc": "Automated builders speed all construction.",
+      "base_cost": {
+        "metal": 400,
+        "crystal": 120,
+        "deuterium": 200
+      },
+      "cost_mult": 2.0,
+      "time": 180,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "industrial": {
+          "type": "flat",
+          "per_level": 5
+        }
+      }
+    },
+    "nanite_factory": {
+      "name": "Assembly Nanobots",
+      "desc": "Self-replicating builders; massive industry.",
+      "base_cost": {
+        "metal": 1000000,
+        "crystal": 500000,
+        "deuterium": 100000
+      },
+      "cost_mult": 2.0,
+      "time": 1200,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "computing": 10
+      },
+      "advanced": true,
+      "contributions": {
+        "industrial": {
+          "type": "flat",
+          "per_level": 20
+        }
+      }
+    },
+    "shipyard": {
+      "name": "Orbital Shipyard",
+      "desc": "Assembles ships and heavy defenses.",
+      "base_cost": {
+        "metal": 400,
+        "crystal": 200,
+        "deuterium": 100
+      },
+      "cost_mult": 2.0,
+      "time": 200,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "shipyard_level": {
+          "type": "flat",
+          "per_level": 1
+        },
+        "production": {
+          "type": "flat",
+          "per_level": 3
+        }
+      }
+    },
+    "research_lab": {
+      "name": "Research Campus",
+      "desc": "Drives the technology tree.",
+      "base_cost": {
+        "metal": 200,
+        "crystal": 400,
+        "deuterium": 200
+      },
+      "cost_mult": 2.0,
+      "time": 200,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "research": {
+          "type": "flat",
+          "per_level": 8
+        },
+        "research_lab_level": {
+          "type": "flat",
+          "per_level": 1
+        }
+      }
+    },
+    "terraformer": {
+      "name": "Terraformer",
+      "desc": "Expands usable building area.",
+      "base_cost": {
+        "crystal": 50000,
+        "deuterium": 100000
+      },
+      "cost_mult": 2.0,
+      "time": 1000,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "energy_theory": 12
+      },
+      "advanced": true,
+      "contributions": {
+        "area": {
+          "type": "flat",
+          "per_level": 5
+        }
+      }
+    },
+    "jump_gate": {
+      "name": "Jump Gate",
+      "desc": "Instant fleet transit between gated worlds.",
+      "base_cost": {
+        "metal": 2000000,
+        "crystal": 4000000,
+        "deuterium": 2000000
+      },
+      "cost_mult": 2.0,
+      "time": 3600,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "hyperdrive": 1
+      },
+      "advanced": true,
+      "contributions": {
+        "jump_gate_level": {
+          "type": "flat",
+          "per_level": 1
+        }
+      }
+    }
+  },
+  "research": {
+    "energy_theory": {
+      "name": "Energy Theory",
+      "base_cost": {
+        "crystal": 800,
+        "deuterium": 400
+      },
+      "cost_mult": 2.0,
+      "base_time": 1,
+      "lab_req": 1,
+      "prereqs": {},
+      "icon": "⚡",
+      "bonus": "+5% energy output per level",
+      "bonuses": [
+        {
+          "type": "stat_multiplier",
+          "stat": "energy",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "laser_tech": {
+      "name": "Laser Technology",
+      "base_cost": {
+        "metal": 200,
+        "crystal": 100
+      },
+      "cost_mult": 2.0,
+      "base_time": 80,
+      "lab_req": 1,
+      "prereqs": {
+        "energy_theory": 2
+      },
+      "icon": "",
+      "bonus": "+5% laser power per level",
+      "bonuses": [
+        {
+          "type": "weapon_power",
+          "weapon": "laser",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "ion_tech": {
+      "name": "Ion Technology",
+      "base_cost": {
+        "metal": 1000,
+        "crystal": 300,
+        "deuterium": 100
+      },
+      "cost_mult": 2.0,
+      "base_time": 200,
+      "lab_req": 4,
+      "prereqs": {
+        "energy_theory": 4,
+        "laser_tech": 5
+      },
+      "icon": "",
+      "bonus": "+5% ion power per level",
+      "bonuses": [
+        {
+          "type": "weapon_power",
+          "weapon": "ion",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "plasma_tech": {
+      "name": "Plasma Technology",
+      "base_cost": {
+        "metal": 2000,
+        "crystal": 4000,
+        "deuterium": 1000
+      },
+      "cost_mult": 2.0,
+      "base_time": 400,
+      "lab_req": 4,
+      "prereqs": {
+        "energy_theory": 8,
+        "laser_tech": 10,
+        "ion_tech": 5
+      },
+      "icon": "",
+      "bonus": "+5% plasma power per level",
+      "bonuses": [
+        {
+          "type": "weapon_power",
+          "weapon": "plasma",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "combustion_drive": {
+      "name": "Combustion Drive",
+      "base_cost": {
+        "metal": 400,
+        "deuterium": 600
+      },
+      "cost_mult": 2.0,
+      "base_time": 100,
+      "lab_req": 1,
+      "prereqs": {
+        "energy_theory": 1
+      },
+      "icon": "",
+      "bonus": "+10% combustion ship speed per level",
+      "bonuses": [
+        {
+          "type": "speed_multiplier",
+          "drive": "combustion",
+          "per_level": 0.1
+        }
+      ]
+    },
+    "impulse_drive": {
+      "name": "Impulse Drive",
+      "base_cost": {
+        "metal": 2000,
+        "crystal": 4000,
+        "deuterium": 600
+      },
+      "cost_mult": 2.0,
+      "base_time": 300,
+      "lab_req": 2,
+      "prereqs": {
+        "energy_theory": 1
+      },
+      "icon": "",
+      "bonus": "+5% impulse ship speed per level",
+      "bonuses": [
+        {
+          "type": "speed_multiplier",
+          "drive": "impulse",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "hyperspace_theory": {
+      "name": "Hyperspace Theory",
+      "base_cost": {
+        "crystal": 4000,
+        "deuterium": 2000
+      },
+      "cost_mult": 2.0,
+      "base_time": 400,
+      "lab_req": 7,
+      "prereqs": {
+        "energy_theory": 5
+      },
+      "icon": "",
+      "bonus": "Unlocks hyperspace systems",
+      "bonuses": []
+    },
+    "hyperdrive": {
+      "name": "Hyperdrive",
+      "base_cost": {
+        "metal": 10000,
+        "crystal": 20000,
+        "deuterium": 6000
+      },
+      "cost_mult": 2.0,
+      "base_time": 600,
+      "lab_req": 7,
+      "prereqs": {
+        "hyperspace_theory": 3
+      },
+      "icon": "",
+      "bonus": "+5% hyperdrive ship speed per level",
+      "bonuses": [
+        {
+          "type": "speed_multiplier",
+          "drive": "hyper",
+          "per_level": 0.05
+        },
+        {
+          "type": "unlock",
+          "unlocks": "hyper_ships"
+        }
+      ]
+    },
+    "recon_tech": {
+      "name": "Recon Technology",
+      "base_cost": {
+        "crystal": 1000
+      },
+      "cost_mult": 2.0,
+      "base_time": 150,
+      "lab_req": 3,
+      "prereqs": {},
+      "icon": "",
+      "bonus": "+stealth/scan per level",
+      "bonuses": [
+        {
+          "type": "stealth",
+          "per_level": 0.1
+        }
+      ]
+    },
+    "computing": {
+      "name": "Computing",
+      "base_cost": {
+        "crystal": 400,
+        "deuterium": 600
+      },
+      "cost_mult": 2.0,
+      "base_time": 100,
+      "lab_req": 1,
+      "prereqs": {},
+      "icon": "",
+      "bonus": "+1 fleet slot per level",
+      "bonuses": [
+        {
+          "type": "fleet_count",
+          "per_level": 1
+        }
+      ]
+    },
+    "astrophysics": {
+      "name": "Astrophysics",
+      "base_cost": {
+        "metal": 4000,
+        "crystal": 8000,
+        "deuterium": 4000
+      },
+      "cost_mult": 1.75,
+      "base_time": 400,
+      "lab_req": 3,
+      "prereqs": {
+        "impulse_drive": 3,
+        "recon_tech": 4
+      },
+      "icon": "",
+      "bonus": "Enables further colonies/expeditions",
+      "bonuses": []
+    },
+    "research_network": {
+      "name": "Research Network",
+      "base_cost": {
+        "metal": 240000,
+        "crystal": 400000,
+        "deuterium": 160000
+      },
+      "cost_mult": 2.0,
+      "base_time": 800,
+      "lab_req": 10,
+      "prereqs": {
+        "computing": 8
+      },
+      "icon": "",
+      "bonus": "Links labs across colonies",
+      "bonuses": [
+        {
+          "type": "research_link",
+          "per_level": 1,
+          "min_lab_level": 10
+        }
+      ]
+    },
+    "graviton_theory": {
+      "name": "Graviton Theory",
+      "base_cost": {
+        "metal": 0
+      },
+      "cost_mult": 3.0,
+      "base_time": 1200,
+      "lab_req": 12,
+      "prereqs": {
+        "energy_theory": 12
+      },
+      "icon": "",
+      "bonus": "Unlocks the Worldbreaker",
+      "bonuses": [
+        {
+          "type": "unlock",
+          "unlocks": "worldbreaker"
+        }
+      ]
+    },
+    "weapons_forging": {
+      "name": "Weapons Forging",
+      "base_cost": {
+        "metal": 800,
+        "crystal": 200
+      },
+      "cost_mult": 2.0,
+      "base_time": 200,
+      "lab_req": 4,
+      "prereqs": {},
+      "icon": "",
+      "bonus": "+10% weapon damage per level",
+      "bonuses": [
+        {
+          "type": "combat_stat",
+          "stat": "attack",
+          "per_level": 0.1
+        }
+      ]
+    },
+    "shield_matrix": {
+      "name": "Shield Matrix",
+      "base_cost": {
+        "metal": 200,
+        "crystal": 600
+      },
+      "cost_mult": 2.0,
+      "base_time": 200,
+      "lab_req": 6,
+      "prereqs": {
+        "energy_theory": 3
+      },
+      "icon": "",
+      "bonus": "+10% shield strength per level",
+      "bonuses": [
+        {
+          "type": "combat_stat",
+          "stat": "shield",
+          "per_level": 0.1
+        }
+      ]
+    },
+    "hull_plating": {
+      "name": "Hull Plating",
+      "base_cost": {
+        "metal": 1000
+      },
+      "cost_mult": 2.0,
+      "base_time": 200,
+      "lab_req": 2,
+      "prereqs": {},
+      "icon": "",
+      "bonus": "+10% armour per level",
+      "bonuses": [
+        {
+          "type": "combat_stat",
+          "stat": "armour",
+          "per_level": 0.1
+        }
+      ]
+    }
+  },
+  "defenses": {
+    "rocket_turret": {
+      "name": "Rocket Turret",
+      "desc": "Cheap kinetic launcher.",
+      "cost": {
+        "metal": 2000
+      },
+      "cost_mult": 1.0,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "attack": 80,
+      "armour": 40,
+      "shield": 0,
+      "weapon": "ballistic",
+      "max_level": 1000000,
+      "req": {}
+    },
+    "light_laser": {
+      "name": "Light Laser",
+      "desc": "Reliable energy emplacement.",
+      "cost": {
+        "metal": 1500,
+        "crystal": 500
+      },
+      "cost_mult": 1.0,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "attack": 100,
+      "armour": 50,
+      "shield": 0,
+      "weapon": "laser",
+      "max_level": 1000000,
+      "req": {}
+    },
+    "heavy_laser": {
+      "name": "Heavy Laser",
+      "desc": "High-output laser battery.",
+      "cost": {
+        "metal": 6000,
+        "crystal": 2000
+      },
+      "cost_mult": 1.0,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "attack": 250,
+      "armour": 200,
+      "shield": 0,
+      "weapon": "laser",
+      "max_level": 1000000,
+      "req": {
+        "laser_tech": 3
+      }
+    },
+    "ion_battery": {
+      "name": "Ion Battery",
+      "desc": "Shield-piercing ion emplacement.",
+      "cost": {
+        "metal": 5000,
+        "crystal": 3000
+      },
+      "cost_mult": 1.0,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "attack": 150,
+      "armour": 500,
+      "shield": 0,
+      "weapon": "ion",
+      "max_level": 1000000,
+      "req": {
+        "ion_tech": 4
+      }
+    },
+    "coil_cannon": {
+      "name": "Coil Cannon",
+      "desc": "Heavy mass driver; punches armour.",
+      "cost": {
+        "metal": 20000,
+        "crystal": 15000,
+        "deuterium": 2000
+      },
+      "cost_mult": 1.0,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "attack": 1100,
+      "armour": 500,
+      "shield": 0,
+      "weapon": "ballistic",
+      "max_level": 1000000,
+      "req": {
+        "weapons_forging": 3,
+        "shield_matrix": 1
+      }
+    },
+    "plasma_battery": {
+      "name": "Plasma Battery",
+      "desc": "Top-tier planetary plasma turret.",
+      "cost": {
+        "metal": 50000,
+        "crystal": 50000,
+        "deuterium": 30000
+      },
+      "cost_mult": 1.0,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "attack": 3000,
+      "armour": 1000,
+      "shield": 0,
+      "weapon": "plasma",
+      "max_level": 1000000,
+      "req": {
+        "plasma_tech": 7
+      }
+    },
+    "light_shield_dome": {
+      "name": "Light Shield Dome",
+      "desc": "Single planet-wide light shield.",
+      "cost": {
+        "metal": 10000,
+        "crystal": 10000
+      },
+      "cost_mult": 1.0,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "attack": 1,
+      "armour": 2000,
+      "shield": 2000,
+      "weapon": "laser",
+      "max_level": 1,
+      "req": {
+        "shield_matrix": 1
+      }
+    },
+    "heavy_shield_dome": {
+      "name": "Heavy Shield Dome",
+      "desc": "Single planet-wide heavy shield.",
+      "cost": {
+        "metal": 50000,
+        "crystal": 50000
+      },
+      "cost_mult": 1.0,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "attack": 1,
+      "armour": 10000,
+      "shield": 10000,
+      "weapon": "laser",
+      "max_level": 1,
+      "req": {
+        "shield_matrix": 6
+      }
+    },
+    "interceptor_missiles": {
+      "name": "Interceptor Missiles",
+      "desc": "Anti-ballistic interceptors.",
+      "cost": {
+        "metal": 8000,
+        "crystal": 2000
+      },
+      "cost_mult": 1.0,
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "attack": 1,
+      "armour": 8000,
+      "shield": 1,
+      "weapon": "ballistic",
+      "max_level": 1000000,
+      "req": {
+        "impulse_drive": 1
+      }
+    }
+  }
+}

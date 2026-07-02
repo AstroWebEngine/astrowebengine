@@ -1,0 +1,3103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — AstroWebEngine</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div id="admin-page">
+
+    <div class="admin-header">
+      <span class="admin-title">⚙ AstroWebEngine · Admin Panel</span>
+      <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
+        <span id="admin-username" class="text-dim" style="font-size:13px;"></span>
+        <button class="btn btn-ghost btn-sm" onclick="goToGame()">▶ Game View</button>
+        <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="admin-body">
+
+      <div id="admin-alert" style="display:none;"></div>
+
+      <!-- STATUS STRIP -->
+      <div class="panel">
+        <div class="panel-body" style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
+          <div>
+            <div class="text-dim" style="font-size:11px; text-transform:uppercase; letter-spacing:.06em;">Game Status</div>
+            <div id="status-badge" style="margin-top:4px;"></div>
+          </div>
+          <div>
+            <div class="text-dim" style="font-size:11px; text-transform:uppercase; letter-spacing:.06em;">Players Registered</div>
+            <div id="player-count" class="font-mono" style="font-size:1.4rem; color:var(--accent);"></div>
+          </div>
+          <div>
+            <div class="text-dim" style="font-size:11px; text-transform:uppercase; letter-spacing:.06em;">Universe Size</div>
+            <div id="universe-size" class="font-mono" style="font-size:1.4rem; color:var(--accent);"></div>
+          </div>
+          <div style="margin-left:auto; display:flex; gap:10px;">
+            <button class="btn btn-success" onclick="launchGame()" id="btn-launch">🚀 Launch Game & Generate Universe</button>
+            <button class="btn btn-warn" onclick="toggleRegistration()" id="btn-reg">📋 Registration: ...</button>
+            <button class="btn btn-danger" onclick="confirmReset()" id="btn-reset">⚠ Reset Everything</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB NAVIGATION -->
+      <div class="admin-tabs">
+        <button class="awe-nav-btn active" data-admintab="dashboard" onclick="switchAdminTab('dashboard',this)">Dashboard</button>
+        <button class="awe-nav-btn" data-admintab="universe" onclick="switchAdminTab('universe',this)">Universe</button>
+        <button class="awe-nav-btn" data-admintab="balance" onclick="switchAdminTab('balance',this)">Game Balance</button>
+        <button class="awe-nav-btn" data-admintab="grant" onclick="switchAdminTab('grant',this)">Grant Items</button>
+        <button class="awe-nav-btn" data-admintab="constants" onclick="switchAdminTab('constants',this)">Game Constants</button>
+        <button class="awe-nav-btn" data-admintab="commanders" onclick="switchAdminTab('commanders',this)">Commander Types</button>
+        <button class="awe-nav-btn" data-admintab="universes" onclick="switchAdminTab('universes',this)">Universes</button>
+        <button class="awe-nav-btn" data-admintab="gamedefs" onclick="switchAdminTab('gamedefs',this)">Game Definitions</button>
+        <button class="awe-nav-btn" data-admintab="reports" onclick="switchAdminTab('reports',this)">Bug Reports</button>
+        <button class="awe-nav-btn" data-admintab="changelog" onclick="switchAdminTab('changelog',this)">Changelog</button>
+      </div>
+
+      <!-- TAB: UNIVERSE -->
+      <div class="admin-tab-panel" id="admin-tab-universe">
+
+      <!-- GAME CONFIGURATION -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">🛸 Universe & Game Configuration</span>
+          <button class="btn btn-primary btn-sm" onclick="saveConfig()">Save Configuration</button>
+        </div>
+        <div class="panel-body">
+          <div class="section-title">🌌 Universe Structure</div>
+          <div class="config-grid mb-16" id="config-universe"></div>
+
+          <div class="section-title">⚡ Game Speed & Economy</div>
+          <div class="config-grid mb-16" id="config-economy"></div>
+
+          <div class="section-title">🏆 Win Condition</div>
+          <div class="config-grid mb-16" id="config-win"></div>
+
+          <div class="section-title">🔒 Server Settings</div>
+          <div class="config-grid" id="config-server"></div>
+        </div>
+      </div>
+
+      <!-- CLUSTER MANAGEMENT -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Cluster Management</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="loadClusterStats()">Refresh</button>
+            <button class="btn btn-accent btn-sm" onclick="addCluster()">+ Add Cluster</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <p class="text-dim" style="font-size:11px; margin-bottom:12px;">
+            Each cluster contains 10 galaxies (x0-x9). New clusters are auto-created when home base slots (3rd-orbit Earthly planets) run out. You can also add clusters manually.
+          </p>
+          <table class="data-table" id="clusters-table" style="font-size:11px;">
+            <thead>
+              <tr>
+                <th>Cluster</th><th>Galaxies</th><th>Total Planets</th>
+                <th>Colonized</th><th>Home Slots</th>
+              </tr>
+            </thead>
+            <tbody id="clusters-tbody"></tbody>
+          </table>
+          <div id="clusters-total" class="text-dim" style="font-size:11px; margin-top:8px;"></div>
+        </div>
+      </div>
+
+      </div>
+
+      <!-- TAB: DASHBOARD -->
+      <div class="admin-tab-panel active" id="admin-tab-dashboard">
+
+      <!-- PLAYER MANAGEMENT -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">👥 Player Management</span>
+          <span id="online-count" style="font-size:11px;color:var(--success);margin-left:8px;"></span>
+          <button class="btn btn-ghost btn-sm" onclick="loadPlayers()">↻ Refresh</button>
+        </div>
+        <div class="panel-body">
+          <table class="data-table" id="players-table">
+            <thead>
+              <tr>
+                <th></th><th>ID</th><th>Username</th><th>Credits</th>
+                <th>Bases</th><th>Ships</th><th>Score</th><th>Admin</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="players-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADMIN TOOLS -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Admin Tools</span>
+        </div>
+        <div class="panel-body">
+          <div class="grid-2">
+            <!-- Create Player Account -->
+            <div class="card">
+              <div class="section-title">Create Player Account</div>
+              <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="create-player-username" placeholder="Player name" maxlength="50" />
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input type="text" id="create-player-password" placeholder="Password" maxlength="100" />
+              </div>
+              <div class="form-group">
+                <label>Email (optional)</label>
+                <input type="email" id="create-player-email" placeholder="player@email.com" />
+              </div>
+              <button class="btn btn-success" onclick="createPlayer()">Create Player</button>
+              <div id="create-player-status" style="font-size:11px;margin-top:6px;"></div>
+            </div>
+
+            <!-- Registration Link -->
+            <div class="card">
+              <div class="section-title">Player Registration Link</div>
+              <p style="font-size:12px; color:var(--text-dim); margin-bottom:8px;">
+                Share this URL with players so they can register themselves:
+              </p>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <input type="text" id="reg-link-url" readonly style="flex:1; font-size:12px; font-family:var(--font-mono);" />
+                <button class="btn btn-ghost btn-sm" onclick="copyRegLink()">Copy</button>
+              </div>
+              <div id="reg-link-status" style="font-size:11px;margin-top:6px;"></div>
+            </div>
+
+            <!-- Give Credits -->
+            <div class="card">
+              <div class="section-title">Give Credits to Player</div>
+              <div class="form-group">
+                <label>Player</label>
+                <select id="give-credits-player"></select>
+              </div>
+              <div class="form-group">
+                <label>Amount</label>
+                <input type="number" id="give-credits-amount" value="1000" min="1" />
+              </div>
+              <button class="btn btn-success" onclick="giveCredits()">Give Credits</button>
+              <div id="give-credits-status" style="font-size:11px;margin-top:6px;"></div>
+            </div>
+
+            <!-- Broadcast Message -->
+            <div class="card">
+              <div class="section-title">Broadcast Message to All Players</div>
+              <div class="form-group">
+                <label>Subject</label>
+                <input type="text" id="broadcast-subject" value="Admin Broadcast" maxlength="200" />
+              </div>
+              <div class="form-group">
+                <label>Message</label>
+                <textarea id="broadcast-body" rows="4" maxlength="2000" placeholder="Type your broadcast message..."></textarea>
+              </div>
+              <button class="btn btn-warn" onclick="sendBroadcast()">Send Broadcast</button>
+              <div id="broadcast-status" style="font-size:11px;margin-top:6px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NPC BOTS -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">NPC Bots</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadBots()">Refresh</button>
+        </div>
+        <div class="panel-body">
+          <p class="text-dim" style="font-size:11px; margin-bottom:12px;">
+            Create NPC faction bases or simulated player bots. Bots tick every 60 seconds in the background.
+          </p>
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+            <label style="font-size:12px;">Type:</label>
+            <select id="bot-npc-type" style="width:120px;">
+              <option value="both">Settlers + Raiders</option>
+              <option value="settlers">Settlers only</option>
+              <option value="raiders">Raiders only</option>
+              <option value="simulated">Sim Bots</option>
+            </select>
+            <label style="font-size:12px;">Settlers/Galaxy:</label>
+            <input type="number" id="bot-count" placeholder="Auto" min="0" max="50" style="width:66px;" />
+            <label style="font-size:12px;">Raiders/Galaxy:</label>
+            <input type="number" id="raider-count" value="1" min="0" max="50" style="width:60px;" />
+            <label style="font-size:12px;">Sim/Galaxy:</label>
+            <input type="number" id="sim-bot-count" value="10" min="0" max="50" style="width:60px;" />
+            <button class="btn btn-success btn-sm" onclick="createBots()">Create</button>
+            <button class="btn btn-ghost btn-sm" onclick="tickBots()">Run Bot Tick Now</button>
+          </div>
+          <div id="bot-status" style="font-size:11px;margin-bottom:8px;"></div>
+          <table class="data-table" style="font-size:11px;">
+            <thead>
+              <tr><th>Account</th><th>Type</th><th>Base</th><th>Galaxy</th><th>Stability</th><th>Bases</th><th>Credits</th><th>Score</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="bots-tbody"></tbody>
+          </table>
+          <div id="bots-total" class="text-dim" style="font-size:11px; margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <!-- LEADERBOARD PREVIEW -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Current Standings</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadLeaderboard()">Refresh</button>
+        </div>
+        <div class="panel-body">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Commander</th><th>Bases</th><th>Ships</th><th>Credits</th><th>Score</th></tr></thead>
+            <tbody id="leaderboard-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      </div>
+
+      <!-- TAB: GAME BALANCE -->
+      <div class="admin-tab-panel" id="admin-tab-balance">
+
+      <!-- SHIP TYPE MANAGEMENT -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Ship Type Management</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadShips()">Refresh</button>
+        </div>
+        <div class="panel-body">
+          <p class="text-dim" style="font-size:11px; margin-bottom:12px;">
+            Toggle ships on/off or edit their stats. Disabled ships cannot be built by players. Click a stat to edit it inline. Changes take effect immediately.
+          </p>
+          <table class="data-table" id="ships-table" style="font-size:11px;">
+            <thead>
+              <tr>
+                <th>Ship</th><th>Enabled</th><th>Cost</th><th>Atk</th><th>Arm</th>
+                <th>Shd</th><th>Spd</th><th>SY Req</th><th>Hangar</th><th>Requirements</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ships-tbody"></tbody>
+          </table>
+          <details style="margin-top:12px;">
+            <summary class="text-accent" style="cursor:pointer; font-size:12px;">+ Add New Ship Type</summary>
+            <div style="padding:8px; display:flex; flex-wrap:wrap; gap:6px; align-items:end;">
+              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-ship-key" placeholder="my_ship" style="width:100px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-ship-name" placeholder="My Ship" style="width:100px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Cost</label><br><input type="number" class="stat-input" id="new-ship-cost" value="100" style="width:60px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Atk</label><br><input type="number" class="stat-input" id="new-ship-attack" value="10" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Arm</label><br><input type="number" class="stat-input" id="new-ship-armour" value="10" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Shd</label><br><input type="number" class="stat-input" id="new-ship-shield" value="0" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Spd</label><br><input type="number" class="stat-input" id="new-ship-speed" value="4" step="0.1" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">SY Req</label><br><input type="number" class="stat-input" id="new-ship-shipyard" value="10" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Hangar</label><br><input type="number" class="stat-input" id="new-ship-hangar" value="0" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Weapon</label><br>
+                <select class="stat-input" id="new-ship-weapon" style="width:80px;">
+                  <option>laser</option><option>missiles</option><option>plasma</option><option>ion</option><option>photon</option><option>disruptor</option>
+                </select></div>
+              <div><label class="text-dim" style="font-size:10px;">Drive</label><br>
+                <select class="stat-input" id="new-ship-drive" style="width:80px;">
+                  <option>stellar</option><option>warp</option><option>inter</option>
+                </select></div>
+              <button class="btn btn-primary btn-sm" onclick="addNewShip()">Add Ship</button>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- DEFENSE TYPE MANAGEMENT -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Defense Type Management</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadDefenses()">Refresh</button>
+        </div>
+        <div class="panel-body">
+          <p class="text-dim" style="font-size:11px; margin-bottom:12px;">
+            Toggle defenses on/off or edit stats. Disabled defenses cannot be built.
+          </p>
+          <table class="data-table" id="defenses-table" style="font-size:11px;">
+            <thead>
+              <tr>
+                <th>Defense</th><th>Enabled</th><th>Cost</th><th>Atk</th><th>Arm</th>
+                <th>Shd</th><th>Requirements</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="defenses-tbody"></tbody>
+          </table>
+          <details style="margin-top:12px;">
+            <summary class="text-accent" style="cursor:pointer; font-size:12px;">+ Add New Defense Type</summary>
+            <div style="padding:8px; display:flex; flex-wrap:wrap; gap:6px; align-items:end;">
+              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-def-key" placeholder="my_turret" style="width:100px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-def-name" placeholder="My Turret" style="width:100px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Cost</label><br><input type="number" class="stat-input" id="new-def-cost" value="100" style="width:60px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Atk</label><br><input type="number" class="stat-input" id="new-def-attack" value="10" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Arm</label><br><input type="number" class="stat-input" id="new-def-armour" value="10" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Shd</label><br><input type="number" class="stat-input" id="new-def-shield" value="0" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Weapon</label><br>
+                <select class="stat-input" id="new-def-weapon" style="width:80px;">
+                  <option>laser</option><option>missiles</option><option>plasma</option><option>ion</option><option>photon</option><option>disruptor</option>
+                </select></div>
+              <button class="btn btn-primary btn-sm" onclick="addNewDefense()">Add Defense</button>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- BUILDING TYPE MANAGEMENT -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Building Type Management</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadBuildings()">Refresh</button>
+        </div>
+        <div class="panel-body">
+          <p class="text-dim" style="font-size:11px; margin-bottom:12px;">
+            Toggle buildings on/off or edit their stats. Disabled buildings cannot be built by players. Click a stat to edit it inline.
+          </p>
+          <table class="data-table" id="buildings-table" style="font-size:11px;">
+            <thead>
+              <tr>
+                <th>Building</th><th>Enabled</th><th>Base Cost</th><th>Energy</th>
+                <th>Pop</th><th>Area</th><th>Max Lv</th><th>Requirements</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="buildings-tbody"></tbody>
+          </table>
+          <details style="margin-top:12px;">
+            <summary class="text-accent" style="cursor:pointer; font-size:12px;">+ Add New Building Type</summary>
+            <div style="padding:8px; display:flex; flex-wrap:wrap; gap:6px; align-items:end;">
+              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-bld-key" placeholder="my_building" style="width:100px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-bld-name" placeholder="My Building" style="width:100px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Base Cost</label><br><input type="number" class="stat-input" id="new-bld-cost" value="100" style="width:60px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Energy Req</label><br><input type="number" class="stat-input" id="new-bld-energy" value="1" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Pop Req</label><br><input type="number" class="stat-input" id="new-bld-pop" value="1" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Area Req</label><br><input type="number" class="stat-input" id="new-bld-area" value="1" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Max Level</label><br><input type="number" class="stat-input" id="new-bld-maxlv" value="20" style="width:50px;" /></div>
+              <button class="btn btn-primary btn-sm" onclick="addNewBuilding()">Add Building</button>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- RESEARCH TYPE MANAGEMENT -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Research Type Management</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadResearchTypes()">Refresh</button>
+        </div>
+        <div class="panel-body">
+          <p class="text-dim" style="font-size:11px; margin-bottom:12px;">
+            Toggle research on/off or edit their stats. Disabled research cannot be pursued by players.
+          </p>
+          <table class="data-table" id="research-table" style="font-size:11px;">
+            <thead>
+              <tr>
+                <th>Research</th><th>Enabled</th><th>Base Cost</th><th>Lab Req</th><th>Prerequisites</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="research-tbody"></tbody>
+          </table>
+          <details style="margin-top:12px;">
+            <summary class="text-accent" style="cursor:pointer; font-size:12px;">+ Add New Research Type</summary>
+            <div style="padding:8px; display:flex; flex-wrap:wrap; gap:6px; align-items:end;">
+              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-res-key" placeholder="my_tech" style="width:100px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-res-name" placeholder="My Tech" style="width:100px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Base Cost</label><br><input type="number" class="stat-input" id="new-res-cost" value="100" style="width:60px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Cost Mult</label><br><input type="number" class="stat-input" id="new-res-mult" value="2.0" step="0.1" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Lab Req</label><br><input type="number" class="stat-input" id="new-res-lab" value="10" style="width:50px;" /></div>
+              <button class="btn btn-primary btn-sm" onclick="addNewResearch()">Add Research</button>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- ASTRO TYPE MANAGEMENT -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Astro Type Management</span>
+          <button class="btn btn-ghost btn-sm" onclick="loadAstros()">Refresh</button>
+        </div>
+        <div class="panel-body">
+          <p class="text-dim" style="font-size:11px; margin-bottom:12px;">
+            Toggle planet types on/off or edit their resource yields. Disabled types cannot be generated.
+          </p>
+          <table class="data-table" id="astros-table" style="font-size:11px;">
+            <thead>
+              <tr>
+                <th>Astro Type</th><th>Enabled</th><th>Metal</th><th>Crystal</th><th>Fertility</th>
+                <th>Solar</th><th>Gas</th><th>Area(P)</th><th>Area(M)</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="astros-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      </div>
+
+      <!-- TAB: GRANT ITEMS -->
+      <div class="admin-tab-panel" id="admin-tab-grant">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <!-- Player / Base Selector -->
+          <div class="card" style="grid-column:1/-1;">
+            <div class="section-title">Target Player &amp; Base</div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:end;">
+              <div class="form-group" style="min-width:200px;">
+                <label>Player</label>
+                <select id="grant-player" onchange="onGrantPlayerChange()"></select>
+              </div>
+              <div class="form-group" style="min-width:200px;">
+                <label>Base</label>
+                <select id="grant-base"></select>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="loadGrantPlayers()" style="margin-bottom:2px;">↻ Refresh</button>
+            </div>
+          </div>
+
+          <!-- Grant Buildings -->
+          <div class="card">
+            <div class="section-title">Grant Buildings</div>
+            <div id="grant-buildings-list" style="max-height:400px; overflow-y:auto; font-size:12px;"></div>
+            <div style="margin-top:10px; display:flex; gap:8px;">
+              <button class="btn btn-success btn-sm" onclick="submitGrantBuildings()">Apply Buildings</button>
+              <button class="btn btn-ghost btn-sm" onclick="setAllGrantBuildings(0)">Clear All</button>
+            </div>
+            <div id="grant-buildings-status" style="font-size:11px; margin-top:6px;"></div>
+          </div>
+
+          <!-- Grant Defenses -->
+          <div class="card">
+            <div class="section-title">Grant Defenses</div>
+            <div id="grant-defenses-list" style="max-height:400px; overflow-y:auto; font-size:12px;"></div>
+            <div style="margin-top:10px; display:flex; gap:8px;">
+              <button class="btn btn-success btn-sm" onclick="submitGrantDefenses()">Apply Defenses</button>
+              <button class="btn btn-ghost btn-sm" onclick="setAllGrantDefenses(0)">Clear All</button>
+            </div>
+            <div id="grant-defenses-status" style="font-size:11px; margin-top:6px;"></div>
+          </div>
+
+          <!-- Grant Ships -->
+          <div class="card">
+            <div class="section-title">Grant Ships</div>
+            <div id="grant-ships-list" style="max-height:400px; overflow-y:auto; font-size:12px;"></div>
+            <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn btn-success btn-sm" onclick="submitGrantShips()">Add Ships</button>
+              <button class="btn btn-ghost btn-sm" onclick="setAllGrantShips(0)">Clear All</button>
+              <span class="text-dim" style="font-size:10px; align-self:center;">(ships are ADDED to existing fleet)</span>
+            </div>
+            <div id="grant-ships-status" style="font-size:11px; margin-top:6px;"></div>
+          </div>
+
+          <!-- Grant Research -->
+          <div class="card">
+            <div class="section-title">Grant Research</div>
+            <div id="grant-research-list" style="max-height:400px; overflow-y:auto; font-size:12px;"></div>
+            <div style="margin-top:10px; display:flex; gap:8px;">
+              <button class="btn btn-success btn-sm" onclick="submitGrantResearch()">Apply Research</button>
+              <button class="btn btn-ghost btn-sm" onclick="setAllGrantResearch(0)">Clear All</button>
+            </div>
+            <div id="grant-research-status" style="font-size:11px; margin-top:6px;"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB: GAME CONSTANTS -->
+      <div class="admin-tab-panel" id="admin-tab-constants">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Game Constants</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadGameConstants()">Refresh</button>
+          </div>
+          <div class="panel-body">
+            <p class="text-dim" style="font-size:11px; margin-bottom:12px;">
+              Edit runtime-safe gameplay constants. Setup-time rules and engine components are selected in Build Game.
+              <span class="text-warn">Yellow</span> values have been overridden from default.
+            </p>
+            <div id="game-constants-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: COMMANDER TYPES -->
+      <div class="admin-tab-panel" id="admin-tab-commanders">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Commander Skill Types</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadCommanderSpecs()">Refresh</button>
+          </div>
+          <div class="panel-body">
+            <p class="text-dim" style="font-size:11px; margin-bottom:12px;">
+              View and edit commander skill types. Click the bonus value to change it. The bonus_per_level determines how much each commander level contributes (e.g. 0.01 = 1% per level).
+            </p>
+            <table class="data-table" id="commander-specs-table" style="font-size:11px;">
+              <thead>
+                <tr>
+                  <th>Skill</th><th>Bonus/Level</th><th>Category</th><th>Scope</th><th>Targets</th><th>Description</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="commander-specs-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: BUG REPORTS -->
+      <div class="admin-tab-panel" id="admin-tab-reports">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Bug Reports &amp; Feedback</span>
+            <button class="btn btn-ghost btn-sm" onclick="loadBugReports()">↻ Refresh</button>
+          </div>
+          <div class="panel-body">
+            <div id="bug-reports-list">
+              <div class="text-dim">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: CHANGELOG -->
+      <div class="admin-tab-panel" id="admin-tab-universes">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Universe Management</span>
+            <div style="margin-left:auto;">
+              <a href="/lobby" target="_blank" class="btn btn-sm btn-ghost" style="margin-right:8px;">Open Lobby Page</a>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="card mb-12" style="padding:12px;">
+              <div class="section-title">Create New Universe</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+                <div class="form-group" style="flex:1;min-width:150px;">
+                  <label>Name</label>
+                  <input type="text" id="uni-name" placeholder="Alpha Server" />
+                </div>
+                <div class="form-group" style="width:80px;">
+                  <label>Port</label>
+                  <input type="number" id="uni-port" placeholder="8100" />
+                </div>
+                <div class="form-group" style="width:120px;">
+                  <label>Game Definition</label>
+                  <select id="uni-gamedef"></select>
+                </div>
+                <div class="form-group" style="width:80px;">
+                  <label>Speed</label>
+                  <input type="number" id="uni-speed" value="1" step="0.5" min="0.5" />
+                </div>
+                <div class="form-group" style="width:80px;">
+                  <label>Max Players</label>
+                  <input type="number" id="uni-maxplayers" value="100" min="1" />
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+                <div class="form-group" style="flex:1;min-width:200px;">
+                  <label>Description</label>
+                  <input type="text" id="uni-desc" placeholder="Short description for the lobby page" style="width:100%;" />
+                </div>
+                <div class="form-group" style="width:160px;">
+                  <label>Subdomain <span class="text-dim" style="font-size:9px;">(optional)</span></label>
+                  <input type="text" id="uni-subdomain" placeholder="speed" style="width:100%;" />
+                </div>
+              </div>
+              <button class="btn btn-success btn-sm" onclick="createUniverse()">Create Universe</button>
+              <span id="uni-create-status" style="font-size:11px;margin-left:8px;"></span>
+            </div>
+
+            <div class="section-title">Running Universes</div>
+            <div id="universe-table">
+              <div class="text-dim">Loading...</div>
+            </div>
+
+            <div class="card mb-12" style="padding:12px;margin-top:12px;display:none;" id="uni-log-panel">
+              <div class="section-title">Universe Log <span id="uni-log-name" class="text-dim"></span></div>
+              <textarea id="uni-log-content" readonly rows="12" style="width:100%;font-family:monospace;font-size:10px;background:var(--bg-deep);color:var(--text);border:1px solid var(--border);resize:vertical;"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-tab-panel" id="admin-tab-gamedefs">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Game Definitions</span>
+            <div style="margin-left:auto;display:flex;gap:8px;">
+              <button class="btn btn-sm btn-success" onclick="exportGameDef()">Export Current</button>
+              <button class="btn btn-sm btn-warn" onclick="resetGameDef()">Reset to Default</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="card mb-12" style="padding:12px;">
+              <div class="section-title">Active Definition</div>
+              <div id="gamedef-current" class="text-dim">Loading...</div>
+            </div>
+            <div class="card mb-12" style="padding:12px;">
+              <div class="section-title">Engine Configuration</div>
+              <div id="gamedef-engine" class="text-dim">Loading...</div>
+            </div>
+            <div class="card mb-12" style="padding:12px;">
+              <div class="section-title">Prebuilt Games &amp; Mods</div>
+              <p class="text-dim" style="font-size:11px;margin-bottom:10px;">
+                Switch the whole game to a packaged ruleset, or layer content/behaviour mods on top. Switches that change setup-only rules (e.g. resource model) take full effect on a freshly generated universe.
+              </p>
+              <div id="mods-list" class="text-dim">Loading…</div>
+            </div>
+            <div class="card mb-12" style="padding:12px;">
+              <div class="section-title">Build Game</div>
+              <p class="text-dim" style="font-size:11px;margin-bottom:10px;">
+                Pick setup-time components, compile them into one ruleset, then activate or use it when creating a new universe.
+              </p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+                <div class="form-group" style="min-width:180px;flex:1;">
+                  <label>Ruleset Name</label>
+                  <input type="text" id="build-game-name" placeholder="Weekend Frontier" />
+                </div>
+                <div class="form-group" style="width:110px;">
+                  <label>Version</label>
+                  <input type="text" id="build-game-version" placeholder="1.0" />
+                </div>
+                <div class="form-group" style="min-width:220px;flex:2;">
+                  <label>Description</label>
+                  <input type="text" id="build-game-desc" placeholder="Short description for the ruleset" />
+                </div>
+              </div>
+              <div id="build-game-options" class="text-dim" style="font-size:11px;margin-bottom:10px;">Loading...</div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <button class="btn btn-sm" onclick="compileBuiltGame()">Compile Preview</button>
+                <button class="btn btn-sm btn-success" onclick="activateCompiledGameDef()">Activate Compiled</button>
+                <span id="build-game-status" style="font-size:11px;"></span>
+              </div>
+              <div id="build-game-preview" class="text-dim" style="font-size:11px;margin-top:8px;"></div>
+            </div>
+            <div class="card mb-12" style="padding:12px;">
+              <div class="section-title">Available Definition Files</div>
+              <div id="gamedef-list" class="text-dim">Loading...</div>
+            </div>
+            <div class="card mb-12" style="padding:12px;">
+              <div class="section-title">Import Definition (JSON)</div>
+              <textarea id="gamedef-import-json" rows="6" style="width:100%;resize:vertical;font-family:monospace;font-size:11px;" placeholder="Paste a complete game definition JSON here..."></textarea>
+              <div style="margin-top:8px;display:flex;gap:8px;">
+                <button class="btn btn-sm" onclick="validateGameDef()">Validate</button>
+                <button class="btn btn-sm btn-success" onclick="importGameDef()">Import & Activate</button>
+                <span id="gamedef-import-status" style="font-size:11px;margin-left:8px;"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-tab-panel" id="admin-tab-changelog">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Changelog / Patch Notes</span>
+          </div>
+          <div class="panel-body">
+            <div class="card mb-12" style="padding:12px;">
+              <div class="section-title">Add Entry</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+                <div class="form-group" style="width:100px;">
+                  <label>Version</label>
+                  <input type="text" id="cl-version" placeholder="0.95.1" />
+                </div>
+                <div class="form-group" style="flex:1;min-width:200px;">
+                  <label>Title</label>
+                  <input type="text" id="cl-title" placeholder="What changed?" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Details (one item per line)</label>
+                <textarea id="cl-body" rows="4" style="width:100%;resize:vertical;" placeholder="- Added jump gates&#10;- Fixed combat bug&#10;- New skin option"></textarea>
+              </div>
+              <button class="btn btn-success btn-sm" onclick="addChangelog()">Publish Entry</button>
+              <span id="cl-status" style="font-size:11px;margin-left:8px;"></span>
+            </div>
+            <div id="changelog-list">
+              <div class="text-dim">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PLAYER DETAIL MODAL -->
+  <div class="modal-overlay" id="player-detail-modal">
+    <div class="modal" style="width:min(950px,95vw); max-height:85vh;">
+      <div class="modal-header">
+        <span class="modal-title" id="detail-player-name">Player Details</span>
+        <button class="modal-close" onclick="closeModal('player-detail-modal')">✕</button>
+      </div>
+      <div class="modal-body" id="detail-modal-body" style="overflow-y:auto; max-height:calc(85vh - 60px);">
+        <div class="text-dim">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESET CONFIRM MODAL -->
+  <div class="modal-overlay" id="reset-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">⚠ Confirm Full Reset</span>
+        <button class="modal-close" onclick="closeModal('reset-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-error">
+          <strong>This will permanently delete:</strong> all players, all bases, the entire universe, all fleets, all research, all battle reports, and all settings. This cannot be undone.
+        </div>
+        <p style="color:var(--text); margin-top:12px;">Type <code style="color:var(--danger); background:rgba(255,68,68,.1); padding:2px 6px; border-radius:3px;">RESET</code> to confirm:</p>
+        <input type="text" id="reset-confirm-input" class="form-group" style="width:100%;margin-top:10px;" placeholder="Type RESET here" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('reset-modal')">Cancel</button>
+        <button class="btn btn-danger" onclick="doReset()">Permanently Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+    let TOKEN = localStorage.getItem('awe_token');
+    let currentConfig = {};
+
+    if (!TOKEN || localStorage.getItem('awe_is_admin') !== 'true') { window.location.href = '/game'; }
+
+    function headers() {
+      return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` };
+    }
+
+    function doLogout() {
+      localStorage.clear();
+      window.location.href = '/';
+    }
+
+    function goToGame() {
+      window.location.href = '/game';
+    }
+
+    function showAdminAlert(msg, type = 'success') {
+      const el = document.getElementById('admin-alert');
+      el.className = `alert alert-${type}`;
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 4000);
+    }
+
+    // ── CONFIG DEFINITIONS ──
+    const configDefs = {
+      universe: [
+        { key: 'game_name', label: 'Game Name', type: 'text', desc: 'Your game name shown in the ticker.' },
+        { key: 'server_letter', label: 'Server Letter', type: 'select', options: ['A','B','C','D','E','F','G','H','I','J'], setupOnly: true, desc: 'A=Alpha, B=Beta, C=Gamma... Determines galaxy naming (A00-A09...)' },
+        { key: 'galaxy_preset', label: 'Galaxy Preset', type: 'select', options: ['standard', 'mss'], setupOnly: true, desc: 'Standard = classic (4 clusters × 10 galaxies). MSS = Mini Speed Server (1 galaxy, limited active regions, no wormholes).' },
+        { key: 'num_clusters', label: 'Number of Clusters', type: 'number', setupOnly: true, desc: 'Clusters of galaxies. Standard=4, MSS preset overrides to 1.' },
+        { key: 'active_region_size', label: 'Active Region Size (MSS)', type: 'select', options: ['2','4','6','8'], setupOnly: true, desc: 'MSS only: NxN playable region grid centered in the 10×10 galaxy. 2 = 4 regions, 4 = 16, 6 = 36, 8 = 64.' },
+        { key: 'wormholes_enabled', label: 'Wormholes', type: 'select', options: ['true','false'], setupOnly: true, desc: 'Place wormholes at universe generation. Default: on for Standard, off for MSS.' },
+        { key: 'map_topology', label: 'Cluster Topology', type: 'select', options: ['pumpkin', 'classic'], setupOnly: true, desc: 'Pumpkin: x0↔x0/x9↔x9 between clusters. Classic: x9→x0 mesh.' },
+        { key: 'regions_per_galaxy', label: 'Regions per Galaxy', type: 'number', setupOnly: true, desc: 'Regions in each galaxy (10×10 = 100)' },
+        { key: 'systems_per_region', label: 'Max Systems per Region', type: 'number', setupOnly: true, desc: 'Max star systems per region (~44 in dense core)' },
+        { key: 'planets_per_system_min', label: 'Planets per System (min)', type: 'number', setupOnly: true, desc: 'Minimum planets per system (not used in orbit-first mode)' },
+        { key: 'planets_per_system_max', label: 'Planets per System (max)', type: 'number', setupOnly: true, desc: 'Maximum planets per system (not used in orbit-first mode)' },
+      ],
+      economy: [
+        { key: 'game_speed', label: 'Game Speed Multiplier', type: 'number', step: '0.1', desc: '1.0 = normal, 2.0 = double speed (faster timers & production)' },
+        { key: 'starting_credits', label: 'Starting Credits', type: 'number', desc: 'Credits each player starts with' },
+        { key: 'colonize_cost', label: 'Colonization Cost', type: 'number', desc: 'Credits needed to colonize a planet' },
+        { key: 'max_players', label: 'Max Players', type: 'number', desc: 'Maximum number of players allowed' },
+      ],
+      win: [
+        { key: 'win_condition', label: 'Win Condition', type: 'select',
+          options: ['none','domination','annihilation','time_limit','economic'],
+          desc: 'none=forever server (no win condition) | domination=control X% bases | annihilation=last standing | time_limit=highest score at deadline | economic=first to X credits' },
+        { key: 'domination_threshold', label: 'Domination Threshold (0–1)', type: 'number', step: '0.05', desc: 'Fraction of colonized planets needed to win (e.g. 0.75 = 75%)' },
+        { key: 'economic_target', label: 'Economic Target (credits)', type: 'number', desc: 'First player to reach this many credits wins' },
+        { key: 'time_limit_hours', label: 'Time Limit (hours)', type: 'number', desc: 'Game ends after this many hours; highest score wins' },
+        { key: 'occupation_capture', label: 'Conquest: capture bases', type: 'select',
+          options: ['false','true'],
+          desc: 'true = a base held under occupation long enough is permanently lost (required for the annihilation win to be reachable)' },
+        { key: 'occupation_capture_hours', label: 'Capture after (hours)', type: 'number', desc: 'Hours of continuous occupation before a base is captured' },
+        { key: 'occupation_capture_mode', label: 'Capture outcome', type: 'select',
+          options: ['disband','transfer'],
+          desc: 'disband = base razed, owner keeps the structure-refund discount | transfer = occupier takes the base (snowball risk)' },
+        { key: 'occupation_zero_production', label: 'Occupied bases produce nothing', type: 'select',
+          options: ['false','true'], desc: 'true = an occupied base yields no production for its owner' },
+      ],
+      server: [
+        { key: 'registration_open', label: 'Registration Open', type: 'select',
+          options: ['true','false'], desc: 'Allow new players to register' },
+      ]
+    };
+
+    async function loadConfig() {
+      try {
+        const res = await fetch(`${API}/api/admin/config`, { headers: headers() });
+        currentConfig = await res.json();
+        renderConfigSection('config-universe', configDefs.universe);
+        renderConfigSection('config-economy', configDefs.economy);
+        renderConfigSection('config-win', configDefs.win);
+        renderConfigSection('config-server', configDefs.server);
+        updateRegButton();
+      } catch (e) { showAdminAlert('Failed to load config: ' + e.message, 'error'); }
+    }
+
+    function renderConfigSection(containerId, defs) {
+      const el = document.getElementById(containerId);
+      const gameIsLive = ['active', 'generating'].includes(String(currentConfig.game_status || ''));
+      const visibleDefs = defs.filter(def => !(def.setupOnly && gameIsLive));
+      if (!visibleDefs.length) {
+        el.innerHTML = '<div class="text-dim" style="font-size:11px;">No live-editable settings in this section.</div>';
+        return;
+      }
+      el.innerHTML = visibleDefs.map(def => {
+        const val = currentConfig[def.key] ?? '';
+        let input;
+        if (def.type === 'select') {
+          const opts = def.options.map(o =>
+            `<option value="${o}" ${String(val) === o ? 'selected' : ''}>${o}</option>`
+          ).join('');
+          input = `<select id="cfg-${def.key}">${opts}</select>`;
+        } else {
+          input = `<input type="${def.type}" id="cfg-${def.key}" value="${val}" ${def.step ? `step="${def.step}"` : ''} />`;
+        }
+        return `
+          <div class="config-item">
+            <div class="config-key">${def.label}</div>
+            ${input}
+            <div class="config-desc">${def.desc}</div>
+          </div>`;
+      }).join('');
+    }
+
+    async function saveConfig() {
+      const updates = {};
+      [...configDefs.universe, ...configDefs.economy, ...configDefs.win, ...configDefs.server].forEach(def => {
+        const el = document.getElementById(`cfg-${def.key}`);
+        if (!el) return;
+        let val = el.value;
+        if (def.type === 'number') val = parseFloat(val) || 0;
+        else if (val === 'true') val = true;
+        else if (val === 'false') val = false;
+        updates[def.key] = val;
+      });
+      try {
+        const res = await fetch(`${API}/api/admin/config`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(updates)
+        });
+        if (res.ok) { showAdminAlert('Configuration saved!'); await loadStatus(); }
+        else { const d = await res.json(); showAdminAlert(d.detail || 'Save failed', 'error'); }
+      } catch (e) { showAdminAlert('Save failed: ' + e.message, 'error'); }
+    }
+
+    let _isGenerating = false;
+
+    async function loadStatus() {
+      try {
+        const statusRes = await fetch(`${API}/api/game/status`);
+        const status = await statusRes.json();
+
+        const badges = { setup: 'badge-warn', active: 'badge-green', finished: 'badge-blue', generating: 'badge-warn' };
+        const labels = { setup: 'Setup', active: 'Active', finished: 'Finished', generating: 'Generating...' };
+        const s = status.status || 'setup';
+        _isGenerating = (s === 'generating');
+
+        let badgeHtml = `<span class="badge ${badges[s] || 'badge-warn'}">${labels[s] || s}</span>`;
+        if (_isGenerating && status.gen_progress) {
+          badgeHtml += ` <span style="font-size:12px; color:var(--accent); margin-left:8px;">Galaxy ${status.gen_progress}</span>`;
+        }
+        document.getElementById('status-badge').innerHTML = badgeHtml;
+
+        // Only fetch players list if NOT generating (to avoid lock contention)
+        if (!_isGenerating) {
+          try {
+            const playersRes = await fetch(`${API}/api/admin/players`, { headers: headers() });
+            const players = await playersRes.json();
+            document.getElementById('player-count').textContent = players.length;
+          } catch (e) {}
+        }
+
+        const cfg = currentConfig;
+        const isMSS = cfg.galaxy_preset === 'mss';
+        const galsPerCluster = isMSS ? 1 : 10;
+        const numGalaxies = (+cfg.num_clusters || (isMSS ? 1 : 4)) * galsPerCluster;
+        const avgPlanets = ((+cfg.planets_per_system_min || 3) + (+cfg.planets_per_system_max || 12)) / 2;
+        // Spiral density means ~50% of regions populated, avg systems ≈ max/3 due to density scaling
+        const avgSysPerRegion = (+cfg.systems_per_region || 35) * 0.33;
+        const activeSize = isMSS ? (+cfg.active_region_size || 4) : 10;
+        const activeRegions = activeSize * activeSize;
+        const totalPlanets = numGalaxies * activeRegions * avgSysPerRegion * avgPlanets;
+        const letter = cfg.server_letter || 'A';
+        const sizeNote = isMSS ? ` (${activeSize}×${activeSize} active regions)` : '';
+        document.getElementById('universe-size').textContent = `~${Math.round(totalPlanets).toLocaleString()} planets (${numGalaxies} galax${numGalaxies === 1 ? 'y' : 'ies'}: ${letter}00${numGalaxies > 1 ? '-' + letter + String(numGalaxies-1).padStart(2,'0') : ''}${sizeNote})`;
+
+        document.getElementById('admin-username').textContent = `👤 ${localStorage.getItem('awe_username') || ''}`;
+      } catch (e) {}
+    }
+
+    async function loadPlayers() {
+      try {
+        const res = await fetch(`${API}/api/admin/players`, { headers: headers() });
+        const players = await res.json();
+        const tbody = document.getElementById('players-tbody');
+        const onlineCount = players.filter(p => p.is_online).length;
+        document.getElementById('online-count').textContent = `${onlineCount} online`;
+        tbody.innerHTML = players.map(p => {
+          const dot = p.is_online
+            ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 4px var(--success);" title="Online"></span>'
+            : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--text-dim);" title="' + (p.last_seen ? 'Last seen: ' + new Date(p.last_seen).toLocaleString() : 'Never') + '"></span>';
+          return `<tr style="cursor:pointer;" onclick="openPlayerDetail(${p.id})">
+            <td style="text-align:center;">${dot}</td>
+            <td class="text-dim">#${p.id}</td>
+            <td class="text-bright font-bold">${p.username}</td>
+            <td class="text-warn font-mono">${(p.credits||0).toLocaleString(undefined,{maximumFractionDigits:0})}</td>
+            <td>${p.bases}</td>
+            <td class="font-mono">${(p.ships||0).toLocaleString()}</td>
+            <td class="text-accent font-mono">${(p.score||0).toLocaleString(undefined,{maximumFractionDigits:0})}</td>
+            <td>${p.is_admin ? '<span class="badge badge-blue">Admin</span>' : ''}</td>
+            <td style="display:flex;gap:4px;">
+              ${!p.is_admin ? `<button class="btn btn-sm" style="background:var(--accent);color:#000;" onclick="event.stopPropagation();impersonatePlayer(${p.id},'${p.username}')">Play As</button>` : ''}
+              ${!p.is_admin ? `<button class="btn btn-danger btn-sm" onclick="event.stopPropagation();kickPlayer(${p.id},'${p.username}')">Kick</button>` : ''}
+            </td>
+          </tr>`}).join('');
+      } catch (e) {}
+    }
+
+    // ── NPC Bots ──
+    async function loadBots() {
+      try {
+        const res = await fetch(`${API}/api/admin/bots`, { headers: headers() });
+        if (!res.ok) return;
+        const data = await res.json();
+        const bots = Array.isArray(data) ? data : (data.bases || data.bots || []);
+        const stats = Array.isArray(data) ? null : data.stats;
+        const settlersTarget = Array.isArray(data) ? null : data.settlers_target_per_galaxy;
+        const tbody = document.getElementById('bots-tbody');
+        tbody.innerHTML = bots.map(b => `
+          <tr style="cursor:pointer;" onclick="openPlayerDetail(${b.account_id || b.id})">
+            <td class="text-bright">${b.username}</td>
+            <td>${b.npc_type || b.strategy || 'npc'}</td>
+            <td>${b.base_name || '-'}</td>
+            <td>${b.galaxy || '-'}</td>
+            <td>${b.stability == null ? '-' : `${b.stability}%`}</td>
+            <td>${b.bases}</td>
+            <td class="text-warn font-mono">${Math.round(b.credits).toLocaleString()}</td>
+            <td class="text-accent font-mono">${(b.score||0).toLocaleString()}</td>
+            <td><button class="btn btn-ghost btn-sm" style="color:var(--danger);font-size:10px;" onclick="event.stopPropagation();deleteBot(${b.base_id || b.id})">Remove</button></td>
+          </tr>`).join('');
+        if (stats) {
+          const strat = stats.strategies || {};
+          const simTotal = (strat.balanced || 0) + (strat.builder || 0) + (strat.military || 0);
+          const top = stats.top_bot ? ` · Top: ${stats.top_bot.username} (${stats.top_bot.score})` : '';
+          document.getElementById('bots-total').textContent =
+            `${bots.length} NPC base(s) active · Accounts ${stats.bots} · Bases ${stats.colonies} · Fleets ${stats.fleets} ` +
+            `(moving ${stats.moving_fleets}, staged ${stats.staged_attacks}) · ` +
+            `Settlers ${strat.settlers || 0}${settlersTarget == null ? '' : ` (target ${settlersTarget}/galaxy)`} / Raiders ${strat.raiders || 0} / Sim ${simTotal}${top}`;
+        } else {
+          document.getElementById('bots-total').textContent = `${bots.length} NPC base(s) active`;
+        }
+      } catch (e) {
+        console.error('loadBots error', e);
+      }
+    }
+
+    async function createBots() {
+      const npcType = document.getElementById('bot-npc-type').value || 'both';
+      const settlersRaw = (document.getElementById('bot-count').value || '').trim();
+      const settlersCount = settlersRaw === '' ? null : (parseInt(settlersRaw) || 0);
+      const raiderCount = parseInt(document.getElementById('raider-count').value) || 0;
+      const simCount = parseInt(document.getElementById('sim-bot-count').value) || 0;
+      let payload;
+      if (npcType === 'simulated') {
+        payload = { npc_type: 'simulated', count: simCount };
+      } else if (npcType === 'both') {
+        payload = { npc_type: 'both', raiders_count: raiderCount };
+        if (settlersCount !== null) payload.settlers_count = settlersCount;
+      } else {
+        payload = { npc_type: npcType };
+        if (npcType === 'raiders') payload.count = raiderCount;
+        else if (settlersCount !== null) payload.count = settlersCount;
+      }
+      document.getElementById('bot-status').textContent = `Creating NPC bases per galaxy...`;
+      document.getElementById('bot-status').style.color = 'var(--text-dim)';
+      try {
+        const res = await fetch(`${API}/api/admin/bots/create`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const targets = (data.targets || []).map(t => `${t.npc_type}: ${t.per_galaxy}/galaxy`).join(', ');
+          document.getElementById('bot-status').textContent =
+            `Created ${data.created} NPC base(s) across ${data.galaxies} galaxies${targets ? ` (${targets})` : ''}`;
+          document.getElementById('bot-status').style.color = 'var(--success)';
+          await loadBots();
+          await loadLeaderboard();
+        } else {
+          document.getElementById('bot-status').textContent = data.detail || 'Error';
+          document.getElementById('bot-status').style.color = 'var(--danger)';
+        }
+      } catch (e) {
+        document.getElementById('bot-status').textContent = 'Error: ' + e.message;
+        document.getElementById('bot-status').style.color = 'var(--danger)';
+      }
+    }
+
+    async function tickBots() {
+      document.getElementById('bot-status').textContent = 'Running bot tick...';
+      try {
+        const res = await fetch(`${API}/api/admin/bots/tick`, {
+          method: 'POST', headers: headers()
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const stats = data.stats || {};
+          document.getElementById('bot-status').textContent =
+            `Bot tick completed. Bases ${stats.colonies || 0}, fleets ${stats.fleets || 0}, ` +
+            `moving ${stats.moving_fleets || 0}, staged attacks ${stats.staged_attacks || 0}.`;
+          document.getElementById('bot-status').style.color = 'var(--success)';
+          await loadBots();
+        } else {
+          const data = await res.json().catch(() => ({}));
+          document.getElementById('bot-status').textContent = data.detail || 'Bot tick failed';
+          document.getElementById('bot-status').style.color = 'var(--danger)';
+        }
+      } catch (e) {
+        document.getElementById('bot-status').textContent = 'Error: ' + e.message;
+        document.getElementById('bot-status').style.color = 'var(--danger)';
+      }
+    }
+
+    async function deleteBot(botId) {
+      if (!confirm('Remove this NPC base? The faction account will remain.')) return;
+      try {
+        const res = await fetch(`${API}/api/admin/bots/${botId}`, {
+          method: 'DELETE', headers: headers()
+        });
+        if (res.ok) { await loadBots(); await loadLeaderboard(); }
+      } catch (e) {}
+    }
+
+    async function loadLeaderboard() {
+      try {
+        const res = await fetch(`${API}/api/leaderboard`);
+        const board = await res.json();
+        const tbody = document.getElementById('leaderboard-tbody');
+        tbody.innerHTML = board.map((p, i) => `
+          <tr>
+            <td class="text-dim">${i+1}</td>
+            <td class="text-bright">${p.username}</td>
+            <td>${p.bases}</td>
+            <td class="font-mono">${(p.ships||0).toLocaleString()}</td>
+            <td class="text-warn font-mono">${(p.credits||0).toLocaleString(undefined,{maximumFractionDigits:0})}</td>
+            <td class="text-accent font-mono">${(p.score||0).toLocaleString(undefined,{maximumFractionDigits:0})}</td>
+          </tr>`).join('');
+      } catch (e) {}
+    }
+
+    async function launchGame() {
+      if (!confirm('Launch the game? This will generate the universe based on current config and open the game to all players. You cannot change universe size after this.')) return;
+      const btn = document.getElementById('btn-launch');
+      btn.disabled = true;
+      btn.textContent = '⏳ Generating Universe...';
+      showAdminAlert('Generating universe — this may take a minute or two. Progress is shown in the status bar above.');
+      try {
+        const res = await fetch(`${API}/api/admin/launch`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (res.ok) {
+          showAdminAlert('🚀 Universe generated! Game is now live.');
+          await loadConfig(); await loadStatus(); await loadClusterStats();
+        }
+        else { showAdminAlert(data.detail || 'Launch failed', 'error'); }
+      } catch (e) { showAdminAlert('Launch failed: ' + e.message, 'error'); }
+      btn.disabled = false;
+      btn.textContent = '🚀 Launch Game & Generate Universe';
+    }
+
+    async function toggleRegistration() {
+      const currentlyOpen = currentConfig && currentConfig.registration_open &&
+        currentConfig.registration_open.toLowerCase() === 'true';
+      const newVal = currentlyOpen ? "false" : "true";
+      const action = currentlyOpen ? 'close' : 'open';
+      if (currentlyOpen && !confirm('Close registration? New players will not be able to join until you re-open it.')) return;
+      try {
+        await fetch(`${API}/api/admin/config`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ registration_open: newVal })
+        });
+        showAdminAlert(currentlyOpen ? 'Registration closed.' : 'Registration opened!');
+        await loadConfig();
+        updateRegButton();
+      } catch (e) {}
+    }
+
+    function updateRegButton() {
+      const btn = document.getElementById('btn-reg');
+      const isOpen = currentConfig && currentConfig.registration_open &&
+        currentConfig.registration_open.toLowerCase() === 'true';
+      if (isOpen) {
+        btn.textContent = '🔓 Registration: OPEN';
+        btn.className = 'btn btn-success';
+      } else {
+        btn.textContent = '🔒 Registration: CLOSED';
+        btn.className = 'btn btn-danger';
+      }
+    }
+
+    function confirmReset() {
+      document.getElementById('reset-confirm-input').value = '';
+      document.getElementById('reset-modal').classList.add('active');
+    }
+
+    async function doReset() {
+      const val = document.getElementById('reset-confirm-input').value.trim();
+      if (val !== 'RESET') { showAdminAlert('Type RESET exactly to confirm.', 'error'); return; }
+      try {
+        const res = await fetch(`${API}/api/admin/reset`, { method: 'POST', headers: headers() });
+        if (res.ok) {
+          closeModal('reset-modal');
+          showAdminAlert('Game fully reset.');
+          await loadConfig();
+          await loadStatus();
+          await loadPlayers();
+          await loadLeaderboard();
+        }
+      } catch (e) { showAdminAlert('Reset failed: ' + e.message, 'error'); }
+    }
+
+    // ── CREATE PLAYER ──
+    async function createPlayer() {
+      const username = document.getElementById('create-player-username').value.trim();
+      const password = document.getElementById('create-player-password').value.trim();
+      const email = document.getElementById('create-player-email').value.trim();
+      const statusEl = document.getElementById('create-player-status');
+      if (!username || !password) {
+        statusEl.innerHTML = '<span style="color:var(--danger);">Username and password are required</span>';
+        return;
+      }
+      try {
+        const res = await fetch(`${API}/api/admin/create-player`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ username, password, email })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          statusEl.innerHTML = `<span style="color:var(--success);">${data.message}</span>`;
+          document.getElementById('create-player-username').value = '';
+          document.getElementById('create-player-password').value = '';
+          document.getElementById('create-player-email').value = '';
+          loadPlayers();
+          populateGiveCreditsDropdown();
+        } else {
+          statusEl.innerHTML = `<span style="color:var(--danger);">${data.detail || 'Failed'}</span>`;
+        }
+      } catch (e) { statusEl.innerHTML = `<span style="color:var(--danger);">Error: ${e.message}</span>`; }
+    }
+
+    function copyRegLink() {
+      const input = document.getElementById('reg-link-url');
+      input.select();
+      navigator.clipboard.writeText(input.value).then(() => {
+        document.getElementById('reg-link-status').innerHTML = '<span style="color:var(--success);">Copied!</span>';
+        setTimeout(() => document.getElementById('reg-link-status').innerHTML = '', 2000);
+      });
+    }
+
+    async function impersonatePlayer(id, name) {
+      if (!confirm(`Switch to player "${name}"? This will open the game as that player in a new tab.`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/impersonate/${id}`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) {
+          // Open game in new tab with the impersonated token
+          const url = `${window.location.origin}/static/game.html#impersonate=${encodeURIComponent(data.token)}&username=${encodeURIComponent(data.username)}`;
+          window.open(url, '_blank');
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    async function kickPlayer(id, name) {
+      if (!confirm(`Kick player "${name}"? This will permanently delete their account and all data.`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/players/${id}`, { method: 'DELETE', headers: headers() });
+        if (res.ok) { showAdminAlert(`Player ${name} removed.`); loadPlayers(); loadLeaderboard(); }
+      } catch (e) {}
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    // ── GIVE CREDITS ──
+    async function populateGiveCreditsDropdown() {
+      try {
+        const res = await fetch(`${API}/api/admin/players`, { headers: headers() });
+        const players = await res.json();
+        const sel = document.getElementById('give-credits-player');
+        sel.innerHTML = players.map(p => `<option value="${p.id}">${p.username} (${(p.credits||0).toLocaleString()} cr)</option>`).join('');
+      } catch (e) {}
+    }
+
+    async function giveCredits() {
+      const userId = parseInt(document.getElementById('give-credits-player').value);
+      const amount = parseFloat(document.getElementById('give-credits-amount').value) || 0;
+      const statusEl = document.getElementById('give-credits-status');
+      if (!userId || amount <= 0) { statusEl.innerHTML = '<span style="color:var(--danger);">Select a player and valid amount</span>'; return; }
+      try {
+        const res = await fetch(`${API}/api/admin/give-credits`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ user_id: userId, amount })
+        });
+        const data = await res.json();
+        if (data.success) {
+          statusEl.innerHTML = `<span style="color:var(--success);">Gave ${amount.toLocaleString()} credits! New balance: ${data.new_credits.toLocaleString()}</span>`;
+          loadPlayers();
+          populateGiveCreditsDropdown();
+        } else {
+          statusEl.innerHTML = `<span style="color:var(--danger);">${data.detail || 'Failed'}</span>`;
+        }
+      } catch (e) { statusEl.innerHTML = '<span style="color:var(--danger);">Error</span>'; }
+    }
+
+    // ── BROADCAST ──
+    async function sendBroadcast() {
+      const subject = document.getElementById('broadcast-subject').value.trim();
+      const body = document.getElementById('broadcast-body').value.trim();
+      const statusEl = document.getElementById('broadcast-status');
+      if (!body) { statusEl.innerHTML = '<span style="color:var(--danger);">Message body required</span>'; return; }
+      if (!confirm(`Send broadcast to ALL players?\n\nSubject: ${subject}\nMessage: ${body.substring(0, 100)}...`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/broadcast`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ subject, body })
+        });
+        const data = await res.json();
+        if (data.success) {
+          statusEl.innerHTML = `<span style="color:var(--success);">Broadcast sent to ${data.sent_to} players!</span>`;
+          document.getElementById('broadcast-body').value = '';
+          setTimeout(() => { statusEl.innerHTML = ''; }, 5000);
+        } else {
+          statusEl.innerHTML = `<span style="color:var(--danger);">${data.detail || 'Failed'}</span>`;
+        }
+      } catch (e) { statusEl.innerHTML = '<span style="color:var(--danger);">Error</span>'; }
+    }
+
+    // ── SHARED SPEC HELPERS ──
+
+    // Format a requirements object as a compact readable string
+    function fmtReqs(req) {
+      if (!req || typeof req !== 'object' || Object.keys(req).length === 0) return '<span class="text-dim">—</span>';
+      return Object.entries(req).map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`).join(', ');
+    }
+
+    // Build inline requirements editor HTML for a spec row
+    function reqEditorHtml(prefix, key, req, allTechs) {
+      const entries = req && typeof req === 'object' ? Object.entries(req) : [];
+      let html = `<div id="${prefix}-req-editor-${key}" style="display:none; margin-top:4px; padding:6px; background:var(--panel-bg); border:1px solid var(--border); border-radius:4px;">`;
+      html += `<div class="text-dim" style="font-size:10px; margin-bottom:4px;">Requirements (tech_key: level)</div>`;
+      html += `<div id="${prefix}-req-rows-${key}">`;
+      entries.forEach(([rk, rv], i) => {
+        html += reqRowHtml(prefix, key, i, rk, rv, allTechs);
+      });
+      html += `</div>`;
+      html += `<button class="btn btn-ghost btn-sm" style="margin-top:4px;" onclick="addReqRow('${prefix}','${key}')">+ Add Req</button>`;
+      html += `</div>`;
+      return html;
+    }
+
+    function reqRowHtml(prefix, key, idx, rk, rv, allTechs) {
+      const opts = (allTechs || []).map(t => `<option value="${t}" ${t===rk?'selected':''}>${t.replace(/_/g,' ')}</option>`).join('');
+      return `<div style="display:flex; gap:4px; margin-bottom:2px; align-items:center;" id="${prefix}-req-row-${key}-${idx}">
+        <select class="stat-input" style="width:140px; font-size:10px;" data-req-key="${prefix}-${key}">${opts}<option value="" ${!rk?'selected':''}>— select —</option></select>
+        <input type="number" class="stat-input" style="width:50px;" value="${rv||1}" data-req-val="${prefix}-${key}" />
+        <button class="btn btn-ghost btn-sm" style="padding:0 4px; font-size:10px;" onclick="this.parentElement.remove()">✕</button>
+      </div>`;
+    }
+
+    let _reqRowCounters = {};
+    function addReqRow(prefix, key) {
+      const container = document.getElementById(`${prefix}-req-rows-${key}`);
+      if (!container) return;
+      const cnt = _reqRowCounters[`${prefix}-${key}`] || container.children.length;
+      _reqRowCounters[`${prefix}-${key}`] = cnt + 1;
+      const allTechs = _allTechKeys || [];
+      container.insertAdjacentHTML('beforeend', reqRowHtml(prefix, key, cnt, '', 1, allTechs));
+    }
+
+    function toggleReqEditor(prefix, key) {
+      const el = document.getElementById(`${prefix}-req-editor-${key}`);
+      if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function collectReqs(prefix, key) {
+      const req = {};
+      const keys = document.querySelectorAll(`[data-req-key="${prefix}-${key}"]`);
+      const vals = document.querySelectorAll(`[data-req-val="${prefix}-${key}"]`);
+      keys.forEach((sel, i) => {
+        const k = sel.value.trim();
+        const v = parseInt(vals[i]?.value) || 1;
+        if (k) req[k] = v;
+      });
+      return req;
+    }
+
+    // All tech keys for requirement dropdowns
+    let _allTechKeys = [];
+    async function loadAllTechKeys() {
+      try {
+        const res = await fetch(`${API}/api/admin/research`, { headers: headers() });
+        const data = await res.json();
+        _allTechKeys = data.map(r => r.key);
+      } catch (e) {}
+    }
+
+    // ── SHIP TYPE MANAGEMENT ──
+    let _shipsData = [];
+    async function loadShips() {
+      try {
+        const res = await fetch(`${API}/api/admin/ships`, { headers: headers() });
+        _shipsData = await res.json();
+        renderShipsTable();
+      } catch (e) { showAdminAlert('Failed to load ships: ' + e.message, 'error'); }
+    }
+
+    function renderShipsTable() {
+      const tbody = document.getElementById('ships-tbody');
+      tbody.innerHTML = _shipsData.map(s => {
+        const enabledCls = s.enabled ? 'badge-green' : 'badge-red';
+        const enabledLabel = s.enabled ? 'ON' : 'OFF';
+        const toggleLabel = s.enabled ? 'Disable' : 'Enable';
+        const toggleCls = s.enabled ? 'btn-warn' : 'btn-success';
+        const rowStyle = s.enabled ? '' : 'opacity:0.5;';
+        const customBadge = s.is_custom ? ' <span class="badge badge-blue" style="font-size:9px;">CUSTOM</span>' : '';
+        const deleteBtn = s.is_custom ? `<button class="btn btn-warn btn-sm" onclick="deleteCustomShip('${s.key}')">Del</button>` : '';
+        return `<tr style="${rowStyle}">
+          <td class="text-bright font-bold">${s.name}${customBadge}</td>
+          <td><span class="badge ${enabledCls}">${enabledLabel}</span></td>
+          <td><input type="number" class="stat-input" id="ship-cost-${s.key}" value="${s.cost}" style="width:70px;" /></td>
+          <td><input type="number" class="stat-input" id="ship-attack-${s.key}" value="${s.attack}" style="width:60px;" /></td>
+          <td><input type="number" class="stat-input" id="ship-armour-${s.key}" value="${s.armour}" style="width:60px;" /></td>
+          <td><input type="number" class="stat-input" id="ship-shield-${s.key}" value="${s.shield}" style="width:50px;" /></td>
+          <td><input type="number" class="stat-input" id="ship-speed-${s.key}" value="${s.speed}" step="0.1" style="width:50px;" /></td>
+          <td><input type="number" class="stat-input" id="ship-shipyard-${s.key}" value="${s.shipyard}" style="width:50px;" /></td>
+          <td><input type="number" class="stat-input" id="ship-hangar-${s.key}" value="${s.hangar}" style="width:55px;" /></td>
+          <td style="font-size:10px;">${fmtReqs(s.req)}
+            <button class="btn btn-ghost btn-sm" style="font-size:9px; padding:0 4px;" onclick="toggleReqEditor('ship','${s.key}')">Edit</button>
+            ${reqEditorHtml('ship', s.key, s.req, _allTechKeys)}
+          </td>
+          <td style="white-space:nowrap;">
+            <button class="btn ${toggleCls} btn-sm" onclick="toggleShip('${s.key}')">${toggleLabel}</button>
+            <button class="btn btn-primary btn-sm" onclick="saveShipStats('${s.key}')">Save</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetShip('${s.key}')">Reset</button>
+            ${deleteBtn}
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function toggleShip(key) {
+      try {
+        const res = await fetch(`${API}/api/admin/ships/${key}/toggle`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) {
+          showAdminAlert(`${key}: ${data.enabled ? 'Enabled' : 'Disabled'}`);
+          await loadShips();
+        }
+      } catch (e) { showAdminAlert('Toggle failed', 'error'); }
+    }
+
+    async function saveShipStats(key) {
+      const stats = {
+        cost: parseInt(document.getElementById(`ship-cost-${key}`).value) || 0,
+        attack: parseInt(document.getElementById(`ship-attack-${key}`).value) || 0,
+        armour: parseInt(document.getElementById(`ship-armour-${key}`).value) || 0,
+        shield: parseInt(document.getElementById(`ship-shield-${key}`).value) || 0,
+        speed: parseFloat(document.getElementById(`ship-speed-${key}`).value) || 0,
+        shipyard: parseInt(document.getElementById(`ship-shipyard-${key}`).value) || 0,
+        hangar: parseInt(document.getElementById(`ship-hangar-${key}`).value) || 0,
+        req: collectReqs('ship', key),
+      };
+      try {
+        const res = await fetch(`${API}/api/admin/ships/${key}/stats`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(stats)
+        });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`${key} stats updated!`); await loadShips(); }
+        else { showAdminAlert(data.detail || 'Save failed', 'error'); }
+      } catch (e) { showAdminAlert('Save failed', 'error'); }
+    }
+
+    async function addNewShip() {
+      const key = document.getElementById('new-ship-key').value.trim().toLowerCase().replace(/\s+/g, '_');
+      if (!key) { showAdminAlert('Key is required', 'error'); return; }
+      const data = {
+        key,
+        name: document.getElementById('new-ship-name').value.trim() || key.replace(/_/g, ' '),
+        cost: parseInt(document.getElementById('new-ship-cost').value) || 100,
+        attack: parseInt(document.getElementById('new-ship-attack').value) || 10,
+        armour: parseInt(document.getElementById('new-ship-armour').value) || 10,
+        shield: parseInt(document.getElementById('new-ship-shield').value) || 0,
+        speed: parseFloat(document.getElementById('new-ship-speed').value) || 4,
+        shipyard: parseInt(document.getElementById('new-ship-shipyard').value) || 10,
+        hangar: parseInt(document.getElementById('new-ship-hangar').value) || 0,
+        weapon: document.getElementById('new-ship-weapon').value,
+        drive: document.getElementById('new-ship-drive').value,
+        req: {},
+      };
+      try {
+        const res = await fetch(`${API}/api/admin/ships/add`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success) { showAdminAlert(`Ship '${key}' added!`); document.getElementById('new-ship-key').value = ''; await loadShips(); }
+        else { showAdminAlert(result.detail || 'Add failed', 'error'); }
+      } catch (e) { showAdminAlert('Add failed: ' + e.message, 'error'); }
+    }
+
+    async function deleteCustomShip(key) {
+      if (!confirm(`Delete custom ship '${key}'? This cannot be undone.`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/ships/${key}`, { method: 'DELETE', headers: headers() });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`Ship '${key}' deleted`); await loadShips(); }
+        else { showAdminAlert(data.detail || 'Delete failed', 'error'); }
+      } catch (e) { showAdminAlert('Delete failed', 'error'); }
+    }
+
+    async function resetShip(key) {
+      if (!confirm(`Reset ${key} to default stats?`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/ships/${key}/reset`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`${key} reset to defaults`); await loadShips(); }
+      } catch (e) { showAdminAlert('Reset failed', 'error'); }
+    }
+
+    // ── DEFENSE TYPE MANAGEMENT ──
+    let _defensesData = [];
+    async function loadDefenses() {
+      try {
+        const res = await fetch(`${API}/api/admin/defenses`, { headers: headers() });
+        _defensesData = await res.json();
+        renderDefensesTable();
+      } catch (e) { showAdminAlert('Failed to load defenses: ' + e.message, 'error'); }
+    }
+
+    function renderDefensesTable() {
+      const tbody = document.getElementById('defenses-tbody');
+      tbody.innerHTML = _defensesData.map(d => {
+        const enabledCls = d.enabled ? 'badge-green' : 'badge-red';
+        const enabledLabel = d.enabled ? 'ON' : 'OFF';
+        const toggleLabel = d.enabled ? 'Disable' : 'Enable';
+        const toggleCls = d.enabled ? 'btn-warn' : 'btn-success';
+        const rowStyle = d.enabled ? '' : 'opacity:0.5;';
+        const customBadge = d.is_custom ? ' <span class="badge badge-blue" style="font-size:9px;">CUSTOM</span>' : '';
+        const deleteBtn = d.is_custom ? `<button class="btn btn-warn btn-sm" onclick="deleteCustomDefense('${d.key}')">Del</button>` : '';
+        return `<tr style="${rowStyle}">
+          <td class="text-bright font-bold">${d.name}${customBadge}</td>
+          <td><span class="badge ${enabledCls}">${enabledLabel}</span></td>
+          <td><input type="number" class="stat-input" id="def-cost-${d.key}" value="${d.cost}" style="width:70px;" /></td>
+          <td><input type="number" class="stat-input" id="def-attack-${d.key}" value="${d.attack}" style="width:60px;" /></td>
+          <td><input type="number" class="stat-input" id="def-armour-${d.key}" value="${d.armour}" style="width:60px;" /></td>
+          <td><input type="number" class="stat-input" id="def-shield-${d.key}" value="${d.shield}" style="width:50px;" /></td>
+          <td style="font-size:10px;">${fmtReqs(d.req)}
+            <button class="btn btn-ghost btn-sm" style="font-size:9px; padding:0 4px;" onclick="toggleReqEditor('def','${d.key}')">Edit</button>
+            ${reqEditorHtml('def', d.key, d.req, _allTechKeys)}
+          </td>
+          <td style="white-space:nowrap;">
+            <button class="btn ${toggleCls} btn-sm" onclick="toggleDefense('${d.key}')">${toggleLabel}</button>
+            <button class="btn btn-primary btn-sm" onclick="saveDefenseStats('${d.key}')">Save</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetDefense('${d.key}')">Reset</button>
+            ${deleteBtn}
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function toggleDefense(key) {
+      try {
+        const res = await fetch(`${API}/api/admin/defenses/${key}/toggle`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) {
+          showAdminAlert(`${key}: ${data.enabled ? 'Enabled' : 'Disabled'}`);
+          await loadDefenses();
+        }
+      } catch (e) { showAdminAlert('Toggle failed', 'error'); }
+    }
+
+    async function saveDefenseStats(key) {
+      const stats = {
+        cost: parseInt(document.getElementById(`def-cost-${key}`).value) || 0,
+        attack: parseInt(document.getElementById(`def-attack-${key}`).value) || 0,
+        armour: parseInt(document.getElementById(`def-armour-${key}`).value) || 0,
+        shield: parseInt(document.getElementById(`def-shield-${key}`).value) || 0,
+        req: collectReqs('def', key),
+      };
+      try {
+        const res = await fetch(`${API}/api/admin/defenses/${key}/stats`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(stats)
+        });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`${key} stats updated!`); await loadDefenses(); }
+        else { showAdminAlert(data.detail || 'Save failed', 'error'); }
+      } catch (e) { showAdminAlert('Save failed', 'error'); }
+    }
+
+    async function addNewDefense() {
+      const key = document.getElementById('new-def-key').value.trim().toLowerCase().replace(/\s+/g, '_');
+      if (!key) { showAdminAlert('Key is required', 'error'); return; }
+      const data = {
+        key,
+        name: document.getElementById('new-def-name').value.trim() || key.replace(/_/g, ' '),
+        cost: parseInt(document.getElementById('new-def-cost').value) || 100,
+        attack: parseInt(document.getElementById('new-def-attack').value) || 10,
+        armour: parseInt(document.getElementById('new-def-armour').value) || 10,
+        shield: parseInt(document.getElementById('new-def-shield').value) || 0,
+        weapon: document.getElementById('new-def-weapon').value,
+        req: {},
+      };
+      try {
+        const res = await fetch(`${API}/api/admin/defenses/add`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success) { showAdminAlert(`Defense '${key}' added!`); document.getElementById('new-def-key').value = ''; await loadDefenses(); }
+        else { showAdminAlert(result.detail || 'Add failed', 'error'); }
+      } catch (e) { showAdminAlert('Add failed: ' + e.message, 'error'); }
+    }
+
+    async function deleteCustomDefense(key) {
+      if (!confirm(`Delete custom defense '${key}'? This cannot be undone.`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/defenses/${key}`, { method: 'DELETE', headers: headers() });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`Defense '${key}' deleted`); await loadDefenses(); }
+        else { showAdminAlert(data.detail || 'Delete failed', 'error'); }
+      } catch (e) { showAdminAlert('Delete failed', 'error'); }
+    }
+
+    async function resetDefense(key) {
+      if (!confirm(`Reset ${key} to default stats?`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/defenses/${key}/reset`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`${key} reset to defaults`); await loadDefenses(); }
+      } catch (e) { showAdminAlert('Reset failed', 'error'); }
+    }
+
+    // ── BUILDING TYPE MANAGEMENT ──
+    let _buildingsData = [];
+    async function loadBuildings() {
+      try {
+        const res = await fetch(`${API}/api/admin/buildings`, { headers: headers() });
+        _buildingsData = await res.json();
+        renderBuildingsTable();
+      } catch (e) { showAdminAlert('Failed to load buildings: ' + e.message, 'error'); }
+    }
+
+    function renderBuildingsTable() {
+      const tbody = document.getElementById('buildings-tbody');
+      tbody.innerHTML = _buildingsData.map(b => {
+        const enabledCls = b.enabled ? 'badge-green' : 'badge-red';
+        const enabledLabel = b.enabled ? 'ON' : 'OFF';
+        const toggleLabel = b.enabled ? 'Disable' : 'Enable';
+        const toggleCls = b.enabled ? 'btn-warn' : 'btn-success';
+        const rowStyle = b.enabled ? '' : 'opacity:0.5;';
+        const customBadge = b.is_custom ? ' <span class="badge badge-blue" style="font-size:9px;">CUSTOM</span>' : '';
+        const deleteBtn = b.is_custom ? `<button class="btn btn-warn btn-sm" onclick="deleteCustomBuilding('${b.key}')">Del</button>` : '';
+        return `<tr style="${rowStyle}">
+          <td class="text-bright font-bold">${b.name || b.key.replace(/_/g, ' ')}${customBadge}</td>
+          <td><span class="badge ${enabledCls}">${enabledLabel}</span></td>
+          <td><input type="number" class="stat-input" id="bld-cost-${b.key}" value="${b.base_cost || 0}" style="width:60px;" /></td>
+          <td><input type="number" class="stat-input" id="bld-energy-${b.key}" value="${b.energy_req || 0}" style="width:50px;" /></td>
+          <td><input type="number" class="stat-input" id="bld-pop-${b.key}" value="${b.pop_req || 0}" style="width:50px;" /></td>
+          <td><input type="number" class="stat-input" id="bld-area-${b.key}" value="${b.area_req || 0}" style="width:50px;" /></td>
+          <td><input type="number" class="stat-input" id="bld-maxlv-${b.key}" value="${b.max_level != null ? b.max_level : 0}" style="width:50px;" title="0 = unlimited" /></td>
+          <td style="font-size:10px;">${fmtReqs(b.tech_req)}
+            <button class="btn btn-ghost btn-sm" style="font-size:9px; padding:0 4px;" onclick="toggleReqEditor('bld','${b.key}')">Edit</button>
+            ${reqEditorHtml('bld', b.key, b.tech_req, _allTechKeys)}
+          </td>
+          <td style="white-space:nowrap;">
+            <button class="btn ${toggleCls} btn-sm" onclick="toggleBuilding('${b.key}')">${toggleLabel}</button>
+            <button class="btn btn-primary btn-sm" onclick="saveBuildingStats('${b.key}')">Save</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetBuilding('${b.key}')">Reset</button>
+            ${deleteBtn}
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function toggleBuilding(key) {
+      try {
+        const res = await fetch(`${API}/api/admin/buildings/${key}/toggle`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) {
+          showAdminAlert(`${key}: ${data.enabled ? 'Enabled' : 'Disabled'}`);
+          await loadBuildings();
+        }
+      } catch (e) { showAdminAlert('Toggle failed', 'error'); }
+    }
+
+    async function saveBuildingStats(key) {
+      const stats = {
+        base_cost: parseInt(document.getElementById(`bld-cost-${key}`).value) || 0,
+        energy_req: parseInt(document.getElementById(`bld-energy-${key}`).value) || 0,
+        pop_req: parseInt(document.getElementById(`bld-pop-${key}`).value) || 0,
+        area_req: parseInt(document.getElementById(`bld-area-${key}`).value) || 0,
+        max_level: parseInt(document.getElementById(`bld-maxlv-${key}`).value) || 0,
+        tech_req: collectReqs('bld', key),
+      };
+      try {
+        const res = await fetch(`${API}/api/admin/buildings/${key}/stats`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(stats)
+        });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`${key} stats updated!`); await loadBuildings(); }
+        else { showAdminAlert(data.detail || 'Save failed', 'error'); }
+      } catch (e) { showAdminAlert('Save failed', 'error'); }
+    }
+
+    async function addNewBuilding() {
+      const key = document.getElementById('new-bld-key').value.trim().toLowerCase().replace(/\s+/g, '_');
+      if (!key) { showAdminAlert('Key is required', 'error'); return; }
+      const data = {
+        key,
+        name: document.getElementById('new-bld-name').value.trim() || key.replace(/_/g, ' '),
+        base_cost: parseInt(document.getElementById('new-bld-cost').value) || 100,
+        cost_mult: 1.5,
+        time: 120,
+        energy_req: parseInt(document.getElementById('new-bld-energy').value) || 1,
+        pop_req: parseInt(document.getElementById('new-bld-pop').value) || 1,
+        area_req: parseInt(document.getElementById('new-bld-area').value) || 1,
+        max_level: parseInt(document.getElementById('new-bld-maxlv').value) || 0,
+        tech_req: {},
+        advanced: true,
+      };
+      try {
+        const res = await fetch(`${API}/api/admin/buildings/add`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success) { showAdminAlert(`Building '${key}' added!`); document.getElementById('new-bld-key').value = ''; await loadBuildings(); }
+        else { showAdminAlert(result.detail || 'Add failed', 'error'); }
+      } catch (e) { showAdminAlert('Add failed: ' + e.message, 'error'); }
+    }
+
+    async function deleteCustomBuilding(key) {
+      if (!confirm(`Delete custom building '${key}'? This cannot be undone.`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/buildings/${key}`, { method: 'DELETE', headers: headers() });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`Building '${key}' deleted`); await loadBuildings(); }
+        else { showAdminAlert(data.detail || 'Delete failed', 'error'); }
+      } catch (e) { showAdminAlert('Delete failed', 'error'); }
+    }
+
+    async function resetBuilding(key) {
+      if (!confirm(`Reset ${key} to default stats?`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/buildings/${key}/reset`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`${key} reset to defaults`); await loadBuildings(); }
+      } catch (e) { showAdminAlert('Reset failed', 'error'); }
+    }
+
+    // ── RESEARCH TYPE MANAGEMENT ──
+    let _researchData = [];
+    async function loadResearchTypes() {
+      try {
+        const res = await fetch(`${API}/api/admin/research`, { headers: headers() });
+        _researchData = await res.json();
+        renderResearchTable();
+      } catch (e) { showAdminAlert('Failed to load research: ' + e.message, 'error'); }
+    }
+
+    function renderResearchTable() {
+      const tbody = document.getElementById('research-tbody');
+      tbody.innerHTML = _researchData.map(r => {
+        const enabledCls = r.enabled ? 'badge-green' : 'badge-red';
+        const enabledLabel = r.enabled ? 'ON' : 'OFF';
+        const toggleLabel = r.enabled ? 'Disable' : 'Enable';
+        const toggleCls = r.enabled ? 'btn-warn' : 'btn-success';
+        const rowStyle = r.enabled ? '' : 'opacity:0.5;';
+        const customBadge = r.is_custom ? ' <span class="badge badge-blue" style="font-size:9px;">CUSTOM</span>' : '';
+        const deleteBtn = r.is_custom ? `<button class="btn btn-warn btn-sm" onclick="deleteCustomResearch('${r.key}')">Del</button>` : '';
+        return `<tr style="${rowStyle}">
+          <td class="text-bright font-bold">${r.name || r.key.replace(/_/g, ' ')}${customBadge}</td>
+          <td><span class="badge ${enabledCls}">${enabledLabel}</span></td>
+          <td><input type="number" class="stat-input" id="res-cost-${r.key}" value="${r.base_cost || 0}" style="width:70px;" /></td>
+          <td><input type="number" class="stat-input" id="res-lab-${r.key}" value="${r.lab_req || 0}" style="width:50px;" /></td>
+          <td style="font-size:10px;">${fmtReqs(r.prereqs)}
+            <button class="btn btn-ghost btn-sm" style="font-size:9px; padding:0 4px;" onclick="toggleReqEditor('res','${r.key}')">Edit</button>
+            ${reqEditorHtml('res', r.key, r.prereqs, _allTechKeys)}
+          </td>
+          <td style="white-space:nowrap;">
+            <button class="btn ${toggleCls} btn-sm" onclick="toggleResearch('${r.key}')">${toggleLabel}</button>
+            <button class="btn btn-primary btn-sm" onclick="saveResearchStats('${r.key}')">Save</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetResearch('${r.key}')">Reset</button>
+            ${deleteBtn}
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function toggleResearch(key) {
+      try {
+        const res = await fetch(`${API}/api/admin/research/${key}/toggle`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) {
+          showAdminAlert(`${key}: ${data.enabled ? 'Enabled' : 'Disabled'}`);
+          await loadResearchTypes();
+        }
+      } catch (e) { showAdminAlert('Toggle failed', 'error'); }
+    }
+
+    async function saveResearchStats(key) {
+      const stats = {
+        base_cost: parseInt(document.getElementById(`res-cost-${key}`).value) || 0,
+        lab_req: parseInt(document.getElementById(`res-lab-${key}`).value) || 0,
+        prereqs: collectReqs('res', key),
+      };
+      try {
+        const res = await fetch(`${API}/api/admin/research/${key}/stats`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(stats)
+        });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`${key} stats updated!`); await loadResearchTypes(); }
+        else { showAdminAlert(data.detail || 'Save failed', 'error'); }
+      } catch (e) { showAdminAlert('Save failed', 'error'); }
+    }
+
+    async function addNewResearch() {
+      const key = document.getElementById('new-res-key').value.trim().toLowerCase().replace(/\s+/g, '_');
+      if (!key) { showAdminAlert('Key is required', 'error'); return; }
+      const data = {
+        key,
+        name: document.getElementById('new-res-name').value.trim() || key.replace(/_/g, ' '),
+        base_cost: parseInt(document.getElementById('new-res-cost').value) || 100,
+        cost_mult: parseFloat(document.getElementById('new-res-mult').value) || 2.0,
+        base_time: 200,
+        lab_req: parseInt(document.getElementById('new-res-lab').value) || 10,
+        prereqs: {},
+      };
+      try {
+        const res = await fetch(`${API}/api/admin/research/add`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success) { showAdminAlert(`Research '${key}' added!`); document.getElementById('new-res-key').value = ''; await loadResearchTypes(); await loadAllTechKeys(); }
+        else { showAdminAlert(result.detail || 'Add failed', 'error'); }
+      } catch (e) { showAdminAlert('Add failed: ' + e.message, 'error'); }
+    }
+
+    async function deleteCustomResearch(key) {
+      if (!confirm(`Delete custom research '${key}'? This cannot be undone.`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/research/${key}`, { method: 'DELETE', headers: headers() });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`Research '${key}' deleted`); await loadResearchTypes(); await loadAllTechKeys(); }
+        else { showAdminAlert(data.detail || 'Delete failed', 'error'); }
+      } catch (e) { showAdminAlert('Delete failed', 'error'); }
+    }
+
+    async function resetResearch(key) {
+      if (!confirm(`Reset ${key} to default stats?`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/research/${key}/reset`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`${key} reset to defaults`); await loadResearchTypes(); }
+      } catch (e) { showAdminAlert('Reset failed', 'error'); }
+    }
+
+    // ── ASTRO TYPE MANAGEMENT ──
+    let _astrosData = [];
+    async function loadAstros() {
+      try {
+        const res = await fetch(`${API}/api/admin/astros`, { headers: headers() });
+        _astrosData = await res.json();
+        renderAstrosTable();
+      } catch (e) { showAdminAlert('Failed to load astros: ' + e.message, 'error'); }
+    }
+
+    function renderAstrosTable() {
+      const tbody = document.getElementById('astros-tbody');
+      tbody.innerHTML = _astrosData.map(a => {
+        const enabledCls = a.enabled ? 'badge-green' : 'badge-red';
+        const enabledLabel = a.enabled ? 'ON' : 'OFF';
+        const toggleLabel = a.enabled ? 'Disable' : 'Enable';
+        const toggleCls = a.enabled ? 'btn-warn' : 'btn-success';
+        const rowStyle = a.enabled ? '' : 'opacity:0.5;';
+        return `<tr style="${rowStyle}">
+          <td class="text-bright font-bold">${a.name || a.key.replace(/_/g, ' ')}</td>
+          <td><span class="badge ${enabledCls}">${enabledLabel}</span></td>
+          <td><input type="number" class="stat-input" id="ast-metal-${a.key}" value="${a.metal || 0}" style="width:70px;" /></td>
+          <td><input type="number" class="stat-input" id="ast-crystal-${a.key}" value="${a.crystal || 0}" style="width:70px;" /></td>
+          <td><input type="number" class="stat-input" id="ast-fertility-${a.key}" value="${a.fertility || 0}" style="width:70px;" /></td>
+          <td><input type="number" class="stat-input" id="ast-solar-${a.key}" value="${a.solar || 0}" style="width:70px;" /></td>
+          <td><input type="number" class="stat-input" id="ast-gas-${a.key}" value="${a.gas || 0}" style="width:70px;" /></td>
+          <td><input type="number" class="stat-input" id="ast-area-planet-${a.key}" value="${a.area_planet || 0}" style="width:70px;" /></td>
+          <td><input type="number" class="stat-input" id="ast-area-moon-${a.key}" value="${a.area_moon || 0}" style="width:70px;" /></td>
+          <td style="white-space:nowrap;">
+            <button class="btn ${toggleCls} btn-sm" onclick="toggleAstro('${a.key}')">${toggleLabel}</button>
+            <button class="btn btn-primary btn-sm" onclick="saveAstroStats('${a.key}')">Save</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetAstro('${a.key}')">Reset</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function toggleAstro(key) {
+      try {
+        const res = await fetch(`${API}/api/admin/astros/${key}/toggle`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) {
+          showAdminAlert(`${key}: ${data.enabled ? 'Enabled' : 'Disabled'}`);
+          await loadAstros();
+        }
+      } catch (e) { showAdminAlert('Toggle failed', 'error'); }
+    }
+
+    async function saveAstroStats(key) {
+      const stats = {
+        metal: parseInt(document.getElementById(`ast-metal-${key}`).value) || 0,
+        crystal: parseInt(document.getElementById(`ast-crystal-${key}`).value) || 0,
+        fertility: parseInt(document.getElementById(`ast-fertility-${key}`).value) || 0,
+        solar: parseInt(document.getElementById(`ast-solar-${key}`).value) || 0,
+        gas: parseInt(document.getElementById(`ast-gas-${key}`).value) || 0,
+        area_planet: parseInt(document.getElementById(`ast-area-planet-${key}`).value) || 0,
+        area_moon: parseInt(document.getElementById(`ast-area-moon-${key}`).value) || 0,
+      };
+      try {
+        const res = await fetch(`${API}/api/admin/astros/${key}/stats`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(stats)
+        });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`${key} stats updated!`); await loadAstros(); }
+        else { showAdminAlert(data.detail || 'Save failed', 'error'); }
+      } catch (e) { showAdminAlert('Save failed', 'error'); }
+    }
+
+    async function resetAstro(key) {
+      if (!confirm(`Reset ${key} to default stats?`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/astros/${key}/reset`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) { showAdminAlert(`${key} reset to defaults`); await loadAstros(); }
+      } catch (e) { showAdminAlert('Reset failed', 'error'); }
+    }
+
+    // ── CLUSTER MANAGEMENT ──
+
+    async function loadClusterStats() {
+      try {
+        const res = await fetch(`${API}/api/admin/cluster-stats`, { headers: headers() });
+        const data = await res.json();
+        const tbody = document.getElementById('clusters-tbody');
+        tbody.innerHTML = '';
+        (data.clusters || []).forEach(c => {
+          const tr = document.createElement('tr');
+          const slotsClass = c.home_slots_available === 0 ? 'color:#ff6b6b' : c.home_slots_available < 10 ? 'color:#EAC767' : 'color:#5fff5f';
+          tr.innerHTML = `
+            <td>${c.name}</td>
+            <td>${c.galaxies}</td>
+            <td>${c.total_planets}</td>
+            <td>${c.colonized}</td>
+            <td style="${slotsClass}; font-weight:bold;">${c.home_slots_available}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+        document.getElementById('clusters-total').textContent =
+          `Total available home slots: ${data.total_home_slots}`;
+      } catch (e) {
+        console.error('Failed to load cluster stats:', e);
+      }
+    }
+
+    async function addCluster() {
+      if (!confirm('Add a new cluster (10 galaxies) to the universe? This may take a moment.')) return;
+      showAdminAlert('Generating new cluster...', 'info');
+      try {
+        const res = await fetch(`${API}/api/admin/add-cluster`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (data.success) {
+          showAdminAlert(`${data.message} (${data.galaxies})`);
+          await loadClusterStats();
+          await loadStatus();
+        } else {
+          showAdminAlert(data.detail || 'Failed to add cluster', 'error');
+        }
+      } catch (e) {
+        showAdminAlert('Failed to add cluster', 'error');
+      }
+    }
+
+    // ── TAB SWITCHING & PLAYER DETAILS ──
+    let _adminTabLoaded = { dashboard: false, universe: false, balance: false, grant: false };
+    let _currentAdminTab = 'dashboard';
+
+    function switchAdminTab(tabName, btn) {
+      document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.admin-tabs .awe-nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('admin-tab-' + tabName).classList.add('active');
+      if (btn) btn.classList.add('active');
+      _currentAdminTab = tabName;
+      if (!_adminTabLoaded[tabName]) {
+        _adminTabLoaded[tabName] = true;
+        if (tabName === 'universe') { loadConfig(); loadClusterStats(); }
+        else if (tabName === 'balance') { loadAllTechKeys().then(() => { loadShips(); loadDefenses(); loadBuildings(); loadResearchTypes(); loadAstros(); }); }
+        else if (tabName === 'grant') { loadGrantPlayers(); loadGrantSpecs(); }
+        else if (tabName === 'constants') { loadGameConstants(); }
+        else if (tabName === 'commanders') { loadCommanderSpecs(); }
+        else if (tabName === 'reports') { loadBugReports(); }
+        else if (tabName === 'universes') { loadUniverses(); }
+        else if (tabName === 'gamedefs') { loadGameDefinitions(); }
+        else if (tabName === 'changelog') { loadChangelogs(); }
+      }
+    }
+
+    // ══════════ UNIVERSES TAB ══════════
+
+    async function loadUniverses() {
+      try {
+        const [uniRes, defRes] = await Promise.all([
+          fetch(`${API}/api/admin/universes`, { headers: headers() }),
+          fetch(`${API}/api/admin/available-definitions`, { headers: headers() }),
+        ]);
+        if (uniRes.ok) {
+          const data = await uniRes.json();
+          const universes = data.universes || [];
+          document.getElementById('uni-port').placeholder = data.next_port || 8100;
+          if (!document.getElementById('uni-port').value) {
+            document.getElementById('uni-port').value = data.next_port || 8100;
+          }
+          renderUniverseTable(universes);
+        }
+        if (defRes.ok) {
+          const data = await defRes.json();
+          const sel = document.getElementById('uni-gamedef');
+          sel.innerHTML = '';
+          for (const d of (data.definitions || [])) {
+            sel.innerHTML += `<option value="${esc(d.filename)}">${esc(d.name || d.filename)}</option>`;
+          }
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function renderUniverseTable(universes) {
+      if (universes.length === 0) {
+        document.getElementById('universe-table').innerHTML = '<div class="text-dim" style="padding:12px;">No universes created yet. Create one above.</div>';
+        return;
+      }
+      let html = '<table class="data-table" style="font-size:11px;width:100%;"><thead><tr>';
+      html += '<th>Status</th><th>Name</th><th>Port</th><th>Subdomain</th><th>Game Def</th><th>Speed</th><th>PID</th><th>Actions</th></tr></thead><tbody>';
+      for (const u of universes) {
+        const statusDot = u.status === 'running'
+          ? '<span style="color:#4f4;">&#9679;</span> Running'
+          : '<span style="color:#f44;">&#9679;</span> Stopped';
+        const defLabel = (u.game_definition || '').replace('.json', '');
+        const actions = [];
+        if (u.status === 'running') {
+          actions.push(`<button class="btn btn-sm btn-danger" onclick="stopUniverse('${u.id}')">Stop</button>`);
+          // Use subdomain URL if configured, otherwise port-based
+          const openUrl = u.subdomain
+            ? `${location.protocol}//${u.subdomain}.${location.hostname.replace(/^[^.]+\./, '')}`
+            : `http://${location.hostname}:${u.port}`;
+          actions.push(`<a class="btn btn-sm btn-ghost" href="${openUrl}" target="_blank">Open</a>`);
+        } else {
+          actions.push(`<button class="btn btn-sm btn-success" onclick="startUniverse('${u.id}')">Start</button>`);
+          actions.push(`<button class="btn btn-sm btn-danger" onclick="deleteUniverse('${u.id}','${esc(u.name)}')">Delete</button>`);
+        }
+        actions.push(`<button class="btn btn-sm btn-ghost" onclick="viewUniverseLog('${u.id}','${esc(u.name)}')">Log</button>`);
+        const subLabel = u.subdomain ? `<span style="color:var(--accent);">${esc(u.subdomain)}</span>` : '<span class="text-dim">-</span>';
+        html += `<tr>
+          <td>${statusDot}</td>
+          <td><strong>${esc(u.name)}</strong><div class="text-dim" style="font-size:10px;">${esc(u.description || '')}</div></td>
+          <td>${u.port}</td>
+          <td>${subLabel}</td>
+          <td>${esc(defLabel)}</td>
+          <td>${u.game_speed || 1}x</td>
+          <td class="text-dim">${u.pid || '-'}</td>
+          <td style="white-space:nowrap;">${actions.join(' ')}</td>
+        </tr>`;
+      }
+      html += '</tbody></table>';
+      document.getElementById('universe-table').innerHTML = html;
+    }
+
+    async function createUniverse() {
+      const name = document.getElementById('uni-name').value.trim();
+      const status = document.getElementById('uni-create-status');
+      if (!name) { status.textContent = 'Name is required'; return; }
+      try {
+        const res = await fetch(`${API}/api/admin/universes`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({
+            name,
+            port: parseInt(document.getElementById('uni-port').value) || 8100,
+            game_definition: document.getElementById('uni-gamedef').value,
+            game_speed: parseFloat(document.getElementById('uni-speed').value) || 1,
+            max_players: parseInt(document.getElementById('uni-maxplayers').value) || 100,
+            description: document.getElementById('uni-desc').value.trim(),
+            subdomain: document.getElementById('uni-subdomain').value.trim(),
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          status.innerHTML = '<span style="color:var(--success);">Created!</span>';
+          document.getElementById('uni-name').value = '';
+          document.getElementById('uni-desc').value = '';
+          document.getElementById('uni-subdomain').value = '';
+          _adminTabLoaded['universes'] = false;
+          loadUniverses();
+        } else {
+          status.innerHTML = `<span style="color:var(--danger);">${esc(data.detail || 'Failed')}</span>`;
+        }
+      } catch (e) { status.innerHTML = `<span style="color:var(--danger);">Error: ${esc(e.message)}</span>`; }
+    }
+
+    async function startUniverse(id) {
+      try {
+        const res = await fetch(`${API}/api/admin/universes/${id}/start`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (res.ok) { showAdminAlert(`Started universe: ${data.universe.name}`, 'success'); loadUniverses(); }
+        else showAdminAlert(data.detail || 'Start failed', 'danger');
+      } catch (e) { showAdminAlert('Error: ' + e.message, 'danger'); }
+    }
+
+    async function stopUniverse(id) {
+      if (!confirm('Stop this universe? Players will be disconnected.')) return;
+      try {
+        const res = await fetch(`${API}/api/admin/universes/${id}/stop`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (res.ok) { showAdminAlert(`Stopped universe: ${data.universe.name}`, 'success'); loadUniverses(); }
+        else showAdminAlert(data.detail || 'Stop failed', 'danger');
+      } catch (e) { showAdminAlert('Error: ' + e.message, 'danger'); }
+    }
+
+    async function deleteUniverse(id, name) {
+      if (!confirm(`Delete universe "${name}"? This cannot be undone.`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/universes/${id}`, { method: 'DELETE', headers: headers() });
+        if (res.ok) { showAdminAlert(`Deleted universe: ${name}`, 'success'); loadUniverses(); }
+        else { const data = await res.json(); showAdminAlert(data.detail || 'Delete failed', 'danger'); }
+      } catch (e) { showAdminAlert('Error: ' + e.message, 'danger'); }
+    }
+
+    async function viewUniverseLog(id, name) {
+      const panel = document.getElementById('uni-log-panel');
+      panel.style.display = 'block';
+      document.getElementById('uni-log-name').textContent = `(${name})`;
+      document.getElementById('uni-log-content').value = 'Loading...';
+      try {
+        const res = await fetch(`${API}/api/admin/universes/${id}/log`, { headers: headers() });
+        const data = await res.json();
+        const textarea = document.getElementById('uni-log-content');
+        textarea.value = data.log || '(empty)';
+        textarea.scrollTop = textarea.scrollHeight;
+      } catch (e) { document.getElementById('uni-log-content').value = 'Error loading log'; }
+    }
+
+    // ══════════ GAME DEFINITIONS TAB ══════════
+
+    let _buildGameOptions = null;
+    let _compiledGameDefinition = null;
+
+    function engineSafetyKind(flag, safety) {
+      const setupOnly = new Set((safety && safety.setup_only) || []);
+      const balance = new Set((safety && safety.balance_sensitive) || []);
+      if (setupOnly.has(flag)) return 'setup_only';
+      if (balance.has(flag)) return 'balance_sensitive';
+      return 'live';
+    }
+
+    function engineSafetyBadge(flag, safety) {
+      const kind = engineSafetyKind(flag, safety);
+      if (kind === 'setup_only') return '<span style="color:var(--danger);">Setup only</span>';
+      if (kind === 'balance_sensitive') return '<span style="color:var(--warn);">Balance</span>';
+      return '<span style="color:var(--success);">Live</span>';
+    }
+
+    function clearCompiledGameDef(updateStatus = true) {
+      _compiledGameDefinition = null;
+      const preview = document.getElementById('build-game-preview');
+      if (preview) preview.innerHTML = '';
+      if (updateStatus) {
+        const status = document.getElementById('build-game-status');
+        if (status) status.innerHTML = '<span class="text-dim">Compile preview required.</span>';
+      }
+    }
+
+    function renderBuildGameOptions(data) {
+      _buildGameOptions = data || {};
+      const defs = _buildGameOptions.definitions || [];
+      const fragments = _buildGameOptions.fragments || [];
+      const container = document.getElementById('build-game-options');
+      if (!container) return;
+
+      let html = '';
+      html += '<div class="section-title" style="margin-top:0;">Base Definition</div>';
+      if (defs.length) {
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin-bottom:10px;">';
+        defs.forEach((d, idx) => {
+          html += `<label class="card" style="padding:8px;display:block;cursor:pointer;">
+            <div style="display:flex;gap:6px;align-items:flex-start;">
+              <input type="radio" name="build-base-definition" value="${esc(d.filename)}" ${idx === 0 ? 'checked' : ''} onchange="clearCompiledGameDef()" />
+              <div>
+                <div><strong>${esc(d.name || d.filename)}</strong> <span class="text-dim">${esc(d.version || '')}</span></div>
+                <div class="text-dim" style="font-size:10px;">${esc(d.filename)}</div>
+                <div class="text-dim" style="font-size:10px;margin-top:3px;">${esc(d.description || d.error || '')}</div>
+              </div>
+            </div>
+          </label>`;
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="text-warn" style="margin-bottom:10px;">No base definition files found.</div>';
+      }
+
+      html += '<div class="section-title">Optional Components</div>';
+      if (!fragments.length) {
+        html += '<div class="text-dim" style="margin-bottom:8px;">No component fragments found yet. Add JSON fragments under <code>game_definitions/fragments/</code> to expose more choices here.</div>';
+      } else {
+        const groups = {};
+        fragments.forEach(f => {
+          const key = f.component_type || 'fragment';
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(f);
+        });
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;">';
+        const exclusiveGroups = new Set(['combat', 'defenses', 'resources', 'map', 'ships', 'buildings', 'research', 'astros']);
+        Object.entries(groups).forEach(([group, items]) => {
+          const groupSafe = group.replace(/[^a-zA-Z0-9_-]/g, '-');
+          const isExclusive = exclusiveGroups.has(group);
+          html += `<div class="card" style="padding:8px;">
+            <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px;">${esc(group.replace(/_/g, ' '))}</div>`;
+          if (isExclusive) {
+            const baseId = `build-frag-${groupSafe}-base`;
+            html += `<label for="${esc(baseId)}" style="display:flex;gap:6px;align-items:flex-start;margin-bottom:6px;cursor:pointer;">
+              <input id="${esc(baseId)}" type="radio" name="build-fragment-${esc(groupSafe)}" data-build-fragment="1" value="" checked onchange="clearCompiledGameDef()" />
+              <span>Base default<span class="text-dim" style="font-size:10px;display:block;">Use the selected base definition's ${esc(group.replace(/_/g, ' '))} settings.</span></span>
+            </label>`;
+          }
+          items.forEach((f, idx) => {
+            const id = `build-frag-${groupSafe}-${idx}`;
+            const inputType = isExclusive ? 'radio' : 'checkbox';
+            const inputName = isExclusive ? `build-fragment-${groupSafe}` : 'build-fragment';
+            html += `<label for="${esc(id)}" style="display:flex;gap:6px;align-items:flex-start;margin-bottom:6px;cursor:pointer;">
+              <input id="${esc(id)}" type="${inputType}" name="${esc(inputName)}" data-build-fragment="1" value="${esc(f.filename)}" onchange="clearCompiledGameDef()" />
+              <span>
+                <span>${esc(f.name || f.filename)}</span>
+                <span class="text-dim" style="font-size:10px;display:block;">${esc(f.description || f.filename)}</span>
+              </span>
+            </label>`;
+          });
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+      container.innerHTML = html;
+      clearCompiledGameDef(false);
+    }
+
+    // ── Prebuilt Games & Mods (drives the existing mod_loader backend) ──
+    async function loadModsPanel() {
+      const el = document.getElementById('mods-list');
+      if (!el) return;
+      try {
+        const res = await fetch(`${API}/api/admin/mods`, { headers: headers() });
+        if (!res.ok) { el.innerHTML = '<span class="text-warn">Failed to load mods.</span>'; return; }
+        const data = await res.json();
+        const mods = data.mods || [];
+        const rulesets = mods.filter(m => m.kind === 'ruleset');
+        const content = mods.filter(m => m.kind !== 'ruleset');
+        let html = '<div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px;">Prebuilt Games (base ruleset)</div>';
+        if (!rulesets.length) {
+          html += '<div class="text-dim" style="margin-bottom:10px;">No ruleset mods found in <code>mods/</code>.</div>';
+        } else {
+          html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px;margin-bottom:12px;">';
+          rulesets.forEach(m => {
+            const active = m.active_ruleset;
+            html += `<div class="card" style="padding:8px;${active ? 'border:1px solid var(--success);' : ''}">
+              <div><strong>${esc(m.name)}</strong> <span class="text-dim">${esc(m.version || '')}</span>${active ? ' <span style="color:var(--success);font-size:10px;">● ACTIVE</span>' : ''}</div>
+              <div class="text-dim" style="font-size:10px;margin:3px 0;">${esc(m.description || '')}</div>
+              ${m.valid
+                ? `<button class="btn btn-sm ${active ? '' : 'btn-success'}" ${active ? 'disabled' : ''} onclick="activateRulesetMod('${esc(m.id)}')">${active ? 'Active' : 'Use this game'}</button>`
+                : `<span class="text-danger" style="font-size:10px;">invalid: ${esc((m.errors || []).join('; '))}</span>`}
+            </div>`;
+          });
+          html += '</div>';
+        }
+        if (rulesets.length) {
+          html += '<div style="margin:0 0 12px;"><button class="btn btn-sm btn-ghost" onclick="regenerateUniverseForRuleset()">⟳ Regenerate fresh universe on active ruleset</button> <span class="text-dim" style="font-size:10px;">Rebuild the galaxy so setup-only changes (resource model, map depth) become coherent.</span></div>';
+        }
+        if (content.length) {
+          html += '<div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px;">Content / Behaviour Mods (overlay)</div>';
+          html += '<div style="display:flex;flex-direction:column;gap:6px;">';
+          content.forEach(m => {
+            html += `<label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;">
+              <input type="checkbox" ${m.enabled ? 'checked' : ''} ${m.valid ? '' : 'disabled'} onchange="toggleContentMod('${esc(m.id)}', this.checked)" />
+              <span><strong>${esc(m.name)}</strong> <span class="text-dim" style="font-size:10px;">(${esc(m.kind)})</span><span class="text-dim" style="font-size:10px;display:block;">${esc(m.description || '')}</span></span>
+            </label>`;
+          });
+          html += '</div>';
+        }
+        html += '<div id="mods-status" style="font-size:11px;margin-top:8px;"></div>';
+        el.innerHTML = html;
+      } catch (e) { el.innerHTML = '<span class="text-danger">Error: ' + esc(e.message) + '</span>'; }
+    }
+
+    async function activateRulesetMod(modId) {
+      if (!confirm(`Switch the active game to "${modId}"? Setup-only rule changes (e.g. resource model) take full effect on a freshly generated universe.`)) return;
+      const status = document.getElementById('mods-status');
+      if (status) status.innerHTML = '<span class="text-dim">Switching…</span>';
+      try {
+        let res = await fetch(`${API}/api/admin/mods/ruleset`, { method: 'POST', headers: headers(), body: JSON.stringify({ mod_id: modId }) });
+        let data = await res.json();
+        if (!res.ok) { if (status) status.innerHTML = `<span class="text-danger">${esc(data.detail || 'Failed to set ruleset')}</span>`; return; }
+        res = await fetch(`${API}/api/admin/mods/apply`, { method: 'POST', headers: headers() });
+        data = await res.json();
+        const rep = data.report || {};
+        const safety = (rep.safety || []).filter(s => s && s.flag);
+        if (data.success && safety.length) {
+          const flags = safety.map(s => `• ${s.flag}: ${JSON.stringify(s.current)} → ${JSON.stringify(s.new)}`).join('\n');
+          showAdminAlert(`Activated ${modId}. These setup-only rules only take full effect on a fresh universe:\n${flags}\n\nUse the “Regenerate fresh universe on active ruleset” button.`, 'warn');
+        } else if (data.success) {
+          showAdminAlert(`Activated prebuilt game: ${modId}`, 'success');
+        } else {
+          showAdminAlert('Applied with issues: ' + esc(JSON.stringify(rep.errors || rep)), 'warn');
+        }
+        _adminTabLoaded['gamedefs'] = false;
+        loadGameDefinitions();
+      } catch (e) { if (status) status.innerHTML = '<span class="text-danger">Error: ' + esc(e.message) + '</span>'; }
+    }
+
+    async function toggleContentMod(modId, enabled) {
+      try {
+        await fetch(`${API}/api/admin/mods/enable`, { method: 'POST', headers: headers(), body: JSON.stringify({ mod_id: modId, enabled }) });
+        const res = await fetch(`${API}/api/admin/mods/apply`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        showAdminAlert(`${enabled ? 'Enabled' : 'Disabled'} mod: ${modId}`, data.success ? 'success' : 'warn');
+        _adminTabLoaded['gamedefs'] = false;
+        loadGameDefinitions();
+      } catch (e) { showAdminAlert('Error: ' + e.message, 'danger'); }
+    }
+
+    async function regenerateUniverseForRuleset() {
+      if (!confirm('Regenerate the universe on the ACTIVE ruleset? Uncolonized planets are rebuilt from the current rules; existing colonies are preserved.')) return;
+      const status = document.getElementById('mods-status');
+      if (status) status.innerHTML = '<span class="text-dim">Regenerating universe… (this can take a moment)</span>';
+      try {
+        const res = await fetch(`${API}/api/admin/regenerate-galaxy`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (res.ok) {
+          showAdminAlert('Universe regenerated on the active ruleset.', 'success');
+          if (status) status.innerHTML = '<span class="text-success">Universe regenerated on the active ruleset.</span>';
+        } else if (status) {
+          status.innerHTML = `<span class="text-danger">${esc(data.detail || 'Regenerate failed')}</span>`;
+        }
+      } catch (e) { if (status) status.innerHTML = '<span class="text-danger">Error: ' + esc(e.message) + '</span>'; }
+    }
+
+    function buildGameDraft() {
+      const base = document.querySelector('input[name="build-base-definition"]:checked');
+      const refs = [];
+      if (base && base.value) refs.push(base.value);
+      document.querySelectorAll('input[data-build-fragment="1"]:checked').forEach(el => {
+        if (el.value) refs.push(el.value);
+      });
+
+      const name = (document.getElementById('build-game-name').value || '').trim();
+      const version = (document.getElementById('build-game-version').value || '1.0').trim() || '1.0';
+      const description = (document.getElementById('build-game-desc').value || '').trim();
+      if (!name) throw new Error('Ruleset name is required.');
+      if (!refs.length) throw new Error('Choose at least one base definition or component.');
+
+      return {
+        extends: refs,
+        meta: {
+          name,
+          version,
+          description,
+          author: 'Server Operator',
+        },
+      };
+    }
+
+    function renderBuiltGamePreview(definition, result) {
+      const preview = document.getElementById('build-game-preview');
+      if (!preview || !definition) return;
+      const engine = definition.engine || {};
+      const counts = {
+        ships: Object.keys(definition.ships || {}).length,
+        defenses: Object.keys(definition.defenses || {}).length,
+        buildings: Object.keys(definition.buildings || {}).length,
+        research: Object.keys(definition.research || {}).length,
+        weapons: Object.keys(definition.weapon_types || {}).length,
+      };
+      const blocked = (result && result.blocked) || [];
+      const warnings = (result && result.warnings) || [];
+      let html = `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
+        <span><strong>${counts.ships}</strong> ships</span>
+        <span><strong>${counts.defenses}</strong> defenses</span>
+        <span><strong>${counts.buildings}</strong> buildings</span>
+        <span><strong>${counts.research}</strong> research</span>
+        <span><strong>${counts.weapons}</strong> weapon types</span>
+      </div>`;
+      html += `<div class="text-dim" style="margin-top:4px;">Engine: resource=${esc(engine.resource_model || '?')}, combat=${esc(engine.combat_model || '?')}, defenses=${esc(engine.defense_model || '?')}, map depth=${esc(engine.map_depth || '?')}</div>`;
+      html += `<div class="text-dim" style="margin-top:4px;font-size:10px;">Counts are for this composed ruleset (base + components). Custom ships/buildings/research you add in <strong>Game Balance</strong> layer on top and also carry over when this ruleset is activated.</div>`;
+      if (warnings.length) html += `<div class="text-warn" style="margin-top:4px;">Warnings: ${esc(warnings.join('; '))}</div>`;
+      if (blocked.length) html += `<div class="text-danger" style="margin-top:4px;">Blocked on active universe: ${esc(blocked.join('; '))}</div>`;
+      preview.innerHTML = html;
+    }
+
+    async function loadGameDefinitions() {
+      try {
+        const [curRes, listRes, buildRes] = await Promise.all([
+          fetch(`${API}/api/admin/game-definition/current`, { headers: headers() }),
+          fetch(`${API}/api/admin/game-definitions`, { headers: headers() }),
+          fetch(`${API}/api/admin/game-definition/build-options`, { headers: headers() }),
+        ]);
+        if (curRes.ok) {
+          const defn = await curRes.json();
+          const meta = defn.meta || {};
+          const safety = defn.safety || {};
+          document.getElementById('gamedef-current').innerHTML = `
+            <div style="display:flex;gap:20px;flex-wrap:wrap;">
+              <div><span class="text-dim">Name:</span> <strong>${esc(meta.name || 'Unknown')}</strong></div>
+              <div><span class="text-dim">Version:</span> ${esc(meta.version || '?')}</div>
+              <div><span class="text-dim">Author:</span> ${esc(meta.author || '?')}</div>
+            </div>
+            <div class="text-dim" style="margin-top:4px;font-size:11px;">${esc(meta.description || '')}</div>`;
+
+          const nameInput = document.getElementById('build-game-name');
+          const versionInput = document.getElementById('build-game-version');
+          const descInput = document.getElementById('build-game-desc');
+          if (nameInput && !nameInput.value) nameInput.value = `${meta.name || 'Custom Game'} Custom`;
+          if (versionInput && !versionInput.value) versionInput.value = meta.version || '1.0';
+          if (descInput && !descInput.value) descInput.value = meta.description || '';
+
+          const eng = defn.engine || {};
+          let engHtml = '<table class="data-table" style="font-size:11px;width:auto;">';
+          engHtml += '<thead><tr><th>Flag</th><th>Value</th><th>Safety</th></tr></thead><tbody>';
+          for (const [k, v] of Object.entries(eng)) {
+            engHtml += `<tr><td class="text-dim" style="padding:2px 12px 2px 0;">${esc(k)}</td><td><code>${esc(JSON.stringify(v))}</code></td><td>${engineSafetyBadge(k, safety)}</td></tr>`;
+          }
+          engHtml += '</tbody></table>';
+          engHtml += '<div class="text-dim" style="font-size:10px;margin-top:6px;"><span style="color:var(--success);">Live</span> = runtime-safe &nbsp; <span style="color:var(--warn);">Balance</span> = allowed but affects gameplay &nbsp; <span style="color:var(--danger);">Setup only</span> = requires a fresh universe</div>';
+          document.getElementById('gamedef-engine').innerHTML = engHtml;
+        }
+        if (listRes.ok) {
+          const data = await listRes.json();
+          const defs = data.definitions || [];
+          if (defs.length === 0) {
+            document.getElementById('gamedef-list').innerHTML = '<span class="text-dim">No definition files found in game_definitions/</span>';
+          } else {
+            let html = '<table class="data-table" style="font-size:11px;width:100%;">';
+            html += '<thead><tr><th>File</th><th>Name</th><th>Version</th><th>Description</th><th></th></tr></thead><tbody>';
+            for (const d of defs) {
+              html += `<tr>
+                <td><code>${esc(d.filename)}</code></td>
+                <td>${esc(d.name || '')}</td>
+                <td>${esc(d.version || '')}</td>
+                <td class="text-dim">${esc(d.description || d.error || '')}</td>
+                <td><button class="btn btn-sm" onclick="loadGameDefFile('${esc(d.filename)}')">Load</button></td>
+              </tr>`;
+            }
+            html += '</tbody></table>';
+            document.getElementById('gamedef-list').innerHTML = html;
+          }
+        }
+        if (buildRes.ok) {
+          renderBuildGameOptions(await buildRes.json());
+        } else {
+          document.getElementById('build-game-options').innerHTML = '<span class="text-warn">Failed to load build options.</span>';
+        }
+        loadModsPanel();
+      } catch (e) { console.error(e); }
+    }
+
+    async function compileBuiltGame() {
+      const status = document.getElementById('build-game-status');
+      const preview = document.getElementById('build-game-preview');
+      try {
+        const draft = buildGameDraft();
+        status.innerHTML = '<span class="text-dim">Compiling...</span>';
+        if (preview) preview.innerHTML = '';
+        const res = await fetch(`${API}/api/admin/game-definition/compile`, {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({ definition: draft }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          _compiledGameDefinition = null;
+          status.innerHTML = `<span class="text-danger">${esc(data.detail || 'Compile failed')}</span>`;
+          return null;
+        }
+        if (!data.ok || (data.errors && data.errors.length)) {
+          _compiledGameDefinition = null;
+          status.innerHTML = `<span class="text-danger">Compile errors: ${esc((data.errors || []).join('; '))}</span>`;
+          return null;
+        }
+        _compiledGameDefinition = data.definition;
+        const blocked = data.blocked || [];
+        const warnings = data.warnings || [];
+        if (blocked.length) {
+          status.innerHTML = '<span class="text-danger">Compiled, but blocked for the active universe.</span>';
+        } else if (warnings.length) {
+          status.innerHTML = '<span class="text-warn">Compiled with warnings.</span>';
+        } else {
+          status.innerHTML = '<span class="text-success">Compiled successfully.</span>';
+        }
+        renderBuiltGamePreview(data.definition, data);
+        return data.definition;
+      } catch (e) {
+        _compiledGameDefinition = null;
+        status.innerHTML = `<span class="text-danger">${esc(e.message)}</span>`;
+        if (preview) preview.innerHTML = '';
+        return null;
+      }
+    }
+
+    async function activateCompiledGameDef() {
+      let definition = _compiledGameDefinition;
+      if (!definition) {
+        definition = await compileBuiltGame();
+        if (!definition) return;
+      }
+      const name = definition.meta && definition.meta.name ? definition.meta.name : 'compiled ruleset';
+      if (!confirm(`Activate "${name}" as the current game definition? Setup-only changes are blocked while a universe exists.`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/game-definition/import`, {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({ definition }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          let msg = `Activated: ${data.name}`;
+          if (data.warnings && data.warnings.length) msg += '\n\nWarnings:\n' + data.warnings.join('\n');
+          showAdminAlert(msg, data.warnings && data.warnings.length ? 'warn' : 'success');
+          _adminTabLoaded['gamedefs'] = false;
+          loadGameDefinitions();
+        } else {
+          document.getElementById('build-game-status').innerHTML = `<span class="text-danger">${esc(data.detail || 'Activation failed')}</span>`;
+        }
+      } catch (e) {
+        document.getElementById('build-game-status').innerHTML = `<span class="text-danger">Error: ${esc(e.message)}</span>`;
+      }
+    }
+
+    async function loadGameDefFile(filename) {
+      if (!confirm(`Load game definition "${filename}"? This will change the active game rules.`)) return;
+      try {
+        const res = await fetch(`${API}/api/admin/game-definition/load-file`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ filename })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          let msg = `Loaded definition: ${data.name}`;
+          if (data.warnings && data.warnings.length) msg += '\n\nWarnings:\n' + data.warnings.join('\n');
+          showAdminAlert(msg, data.warnings && data.warnings.length ? 'warn' : 'success');
+          _adminTabLoaded['gamedefs'] = false; loadGameDefinitions();
+        } else showAdminAlert(data.detail || 'Load failed', 'danger');
+      } catch (e) { showAdminAlert('Error: ' + e.message, 'danger'); }
+    }
+
+    async function exportGameDef() {
+      try {
+        const res = await fetch(`${API}/api/admin/game-definition/current`, { headers: headers() });
+        const defn = await res.json();
+        if (!res.ok) { showAdminAlert(defn.detail || 'Export failed', 'danger'); return; }
+        const name = (defn.meta && defn.meta.name || 'game_definition').toLowerCase().replace(/\s+/g, '_');
+        const json = JSON.stringify(defn, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = name + '.json';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+        showAdminAlert('Definition downloaded', 'success');
+      } catch (e) { showAdminAlert('Error: ' + e.message, 'danger'); }
+    }
+
+    async function resetGameDef() {
+      if (!confirm('Reset to the built-in default game definition?')) return;
+      try {
+        const res = await fetch(`${API}/api/admin/game-definition/reset`, { method: 'POST', headers: headers() });
+        const data = await res.json();
+        if (res.ok) { showAdminAlert(`Reset to: ${data.name}`, 'success'); _adminTabLoaded['gamedefs'] = false; loadGameDefinitions(); }
+        else showAdminAlert(data.detail || 'Reset failed', 'danger');
+      } catch (e) { showAdminAlert('Error: ' + e.message, 'danger'); }
+    }
+
+    async function validateGameDef() {
+      const json = document.getElementById('gamedef-import-json').value.trim();
+      const status = document.getElementById('gamedef-import-status');
+      if (!json) { status.textContent = 'Paste JSON first'; return; }
+      try {
+        const defn = JSON.parse(json);
+        const res = await fetch(`${API}/api/admin/game-definition/validate`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(defn)
+        });
+        const data = await res.json();
+        if (data.valid) status.innerHTML = '<span style="color:var(--success);">Valid definition!</span>';
+        else status.innerHTML = `<span style="color:var(--danger);">Errors: ${esc(data.errors.join('; '))}</span>`;
+      } catch (e) { status.innerHTML = `<span style="color:var(--danger);">Invalid JSON: ${esc(e.message)}</span>`; }
+    }
+
+    async function importGameDef() {
+      const json = document.getElementById('gamedef-import-json').value.trim();
+      const status = document.getElementById('gamedef-import-status');
+      if (!json) { status.textContent = 'Paste JSON first'; return; }
+      if (!confirm('Import and activate this game definition? This changes the active game rules.')) return;
+      try {
+        const defn = JSON.parse(json);
+        const res = await fetch(`${API}/api/admin/game-definition/import`, {
+          method: 'POST', headers: headers(), body: JSON.stringify(defn)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          let msg = `Imported: ${data.name}`;
+          if (data.warnings && data.warnings.length) msg += '\n\nWarnings:\n' + data.warnings.join('\n');
+          showAdminAlert(msg, data.warnings && data.warnings.length ? 'warn' : 'success');
+          document.getElementById('gamedef-import-json').value = '';
+          status.textContent = '';
+          _adminTabLoaded['gamedefs'] = false;
+          loadGameDefinitions();
+        } else {
+          status.innerHTML = `<span style="color:var(--danger);">${esc(data.detail || 'Import failed')}</span>`;
+        }
+      } catch (e) { status.innerHTML = `<span style="color:var(--danger);">Invalid JSON: ${esc(e.message)}</span>`; }
+    }
+
+    // ══════════ GRANT ITEMS TAB ══════════
+    let _grantSpecs = { buildings: {}, defenses: {}, ships: {}, research: {} };
+
+    async function loadGrantSpecs() {
+      try {
+        const [bRes, dRes, sRes, rRes] = await Promise.all([
+          fetch(`${API}/api/admin/buildings`, { headers: headers() }),
+          fetch(`${API}/api/admin/defenses`, { headers: headers() }),
+          fetch(`${API}/api/admin/ships`, { headers: headers() }),
+          fetch(`${API}/api/admin/research`, { headers: headers() }),
+        ]);
+        _grantSpecs.buildings = await bRes.json();
+        _grantSpecs.defenses = await dRes.json();
+        _grantSpecs.ships = await sRes.json();
+        _grantSpecs.research = await rRes.json();
+      } catch(e) { console.error('Failed to load grant specs', e); }
+      renderGrantBuildings();
+      renderGrantDefenses();
+      renderGrantShips();
+      renderGrantResearch();
+    }
+
+    async function loadGrantPlayers() {
+      try {
+        const res = await fetch(`${API}/api/admin/players`, { headers: headers() });
+        const players = await res.json();
+        const sel = document.getElementById('grant-player');
+        sel.innerHTML = players.map(p => `<option value="${p.id}">${p.username}</option>`).join('');
+        onGrantPlayerChange();
+      } catch(e) {}
+    }
+
+    async function onGrantPlayerChange() {
+      const userId = document.getElementById('grant-player').value;
+      if (!userId) return;
+      try {
+        const res = await fetch(`${API}/api/admin/player-bases/${userId}`, { headers: headers() });
+        const bases = await res.json();
+        const sel = document.getElementById('grant-base');
+        sel.innerHTML = bases.map(b => `<option value="${b.id}">${b.name} (${b.planet_type})</option>`).join('');
+      } catch(e) {}
+    }
+
+    function renderGrantBuildings() {
+      const arr = Array.isArray(_grantSpecs.buildings) ? _grantSpecs.buildings : Object.entries(_grantSpecs.buildings).map(([k,v])=>({key:k,...v}));
+      const el = document.getElementById('grant-buildings-list');
+      el.innerHTML = arr.map(b => {
+        const key = b.key || b.type || b.building_type || '';
+        const name = b.name || key;
+        return `<div style="display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid rgba(255,255,255,.05);">
+          <span style="flex:1; color:var(--text-secondary);">${name}</span>
+          <input type="number" min="0" max="99" value="0" data-grant-building="${key}" style="width:55px; text-align:center;" class="font-mono" />
+        </div>`;
+      }).join('');
+    }
+
+    function renderGrantDefenses() {
+      const arr = Array.isArray(_grantSpecs.defenses) ? _grantSpecs.defenses : Object.entries(_grantSpecs.defenses).map(([k,v])=>({key:k,...v}));
+      const el = document.getElementById('grant-defenses-list');
+      el.innerHTML = arr.map(d => {
+        const key = d.key || d.type || d.defense_type || '';
+        const name = d.name || key;
+        return `<div style="display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid rgba(255,255,255,.05);">
+          <span style="flex:1; color:var(--text-secondary);">${name}</span>
+          <input type="number" min="0" max="99" value="0" data-grant-defense="${key}" style="width:55px; text-align:center;" class="font-mono" />
+          <span class="text-dim" style="font-size:10px; width:40px;" id="grant-def-qty-${key}">0 units</span>
+        </div>`;
+      }).join('');
+      // update qty labels on input change
+      el.querySelectorAll('input[data-grant-defense]').forEach(inp => {
+        inp.addEventListener('input', () => {
+          const q = document.getElementById('grant-def-qty-' + inp.dataset.grantDefense);
+          if (q) q.textContent = (parseInt(inp.value)||0) * 5 + ' units';
+        });
+      });
+    }
+
+    function renderGrantShips() {
+      const arr = Array.isArray(_grantSpecs.ships) ? _grantSpecs.ships : Object.entries(_grantSpecs.ships).map(([k,v])=>({key:k,...v}));
+      const el = document.getElementById('grant-ships-list');
+      el.innerHTML = arr.map(s => {
+        const key = s.key || s.type || s.ship_type || '';
+        const name = s.name || key;
+        return `<div style="display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid rgba(255,255,255,.05);">
+          <span style="flex:1; color:var(--text-secondary);">${name}</span>
+          <input type="number" min="0" max="99999" value="0" data-grant-ship="${key}" style="width:70px; text-align:center;" class="font-mono" />
+        </div>`;
+      }).join('');
+    }
+
+    function renderGrantResearch() {
+      const arr = Array.isArray(_grantSpecs.research) ? _grantSpecs.research : Object.entries(_grantSpecs.research).map(([k,v])=>({key:k,...v}));
+      const el = document.getElementById('grant-research-list');
+      el.innerHTML = arr.map(r => {
+        const key = r.key || r.type || r.tech_type || '';
+        const name = r.name || key;
+        return `<div style="display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid rgba(255,255,255,.05);">
+          <span style="flex:1; color:var(--text-secondary);">${name}</span>
+          <input type="number" min="0" max="99" value="0" data-grant-research="${key}" style="width:55px; text-align:center;" class="font-mono" />
+        </div>`;
+      }).join('');
+    }
+
+    function setAllGrantBuildings(v) { document.querySelectorAll('[data-grant-building]').forEach(i => i.value = v); }
+    function setAllGrantDefenses(v) {
+      document.querySelectorAll('[data-grant-defense]').forEach(i => { i.value = v; i.dispatchEvent(new Event('input')); });
+    }
+    function setAllGrantShips(v) { document.querySelectorAll('[data-grant-ship]').forEach(i => i.value = v); }
+    function setAllGrantResearch(v) { document.querySelectorAll('[data-grant-research]').forEach(i => i.value = v); }
+
+    async function submitGrantBuildings() {
+      const baseId = parseInt(document.getElementById('grant-base').value);
+      if (!baseId) { document.getElementById('grant-buildings-status').innerHTML = '<span style="color:var(--danger);">Select a base</span>'; return; }
+      const buildings = {};
+      document.querySelectorAll('[data-grant-building]').forEach(inp => {
+        const v = parseInt(inp.value) || 0;
+        if (v > 0) buildings[inp.dataset.grantBuilding] = v;
+      });
+      if (!Object.keys(buildings).length) { document.getElementById('grant-buildings-status').innerHTML = '<span style="color:var(--danger);">Set at least one building level</span>'; return; }
+      try {
+        const res = await fetch(`${API}/api/admin/grant-buildings`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ base_id: baseId, buildings })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('grant-buildings-status').innerHTML = `<span style="color:var(--success);">Done: ${data.changed.join(', ')}</span>`;
+        } else {
+          document.getElementById('grant-buildings-status').innerHTML = `<span style="color:var(--danger);">${data.detail || 'Failed'}</span>`;
+        }
+      } catch(e) { document.getElementById('grant-buildings-status').innerHTML = `<span style="color:var(--danger);">${e.message}</span>`; }
+    }
+
+    async function submitGrantDefenses() {
+      const baseId = parseInt(document.getElementById('grant-base').value);
+      if (!baseId) { document.getElementById('grant-defenses-status').innerHTML = '<span style="color:var(--danger);">Select a base</span>'; return; }
+      const defenses = {};
+      document.querySelectorAll('[data-grant-defense]').forEach(inp => {
+        const v = parseInt(inp.value) || 0;
+        if (v > 0) defenses[inp.dataset.grantDefense] = v;
+      });
+      if (!Object.keys(defenses).length) { document.getElementById('grant-defenses-status').innerHTML = '<span style="color:var(--danger);">Set at least one defense level</span>'; return; }
+      try {
+        const res = await fetch(`${API}/api/admin/grant-defenses`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ base_id: baseId, defenses })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('grant-defenses-status').innerHTML = `<span style="color:var(--success);">Done: ${data.changed.join(', ')}</span>`;
+        } else {
+          document.getElementById('grant-defenses-status').innerHTML = `<span style="color:var(--danger);">${data.detail || 'Failed'}</span>`;
+        }
+      } catch(e) { document.getElementById('grant-defenses-status').innerHTML = `<span style="color:var(--danger);">${e.message}</span>`; }
+    }
+
+    async function submitGrantShips() {
+      const baseId = parseInt(document.getElementById('grant-base').value);
+      const userId = parseInt(document.getElementById('grant-player').value);
+      if (!baseId || !userId) { document.getElementById('grant-ships-status').innerHTML = '<span style="color:var(--danger);">Select player and base</span>'; return; }
+      const ships = {};
+      document.querySelectorAll('[data-grant-ship]').forEach(inp => {
+        const v = parseInt(inp.value) || 0;
+        if (v > 0) ships[inp.dataset.grantShip] = v;
+      });
+      if (!Object.keys(ships).length) { document.getElementById('grant-ships-status').innerHTML = '<span style="color:var(--danger);">Set at least one ship count</span>'; return; }
+      try {
+        const res = await fetch(`${API}/api/admin/grant-ships`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ base_id: baseId, user_id: userId, ships })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('grant-ships-status').innerHTML = `<span style="color:var(--success);">Done: ${data.changed.join(', ')}</span>`;
+        } else {
+          document.getElementById('grant-ships-status').innerHTML = `<span style="color:var(--danger);">${data.detail || 'Failed'}</span>`;
+        }
+      } catch(e) { document.getElementById('grant-ships-status').innerHTML = `<span style="color:var(--danger);">${e.message}</span>`; }
+    }
+
+    async function submitGrantResearch() {
+      const userId = parseInt(document.getElementById('grant-player').value);
+      if (!userId) { document.getElementById('grant-research-status').innerHTML = '<span style="color:var(--danger);">Select a player</span>'; return; }
+      const research = {};
+      document.querySelectorAll('[data-grant-research]').forEach(inp => {
+        const v = parseInt(inp.value) || 0;
+        if (v > 0) research[inp.dataset.grantResearch] = v;
+      });
+      if (!Object.keys(research).length) { document.getElementById('grant-research-status').innerHTML = '<span style="color:var(--danger);">Set at least one research level</span>'; return; }
+      try {
+        const res = await fetch(`${API}/api/admin/grant-research`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ user_id: userId, research })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('grant-research-status').innerHTML = `<span style="color:var(--success);">Done: ${data.changed.join(', ')}</span>`;
+        } else {
+          document.getElementById('grant-research-status').innerHTML = `<span style="color:var(--danger);">${data.detail || 'Failed'}</span>`;
+        }
+      } catch(e) { document.getElementById('grant-research-status').innerHTML = `<span style="color:var(--danger);">${e.message}</span>`; }
+    }
+
+    async function openPlayerDetail(playerId) {
+      const body = document.getElementById('detail-modal-body');
+      body.innerHTML = '<div class="text-dim">Loading...</div>';
+      document.getElementById('player-detail-modal').classList.add('active');
+      try {
+        const res = await fetch(`${API}/api/admin/players/${playerId}/detail`, { headers: headers() });
+        if (!res.ok) { body.innerHTML = '<div class="text-danger">Error loading player</div>'; return; }
+        const d = await res.json();
+        document.getElementById('detail-player-name').textContent = d.username + (d.is_bot ? ` [Bot: ${d.bot_strategy}]` : d.is_admin ? ' [Admin]' : '');
+        let html = `<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;">
+          <div class="stat-mini"><span class="label">Credits</span><span class="value text-warn">${Math.round(d.credits).toLocaleString()}</span></div>
+          <div class="stat-mini"><span class="label">Score</span><span class="value text-accent">${(d.score||0).toLocaleString()}</span></div>
+          <div class="stat-mini"><span class="label">Bases</span><span class="value">${d.bases.length}</span></div>
+          <div class="stat-mini"><span class="label">Fleets</span><span class="value">${d.fleets.length}</span></div>
+        </div>`;
+        // Bases
+        if (d.bases.length) {
+          html += '<div class="section-title">Bases</div>';
+          for (const b of d.bases) {
+            const bldgs = b.buildings.filter(bl => bl.level > 0).map(bl => {
+              const name = bl.type.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+              return `<span style="margin-right:6px;"><span class="text-dim">${name}</span> <strong>${bl.level}</strong>${bl.constructing ? ' <span class="text-warn">⏳</span>' : ''}</span>`;
+            }).join('');
+            const defs = b.defenses.filter(df => df.level > 0).map(df => {
+              const name = df.type.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+              return `<span style="margin-right:6px;"><span class="text-dim">${name}</span> <strong>${df.level}</strong></span>`;
+            }).join('');
+            html += `<div class="card mb-8" style="padding:8px 12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <span class="text-accent font-bold">${b.name}</span>
+                <span class="text-dim font-mono" style="font-size:10px;">${b.coords} · ${b.planet_type.replace(/_/g,' ')}</span>
+              </div>
+              <div style="display:flex;gap:16px;font-size:11px;margin-bottom:6px;">
+                <span>Econ: <strong class="text-warn">${b.economy}/hr</strong></span>
+                <span>Const: <strong>${b.construction}</strong></span>
+                <span>Prod: <strong>${b.production}</strong></span>
+                <span>Energy: <strong class="text-accent2">${b.energy}</strong></span>
+                <span>Pop: <strong>${b.population}</strong></span>
+                <span>Area: <strong>${b.area}</strong></span>
+              </div>
+              <div style="font-size:10px;line-height:1.8;">${bldgs || '<span class="text-dim">No buildings</span>'}</div>
+              ${defs ? '<div style="font-size:10px;line-height:1.8;margin-top:2px;color:var(--defenses);">' + defs + '</div>' : ''}
+            </div>`;
+          }
+        } else {
+          html += '<div class="text-dim" style="font-size:11px;">No bases</div>';
+        }
+        // Fleets
+        if (d.fleets.length) {
+          html += '<div class="section-title" style="margin-top:12px;">Fleets</div>';
+          html += '<table class="data-table" style="font-size:11px;"><thead><tr><th>Fleet</th><th>Location</th><th>Ships</th><th>Status</th></tr></thead><tbody>';
+          for (const f of d.fleets) {
+            const shipList = Object.entries(f.ships).map(([k,v]) => `${k.replace(/_/g,' ')}:${v}`).join(', ');
+            html += `<tr>
+              <td class="text-bright">${f.name}</td>
+              <td class="font-mono" style="font-size:10px;">${f.location}</td>
+              <td style="font-size:10px;">${shipList || 'Empty'} <span class="text-dim">(${f.total_ships} total)</span></td>
+              <td>${f.is_moving ? '<span class="text-warn">Moving</span>' : '<span class="text-success">Stationed</span>'}</td>
+            </tr>`;
+          }
+          html += '</tbody></table>';
+        }
+        body.innerHTML = html;
+      } catch (e) {
+        body.innerHTML = '<div class="text-danger">Error: ' + e.message + '</div>';
+      }
+    }
+
+    // ══════════ GAME CONSTANTS TAB ══════════
+    async function loadGameConstants() {
+      const container = document.getElementById('game-constants-container');
+      container.innerHTML = '<p class="text-dim">Loading...</p>';
+      try {
+        const res = await fetch(`${API}/api/admin/game-constants`, { headers: headers() });
+        const categories = await res.json();
+        let html = '';
+        for (const cat of categories) {
+          const items = (cat.items || []).filter(item => (item.safety || 'live') !== 'setup_only');
+          if (!items.length) continue;
+          html += `<details style="margin-bottom:8px;" open>
+            <summary class="text-accent" style="cursor:pointer;font-size:12px;font-weight:700;margin-bottom:4px;">${cat.category} (${items.length})</summary>
+            <div class="config-grid">`;
+          for (const item of items) {
+            const isOverridden = item.overridden;
+            const valClass = isOverridden ? 'text-warn' : 'text-bright';
+            const safety = item.safety || 'live';
+            const safetyHtml = safety === 'balance_sensitive'
+              ? '<span class="text-warn" style="font-size:10px;">balance</span>'
+              : '<span class="text-success" style="font-size:10px;">live</span>';
+            html += `<div class="config-item">
+              <div class="config-key">${item.key}</div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <input class="stat-input" type="text" value="${item.current}" data-key="${item.key}" data-default="${item.default}"
+                  style="width:80px;font-size:13px;${isOverridden ? 'color:var(--accent-warn);border-color:var(--accent-warn);' : ''}"
+                  onchange="saveGameConstant(this)" />
+                <span class="text-dim" style="font-size:10px;">def: ${item.default}</span>
+                ${safetyHtml}
+                ${isOverridden ? `<button class="btn btn-ghost btn-sm" style="font-size:9px;padding:1px 4px;" onclick="resetGameConstant('${item.key}',this)">Reset</button>` : ''}
+              </div>
+            </div>`;
+          }
+          html += '</div></details>';
+        }
+        container.innerHTML = html;
+      } catch(e) { container.innerHTML = '<p class="text-warn">Failed to load</p>'; }
+    }
+
+    async function saveGameConstant(input) {
+      const key = input.dataset.key;
+      const value = input.value;
+      try {
+        const res = await fetch(`${API}/api/admin/game-constants`, {
+          method: 'POST', headers: headers(), body: JSON.stringify({key, value})
+        });
+        const data = await res.json();
+        if (data.ok) {
+          input.style.color = 'var(--accent-warn)';
+          input.style.borderColor = 'var(--accent-warn)';
+          showAdminAlert(`Updated ${key} = ${value}`, 'success');
+        }
+      } catch(e) { showAdminAlert('Failed to save', 'error'); }
+    }
+
+    async function resetGameConstant(key, btn) {
+      try {
+        const res = await fetch(`${API}/api/admin/game-constants`, {
+          method: 'POST', headers: headers(), body: JSON.stringify({key, value: ''})
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showAdminAlert(`Reset ${key} to default`, 'success');
+          loadGameConstants();
+        }
+      } catch(e) { showAdminAlert('Failed to reset', 'error'); }
+    }
+
+    // ══════════ COMMANDER SPECS TAB ══════════
+    async function loadCommanderSpecs() {
+      const tbody = document.getElementById('commander-specs-tbody');
+      tbody.innerHTML = '<tr><td colspan="7" class="text-dim">Loading...</td></tr>';
+      try {
+        const res = await fetch(`${API}/api/admin/commander-specs`, { headers: headers() });
+        const specs = await res.json();
+        let html = '';
+        for (const s of specs) {
+          const valStyle = s.overridden ? 'color:var(--accent-warn);border-color:var(--accent-warn);' : '';
+          html += `<tr>
+            <td class="text-bright">${s.name}</td>
+            <td><input class="stat-input" type="text" value="${s.bonus_per_level}" data-key="${s.key}"
+              style="width:60px;font-size:11px;${valStyle}"
+              onchange="saveCommanderBonus(this)" /> <span class="text-dim" style="font-size:10px;">(${(s.bonus_per_level*100).toFixed(1)}%/lv)</span>
+              ${s.overridden ? `<button class="btn btn-ghost btn-sm" style="font-size:9px;padding:1px 4px;" onclick="resetCommanderBonus('${s.key}')">Reset</button>` : ''}
+            </td>
+            <td class="text-dim">${s.bonus_category}</td>
+            <td class="text-dim">${s.scope}</td>
+            <td class="text-dim" style="font-size:10px;">${s.targets}</td>
+            <td class="text-dim" style="font-size:10px;">${s.desc}</td>
+            <td></td>
+          </tr>`;
+        }
+        tbody.innerHTML = html;
+      } catch(e) { tbody.innerHTML = '<tr><td colspan="7" class="text-warn">Failed to load</td></tr>'; }
+    }
+
+    async function saveCommanderBonus(input) {
+      const key = input.dataset.key;
+      const bonus_per_level = parseFloat(input.value);
+      if (isNaN(bonus_per_level)) { showAdminAlert('Invalid number', 'error'); return; }
+      try {
+        const res = await fetch(`${API}/api/admin/commander-specs`, {
+          method: 'POST', headers: headers(), body: JSON.stringify({key, bonus_per_level})
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showAdminAlert(`Updated ${key} bonus = ${bonus_per_level} (${(bonus_per_level*100).toFixed(1)}%/lv)`, 'success');
+          loadCommanderSpecs();
+        }
+      } catch(e) { showAdminAlert('Failed to save', 'error'); }
+    }
+
+    async function resetCommanderBonus(key) {
+      try {
+        const res = await fetch(`${API}/api/admin/commander-specs`, {
+          method: 'POST', headers: headers(), body: JSON.stringify({key, bonus_per_level: ''})
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showAdminAlert(`Reset ${key} bonus to default`, 'success');
+          loadCommanderSpecs();
+        }
+      } catch(e) { showAdminAlert('Failed to reset', 'error'); }
+    }
+
+    // ══════════ BUG REPORTS TAB ══════════
+    async function loadBugReports() {
+      const el = document.getElementById('bug-reports-list');
+      try {
+        const res = await fetch(`${API}/api/bug-reports`, { headers: headers() });
+        if (!res.ok) { el.innerHTML = '<div class="text-danger">Failed to load</div>'; return; }
+        const reports = await res.json();
+        if (!reports.length) { el.innerHTML = '<div class="text-dim">No bug reports yet.</div>'; return; }
+        const statusColors = { open: 'var(--warn)', acknowledged: 'var(--accent)', fixed: 'var(--success)', wontfix: 'var(--text-dim)' };
+        let html = '<table class="data-table" style="font-size:12px;"><thead><tr><th>#</th><th>User</th><th>Category</th><th>Title</th><th>Page</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
+        for (const r of reports) {
+          const col = statusColors[r.status] || 'var(--text)';
+          const desc = r.description ? `<div class="text-dim" style="font-size:10px;max-width:400px;white-space:pre-wrap;margin-top:4px;">${escHtml(r.description)}</div>` : '';
+          const notes = r.admin_notes ? `<div style="font-size:10px;color:var(--accent);margin-top:2px;">Admin: ${escHtml(r.admin_notes)}</div>` : '';
+          html += `<tr>
+            <td>${r.id}</td>
+            <td>${escHtml(r.username || '?')}</td>
+            <td><span style="color:${r.category === 'bug' ? 'var(--danger)' : r.category === 'request' ? 'var(--accent)' : 'var(--text-dim)'}">${r.category}</span></td>
+            <td>${escHtml(r.title)}${desc}${notes}</td>
+            <td class="text-dim">${r.page || '-'}</td>
+            <td><select onchange="updateBugStatus(${r.id}, this.value)" style="font-size:11px;background:var(--bg-card);color:${col};border:1px solid var(--border);border-radius:3px;">
+              ${['open','acknowledged','fixed','wontfix'].map(s => `<option value="${s}" ${s === r.status ? 'selected' : ''} style="color:var(--text);">${s}</option>`).join('')}
+            </select></td>
+            <td class="text-dim" style="font-size:10px;">${new Date(r.created_at).toLocaleDateString()}</td>
+            <td><button class="btn btn-ghost btn-sm" onclick="promptBugNotes(${r.id}, '${escHtml(r.admin_notes || '')}')">Notes</button></td>
+          </tr>`;
+        }
+        html += '</tbody></table>';
+        el.innerHTML = html;
+      } catch (e) { el.innerHTML = '<div class="text-danger">Error: ' + e.message + '</div>'; }
+    }
+
+    async function updateBugStatus(id, status) {
+      try {
+        await fetch(`${API}/api/bug-reports/${id}/update`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ status })
+        });
+      } catch (e) { console.error(e); }
+    }
+
+    function promptBugNotes(id, current) {
+      const notes = prompt('Admin notes:', current);
+      if (notes === null) return;
+      fetch(`${API}/api/bug-reports/${id}/update`, {
+        method: 'POST', headers: headers(),
+        body: JSON.stringify({ admin_notes: notes })
+      }).then(() => loadBugReports());
+    }
+
+    function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    const esc = escHtml;
+
+    // ══════════ CHANGELOG TAB ══════════
+    async function loadChangelogs() {
+      const el = document.getElementById('changelog-list');
+      try {
+        const res = await fetch(`${API}/api/admin/changelogs`, { headers: headers() });
+        if (!res.ok) { el.innerHTML = '<div class="text-danger">Failed to load</div>'; return; }
+        const entries = await res.json();
+        if (!entries.length) { el.innerHTML = '<div class="text-dim">No changelog entries yet.</div>'; return; }
+        let html = '';
+        for (const e of entries) {
+          const body = e.body ? `<div style="font-size:11px;white-space:pre-wrap;margin-top:4px;color:var(--text);">${escHtml(e.body)}</div>` : '';
+          html += `<div class="card mb-8" style="padding:10px 14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                ${e.version ? `<span class="badge" style="background:var(--accent);color:#fff;margin-right:6px;">${escHtml(e.version)}</span>` : ''}
+                <span class="text-bright font-bold">${escHtml(e.title)}</span>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span class="text-dim" style="font-size:10px;">${new Date(e.created_at).toLocaleDateString()}</span>
+                <button class="btn btn-ghost btn-sm" style="color:var(--danger);font-size:10px;" onclick="deleteChangelog(${e.id})">✕</button>
+              </div>
+            </div>
+            ${body}
+          </div>`;
+        }
+        el.innerHTML = html;
+      } catch (e) { el.innerHTML = '<div class="text-danger">Error: ' + e.message + '</div>'; }
+    }
+
+    async function addChangelog() {
+      const version = document.getElementById('cl-version').value.trim();
+      const title = document.getElementById('cl-title').value.trim();
+      const body = document.getElementById('cl-body').value.trim();
+      const status = document.getElementById('cl-status');
+      if (!title) { status.textContent = 'Title is required'; status.style.color = 'var(--danger)'; return; }
+      try {
+        const res = await fetch(`${API}/api/admin/changelogs`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ version, title, body })
+        });
+        if (!res.ok) { status.textContent = 'Error creating entry'; status.style.color = 'var(--danger)'; return; }
+        document.getElementById('cl-version').value = '';
+        document.getElementById('cl-title').value = '';
+        document.getElementById('cl-body').value = '';
+        status.textContent = 'Published!';
+        status.style.color = 'var(--success)';
+        setTimeout(() => status.textContent = '', 2000);
+        loadChangelogs();
+      } catch (e) { status.textContent = 'Error: ' + e.message; status.style.color = 'var(--danger)'; }
+    }
+
+    async function deleteChangelog(id) {
+      if (!confirm('Delete this changelog entry?')) return;
+      await fetch(`${API}/api/admin/changelogs/${id}`, { method: 'DELETE', headers: headers() });
+      loadChangelogs();
+    }
+
+    // ── INIT ──
+    async function init() {
+      document.getElementById('reg-link-url').value = window.location.origin + '/';
+      document.getElementById('admin-username').textContent = localStorage.getItem('awe_username') || '';
+      await loadStatus();
+      // Dashboard tab data (default tab)
+      _adminTabLoaded.dashboard = true;
+      await loadPlayers();
+      await loadBots();
+      await loadLeaderboard();
+      await populateGiveCreditsDropdown();
+    }
+    init();
+    // Poll status frequently; only poll players/leaderboard when NOT generating
+    setInterval(() => {
+      loadStatus();
+      if (!_isGenerating) { loadPlayers(); loadLeaderboard(); }
+    }, 5000);
+  </script>
+</body>
+</html>

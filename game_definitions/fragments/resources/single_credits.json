@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "name": "Single Resource (Credits)",
+    "version": "1.0",
+    "description": "One unified currency (credits) for all costs and income — the classic space-strategy economy.",
+    "component_type": "resources"
+  },
+  "engine": {
+    "resource_model": "single",
+    "resource_types": ["credits"]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "solar_empire",
+  "name": "Solar Empire",
+  "version": "0.1",
+  "author": "AstroWebEngine example (from the user's SolarEmpireReborn)",
+  "engine_api": "1.0",
+  "kind": "ruleset",
+  "definition": "definition.json",
+  "description": "A Solar Empire-like ruleset (Generic-engine lineage / old-BBS spirit). Captures the ship roster, commodity economy, and module-flavored weapons. See docs/example_mods.md for the mapping and the engine-feature gaps it motivates.",
+  "requires": [],
+  "conflicts": [],
+  "load_order": 100
+}

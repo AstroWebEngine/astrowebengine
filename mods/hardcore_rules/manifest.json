@@ -1,0 +1,13 @@
+{
+  "id": "hardcore_rules",
+  "name": "Hardcore Rules",
+  "version": "1.0",
+  "author": "AstroWebEngine example",
+  "engine_api": "1.0",
+  "kind": "content",
+  "definition": "definition.json",
+  "description": "A content overlay that toughens any ruleset: no defense auto-repair, more loot/debris, shorter queues. Demonstrates child-wins composition onto whatever base ruleset is active.",
+  "requires": [],
+  "conflicts": [],
+  "load_order": 200
+}

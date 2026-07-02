@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "name": "Regenerating Defenses",
+    "version": "1.0",
+    "description": "Battle damage lowers defense effectiveness instead of permanently removing defense levels.",
+    "component_type": "defenses"
+  },
+  "engine": {
+    "defenses_destructible": false,
+    "defense_repair_percent": 0.7
+  }
+}

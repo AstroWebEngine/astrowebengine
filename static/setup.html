@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0e17" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png" />
+  <title>AstroWebEngine — Setup</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script>
+    (function(){var s=localStorage.getItem('engine_skin');if(s&&s!=='blue-nova'){document.documentElement.setAttribute('data-skin',s)}})();
+  </script>
+  <style>
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Verdana, sans-serif; }
+
+    .setup-page { max-width: 960px; margin: 0 auto; padding: 20px; }
+    .setup-header { text-align: center; padding: 30px 0 20px; }
+    .setup-header h1 { color: var(--accent); font-size: 24px; margin: 0; }
+    .setup-header p { color: var(--text-dim); font-size: 13px; margin-top: 6px; }
+
+    /* Galaxy Selection */
+    .galaxy-select-panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; }
+    .galaxy-select-panel h2 { color: var(--accent); font-size: 18px; margin: 0 0 6px; }
+    .galaxy-select-panel .subtitle { color: var(--text-dim); font-size: 12px; margin-bottom: 16px; }
+    .galaxy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .galaxy-card {
+      background: var(--bg-card); border: 2px solid var(--border); border-radius: 6px;
+      padding: 14px; cursor: pointer; transition: all 0.2s;
+      text-align: center;
+    }
+    .galaxy-card:hover { border-color: var(--accent); }
+    .galaxy-card.selected { border-color: var(--success); background: rgba(80,200,120,0.08); }
+    .galaxy-card .gname { font-size: 16px; font-weight: bold; color: var(--text); }
+    .galaxy-card .ginfo { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+    .galaxy-card .recommended { font-size: 10px; color: var(--success); font-weight: bold; margin-top: 4px; }
+    .galaxy-card .player-count { font-size: 12px; color: var(--accent); margin-top: 4px; }
+    .galaxy-actions { text-align: center; margin-top: 16px; }
+
+    /* Tutorial Panel */
+    .tutorial-container { display: none; }
+    .tutorial-layout { display: flex; gap: 0; min-height: 500px; }
+    .tutorial-sidebar {
+      width: 200px; min-width: 200px; background: var(--bg-panel);
+      border: 1px solid var(--border); border-right: none; border-radius: 6px 0 0 6px;
+      padding: 8px 0; overflow-y: auto;
+    }
+    .tutorial-sidebar h3 {
+      font-size: 13px; color: var(--accent); text-align: center;
+      padding: 8px; margin: 0; border-bottom: 1px solid var(--border);
+    }
+    .tut-nav-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; cursor: pointer; font-size: 12px;
+      color: var(--text-dim); border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+    .tut-nav-item:hover { background: rgba(255,255,255,0.04); }
+    .tut-nav-item.active { background: rgba(0,180,255,0.1); color: var(--text); font-weight: bold; }
+    .tut-nav-item.completed { color: var(--success); }
+    .tut-nav-item .tut-check {
+      width: 16px; height: 16px; display: flex; align-items: center;
+      justify-content: center; font-size: 10px; flex-shrink: 0;
+    }
+    .tut-nav-item .tut-check.done { color: var(--success); }
+    .tut-nav-item .tut-check.pending { color: var(--text-dim); }
+
+    .tutorial-content {
+      flex: 1; background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 0 6px 6px 0; padding: 20px; overflow-y: auto;
+    }
+    .tutorial-content h2 { color: var(--text); font-size: 20px; margin: 0 0 16px; }
+    .tut-desc {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+      padding: 16px; font-size: 13px; color: var(--text); line-height: 1.6;
+      white-space: pre-line; margin-bottom: 16px;
+    }
+    .tut-mission-box {
+      background: rgba(0,80,60,0.25); border: 1px solid rgba(80,200,120,0.3);
+      border-radius: 6px; padding: 14px; margin-bottom: 12px;
+    }
+    .tut-mission-box h4 { color: var(--text); font-size: 13px; font-weight: bold; margin: 0 0 6px; }
+    .tut-mission-text { font-size: 13px; color: var(--accent); }
+    .tut-mission-text.completed-text { color: var(--success); }
+    .tut-mission-progress { font-size: 12px; color: var(--text-dim); margin-left: 6px; }
+    .tut-completed-tag { color: var(--success); font-size: 12px; font-style: italic; margin-left: 6px; }
+    .tut-requirements { margin-top: 8px; }
+    .tut-requirements h4 { font-size: 12px; color: var(--text); font-weight: bold; margin: 0 0 4px; }
+    .tut-req-item { font-size: 12px; color: var(--text-dim); padding: 2px 0; padding-left: 14px; }
+    .tut-req-item::before { content: "• "; }
+    .tut-optional { margin-top: 8px; }
+    .tut-optional h4 { font-size: 12px; color: var(--text-dim); margin: 0 0 4px; }
+    .tut-reward-box {
+      background: rgba(60,60,0,0.25); border: 1px solid rgba(200,200,80,0.3);
+      border-radius: 6px; padding: 12px; margin-bottom: 16px;
+    }
+    .tut-reward-box h4 { font-size: 13px; font-weight: bold; margin: 0 0 4px; color: var(--text); }
+    .tut-reward-amount { font-size: 14px; color: #ffd700; font-weight: bold; }
+    .tut-collect-btn {
+      background: var(--success); color: #000; border: none; padding: 8px 20px;
+      border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer;
+      margin-top: 8px;
+    }
+    .tut-collect-btn:hover { filter: brightness(1.1); }
+    .tut-collect-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .tut-start-btn {
+      background: #e44; color: #fff; border: none; padding: 10px 24px;
+      border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;
+    }
+    .tut-start-btn:hover { filter: brightness(1.1); }
+    .tut-actions { text-align: center; margin-top: 20px; }
+    .tut-skip-link { color: var(--text-dim); font-size: 11px; cursor: pointer; margin-top: 12px; display: inline-block; }
+    .tut-skip-link:hover { color: var(--text); text-decoration: underline; }
+    .tut-finish-btn {
+      background: var(--accent); color: #fff; border: none; padding: 10px 24px;
+      border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;
+    }
+
+    @media (max-width: 700px) {
+      .setup-page { padding: 14px; }
+      .setup-header { padding: 22px 0 14px; }
+      .setup-header h1 { font-size: 21px; }
+      .galaxy-select-panel { padding: 16px; }
+      .galaxy-grid { grid-template-columns: minmax(0, 1fr); }
+      .galaxy-card { min-height: 72px; display: flex; flex-direction: column; justify-content: center; }
+      .galaxy-actions .btn,
+      .tut-actions .btn,
+      .tut-start-btn,
+      .tut-finish-btn,
+      .tut-collect-btn {
+        width: 100%;
+        min-height: 42px;
+      }
+      .tutorial-layout { flex-direction: column; min-height: 0; }
+      .tutorial-sidebar {
+        width: 100%;
+        min-width: 100%;
+        max-height: 160px;
+        border-radius: 6px 6px 0 0;
+        border-right: 1px solid var(--border);
+        border-bottom: none;
+      }
+      .tut-nav-item { min-height: 40px; }
+      .tutorial-content { border-radius: 0 0 6px 6px; padding: 16px; }
+      .tutorial-content h2 { font-size: 18px; }
+      .tut-desc,
+      .tut-mission-box,
+      .tut-reward-box { padding: 12px; }
+      .tut-skip-link { display: block; padding: 8px; line-height: 1.4; }
+    }
+  </style>
+</head>
+<body>
+  <div class="setup-page">
+    <div class="setup-header">
+      <h1>AstroWebEngine</h1>
+      <p id="setup-subtitle">Choose your starting galaxy</p>
+    </div>
+
+    <!-- PHASE 1: Galaxy Selection -->
+    <div id="galaxy-select-container" class="galaxy-select-panel">
+      <h2>Select Galaxy</h2>
+      <p class="subtitle">Pick a galaxy for your starting base. The recommended galaxy has the fewest players.</p>
+      <div id="galaxy-grid" class="galaxy-grid"></div>
+      <div class="galaxy-actions">
+        <button class="btn btn-primary" id="confirm-galaxy-btn" onclick="confirmGalaxy()" disabled>Confirm Galaxy Selection</button>
+      </div>
+    </div>
+
+    <!-- PHASE 2: Tutorial -->
+    <div id="tutorial-container" class="tutorial-container">
+      <div class="tutorial-layout">
+        <div class="tutorial-sidebar">
+          <h3>Tutorial Missions</h3>
+          <div id="tut-nav"></div>
+        </div>
+        <div class="tutorial-content" id="tut-content">
+          <!-- Filled dynamically -->
+        </div>
+      </div>
+      <div class="tut-actions" style="margin-top: 12px;">
+        <span class="tut-skip-link" onclick="skipTutorial()">Skip Tutorial — go straight to the game</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+    const TOKEN = localStorage.getItem('awe_token');
+    if (!TOKEN) window.location.href = '/';
+
+    function headers() {
+      return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` };
+    }
+
+    let selectedGalaxyId = null;
+    let tutorialData = null;
+    let currentViewStep = 0;
+
+    // ═══════════════════════════════════════════════════
+    // GALAXY SELECTION
+    // ═══════════════════════════════════════════════════
+
+    async function loadGalaxies() {
+      try {
+        const res = await fetch(`${API}/api/galaxies/list`, { headers: headers() });
+        if (!res.ok) { console.error('Failed to load galaxies'); return; }
+        const data = await res.json();
+        renderGalaxies(data.galaxies);
+      } catch (e) { console.error('loadGalaxies error:', e); }
+    }
+
+    function renderGalaxies(galaxies) {
+      const grid = document.getElementById('galaxy-grid');
+      if (!galaxies || galaxies.length === 0) {
+        grid.innerHTML = '<p style="color:var(--text-dim);">No galaxies available. The admin needs to generate the universe first.</p>';
+        return;
+      }
+      grid.innerHTML = galaxies.map(g => `
+        <div class="galaxy-card" data-id="${g.id}" onclick="selectGalaxyCard(${g.id})">
+          <div class="gname">${esc(g.name)}</div>
+          <div class="player-count">${g.player_count} player${g.player_count !== 1 ? 's' : ''}</div>
+          ${g.is_recommended ? '<div class="recommended">★ Recommended</div>' : ''}
+        </div>
+      `).join('');
+
+      // Auto-select recommended
+      const rec = galaxies.find(g => g.is_recommended);
+      if (rec) selectGalaxyCard(rec.id);
+    }
+
+    function selectGalaxyCard(id) {
+      selectedGalaxyId = id;
+      document.querySelectorAll('.galaxy-card').forEach(c => {
+        c.classList.toggle('selected', parseInt(c.dataset.id) === id);
+      });
+      document.getElementById('confirm-galaxy-btn').disabled = false;
+    }
+
+    async function confirmGalaxy() {
+      if (!selectedGalaxyId) return;
+      const btn = document.getElementById('confirm-galaxy-btn');
+      btn.disabled = true;
+      btn.textContent = 'Setting up your base...';
+      try {
+        const res = await fetch(`${API}/api/select-galaxy`, {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ galaxy_id: selectedGalaxyId }),
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          alert(err.detail || 'Failed to select galaxy');
+          btn.disabled = false;
+          btn.textContent = 'Confirm Galaxy Selection';
+          return;
+        }
+        // Move to tutorial
+        showTutorial();
+      } catch (e) {
+        console.error('confirmGalaxy error:', e);
+        btn.disabled = false;
+        btn.textContent = 'Confirm Galaxy Selection';
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // TUTORIAL
+    // ═══════════════════════════════════════════════════
+
+    function showTutorial() {
+      document.getElementById('galaxy-select-container').style.display = 'none';
+      document.getElementById('tutorial-container').style.display = 'block';
+      document.getElementById('setup-subtitle').textContent = 'Tutorial Missions';
+      loadTutorial();
+    }
+
+    async function loadTutorial() {
+      try {
+        const res = await fetch(`${API}/api/tutorial/progress`, { headers: headers() });
+        if (!res.ok) { console.error('Failed to load tutorial'); return; }
+        tutorialData = await res.json();
+        currentViewStep = tutorialData.current_step || 0;
+        renderTutorialNav();
+        renderTutorialStep(currentViewStep);
+      } catch (e) { console.error('loadTutorial error:', e); }
+    }
+
+    function renderTutorialNav() {
+      const nav = document.getElementById('tut-nav');
+      nav.innerHTML = tutorialData.steps.map((s, i) => {
+        const isActive = i === currentViewStep;
+        const isDone = s.is_completed;
+        return `
+          <div class="tut-nav-item ${isActive ? 'active' : ''} ${isDone ? 'completed' : ''}"
+               onclick="viewStep(${i})">
+            <span class="tut-check ${isDone ? 'done' : 'pending'}">
+              ${isDone ? '&#10003;' : '&#9744;'}
+            </span>
+            <span>${esc(s.title)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function viewStep(index) {
+      currentViewStep = index;
+      renderTutorialNav();
+      renderTutorialStep(index);
+    }
+
+    function renderTutorialStep(index) {
+      const step = tutorialData.steps[index];
+      if (!step) return;
+      const content = document.getElementById('tut-content');
+
+      let html = `<h2>${esc(step.title)}</h2>`;
+      html += `<div class="tut-desc">${esc(step.description)}</div>`;
+
+      // Mission box
+      if (step.mission) {
+        const m = step.mission;
+        const isDone = m.progress && m.progress.done;
+        const progressText = m.progress ? `(${m.progress.current}/${m.progress.target})` : '';
+        html += `<div class="tut-mission-box">`;
+        html += `<h4>Mission:</h4>`;
+        html += `<div class="tut-mission-text ${isDone ? 'completed-text' : ''}">`;
+        html += `&#8226; ${esc(m.text)}`;
+        if (isDone) html += ` <span class="tut-completed-tag">(Completed)</span>`;
+        else html += ` <span class="tut-mission-progress">${progressText}</span>`;
+        html += `</div>`;
+
+        // Requirements
+        if (step.requirements && step.requirements.length > 0) {
+          html += `<div class="tut-requirements"><h4>Requirements:</h4>`;
+          step.requirements.forEach(r => {
+            html += `<div class="tut-req-item">${esc(r.text)}</div>`;
+          });
+          html += `</div>`;
+        }
+        html += `</div>`;
+      }
+
+      // Optional mission
+      if (step.optional_mission) {
+        const om = step.optional_mission;
+        const isDone = om.progress && om.progress.done;
+        html += `<div class="tut-optional"><h4>Optional:</h4>`;
+        html += `<div class="tut-mission-text ${isDone ? 'completed-text' : ''}">`;
+        html += `&#8226; ${esc(om.text)}`;
+        if (isDone) html += ` <span class="tut-completed-tag">(Completed)</span>`;
+        html += `</div></div>`;
+      }
+
+      // Reward
+      if (step.reward > 0) {
+        html += `<div class="tut-reward-box">`;
+        html += `<h4>Reward:</h4>`;
+        html += `<div class="tut-reward-amount">&#8226; ${step.reward} Credits</div>`;
+        if (step.is_completed && !step.is_collected) {
+          html += `<button class="tut-collect-btn" onclick="collectReward(${index})">Collect ${step.reward} Credits</button>`;
+        } else if (step.is_collected) {
+          html += `<div style="color:var(--success);font-size:12px;margin-top:4px;">&#10003; Collected</div>`;
+        }
+        html += `</div>`;
+      }
+
+      // Action buttons
+      html += `<div class="tut-actions">`;
+      if (index === 0 && !step.is_completed) {
+        // Introduction — show "Start the tutorial" button
+        html += `<button class="tut-start-btn" onclick="startTutorial()">Start the tutorial</button>`;
+      } else if (step.id === 'end_tutorial') {
+        html += `<button class="tut-finish-btn" onclick="finishTutorial()">Enter the Game</button>`;
+      } else if (!step.is_completed && step.mission) {
+        html += `<button class="btn btn-primary" onclick="checkStep(${index})">Check Mission</button>`;
+        html += `<div style="font-size:11px;color:var(--text-dim);margin-top:8px;">Complete the mission in-game, then come back and click Check Mission.</div>`;
+        html += `<div style="margin-top:8px;"><a href="/game" target="_blank" style="color:var(--accent);font-size:12px;">Open Game in New Tab ↗</a></div>`;
+      }
+      html += `</div>`;
+
+      content.innerHTML = html;
+    }
+
+    async function startTutorial() {
+      try {
+        const res = await fetch(`${API}/api/tutorial/advance`, { method: 'POST', headers: headers() });
+        if (res.ok) {
+          await loadTutorial();
+        }
+      } catch (e) { console.error('startTutorial error:', e); }
+    }
+
+    async function checkStep(index) {
+      try {
+        const res = await fetch(`${API}/api/tutorial/check/${index}`, { method: 'POST', headers: headers() });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.completed) {
+          // Refresh tutorial to show collect button
+          await loadTutorial();
+          viewStep(index);
+        } else {
+          // Show "not done yet" feedback
+          const btn = document.querySelector('.tut-actions .btn-primary');
+          if (btn) {
+            btn.textContent = 'Not completed yet...';
+            btn.style.opacity = '0.6';
+            setTimeout(() => { btn.textContent = 'Check Mission'; btn.style.opacity = '1'; }, 1500);
+          }
+        }
+      } catch (e) { console.error('checkStep error:', e); }
+    }
+
+    async function collectReward(index) {
+      try {
+        const res = await fetch(`${API}/api/tutorial/collect/${index}`, { method: 'POST', headers: headers() });
+        if (!res.ok) return;
+        const data = await res.json();
+        // Refresh
+        await loadTutorial();
+        // Move to next step
+        const nextStep = index + 1;
+        if (nextStep < tutorialData.steps.length) {
+          viewStep(nextStep);
+        }
+      } catch (e) { console.error('collectReward error:', e); }
+    }
+
+    async function skipTutorial() {
+      if (!confirm('Skip the tutorial? You can still play normally but you won\'t earn tutorial rewards.')) return;
+      try {
+        await fetch(`${API}/api/tutorial/skip`, { method: 'POST', headers: headers() });
+        window.location.href = '/game';
+      } catch (e) { window.location.href = '/game'; }
+    }
+
+    async function finishTutorial() {
+      try {
+        await fetch(`${API}/api/tutorial/finish`, { method: 'POST', headers: headers() });
+        window.location.href = '/game';
+      } catch (e) { window.location.href = '/game'; }
+    }
+
+    function esc(s) {
+      if (!s) return '';
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    // ═══════════════════════════════════════════════════
+    // INIT — determine which phase to show
+    // ═══════════════════════════════════════════════════
+
+    async function init() {
+      // Check if player needs galaxy selection or tutorial
+      const needsGalaxy = localStorage.getItem('awe_needs_galaxy') === 'true';
+      const needsTutorial = localStorage.getItem('awe_needs_tutorial') === 'true';
+
+      if (needsGalaxy) {
+        loadGalaxies();
+      } else if (needsTutorial) {
+        showTutorial();
+      } else {
+        // Double-check by calling the API
+        try {
+          const res = await fetch(`${API}/api/tutorial/progress`, { headers: headers() });
+          if (res.ok) {
+            const data = await res.json();
+            if (!data.is_finished) {
+              showTutorial();
+              return;
+            }
+          }
+        } catch (e) {}
+        // All done — go to game
+        window.location.href = '/game';
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

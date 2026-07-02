@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a0e17" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AstroWebEngine" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%230a2a4a'/><circle cx='16' cy='16' r='6' fill='%2300ccff'/></svg>" type="image/svg+xml" />
+  <title>AstroWebEngine</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <style>
+    .stars-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 30%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 70%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 42% 45%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 50%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 5% 50%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 25% 40%, rgba(100,170,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 75% 60%, rgba(100,170,255,0.3) 0%, transparent 100%);
+    }
+    #auth-page { position: relative; z-index: 1; }
+    .server-status {
+      position: fixed; bottom: 20px; right: 20px;
+      background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 6px; padding: 10px 14px; font-size: 12px;
+      color: var(--text-dim); z-index: 2;
+    }
+    .server-status .dot {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; margin-right: 6px; background: var(--text-dim);
+    }
+    .server-status .dot.online { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .version-note { font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 8px; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    .auth-layout {
+      display: flex;
+      gap: 24px;
+      max-width: 800px;
+      margin: 0 auto;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    .auth-stats {
+      flex: 1;
+      min-width: 280px;
+      max-width: 380px;
+    }
+    @media (max-width: 640px) {
+      #auth-page {
+        justify-content: flex-start;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: 28px 14px 20px;
+        gap: 14px;
+      }
+      .auth-logo { margin-bottom: 2px; }
+      .auth-logo h1 {
+        font-size: 1.35rem;
+        letter-spacing: 0.06em;
+        line-height: 1.2;
+      }
+      .auth-logo p { font-size: 10px; letter-spacing: 0.08em; }
+      #game-status-banner {
+        width: 100%;
+        max-width: none !important;
+        margin-bottom: 4px !important;
+      }
+      .auth-layout {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px !important;
+      }
+      .auth-stats {
+        min-width: 0 !important;
+        max-width: none;
+        width: 100%;
+        order: 2;
+      }
+      .auth-box {
+        width: 100%;
+        max-width: none;
+        padding: 20px;
+      }
+      .auth-tab,
+      .form-group input,
+      .btn {
+        min-height: 42px;
+      }
+      #server-stats td { padding: 6px 8px; }
+      .server-status {
+        position: static;
+        width: 100%;
+        margin: 0 auto;
+        text-align: center;
+      }
+      footer { margin-top: 8px !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars-bg"></div>
+
+  <div id="auth-page">
+    <div class="auth-logo">
+      <h1>⚡ AstroWebEngine</h1>
+      <p>Private Server · Space Strategy</p>
+    </div>
+
+    <div id="game-status-banner" class="alert alert-info mb-12" style="display:none;max-width:800px;margin:0 auto 12px;"></div>
+
+    <div class="auth-layout" style="display:flex;gap:24px;max-width:800px;margin:0 auto;align-items:flex-start;flex-wrap:wrap;justify-content:center;">
+      <!-- STATISTICS -->
+      <div class="auth-stats" style="flex:1;min-width:280px;">
+        <div style="text-align:center;font-size:14px;font-weight:bold;margin-bottom:8px;color:var(--text-bright);">Statistics</div>
+        <table class="data-table" style="width:100%;font-size:12px;" id="server-stats">
+          <tbody>
+            <tr><td style="text-align:right;font-weight:bold;width:50%;">Started</td><td id="stat-started">—</td></tr>
+            <tr><td style="text-align:right;font-weight:bold;">Players</td><td><span id="stat-players">—</span></td></tr>
+            <tr><td style="text-align:right;font-weight:bold;">Online</td><td><span id="stat-online">—</span></td></tr>
+            <tr><td style="text-align:right;font-weight:bold;">Planets</td><td><span id="stat-planets">—</span></td></tr>
+            <tr><td style="text-align:right;font-weight:bold;">Bases</td><td><span id="stat-bases">—</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- LOGIN / REGISTER -->
+      <div class="auth-box" style="margin:0;">
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+          <button class="auth-tab" onclick="switchTab('register')" id="reg-tab">Register</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div id="login-form">
+          <div id="login-error" class="alert alert-error" style="display:none;"></div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="your@email.com" autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" />
+          </div>
+          <button class="btn btn-primary btn-full" onclick="doLogin()">Login</button>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div id="register-form" style="display:none;">
+          <div id="reg-error" class="alert alert-error" style="display:none;"></div>
+          <div class="form-group">
+            <label>Commander Name</label>
+            <input type="text" id="reg-username" placeholder="Choose a unique name" autocomplete="username" />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="reg-password" placeholder="Choose a password" autocomplete="new-password" />
+          </div>
+          <button class="btn btn-success btn-full" onclick="doRegister()">Register</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="server-status">
+    <span class="dot" id="server-dot"></span>
+    <span id="server-label">Connecting...</span>
+  </div>
+
+  <script>
+    const API = '';
+
+    function switchTab(tab) {
+      const isLogin = tab === 'login';
+      document.getElementById('login-form').style.display = isLogin ? 'block' : 'none';
+      document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
+      document.querySelectorAll('.auth-tab').forEach((t, i) => {
+        t.classList.toggle('active', isLogin ? i === 0 : i === 1);
+      });
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errEl = document.getElementById('login-error');
+      errEl.style.display = 'none';
+
+      if (!email || !password) { showErr(errEl, 'Please fill in all fields.'); return; }
+      sessionStorage.removeItem('awe_impersonate_token');
+
+      try {
+        const res = await fetch(`${API}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { showErr(errEl, data.detail || 'Login failed.'); return; }
+        localStorage.setItem('awe_token', data.access_token);
+        localStorage.setItem('awe_username', data.username);
+        localStorage.setItem('awe_is_admin', data.is_admin);
+        if (data.is_admin) { window.location.href = '/admin'; }
+        else if (data.needs_galaxy_select || data.needs_tutorial) {
+          if (data.needs_galaxy_select) localStorage.setItem('awe_needs_galaxy', 'true');
+          if (data.needs_tutorial) localStorage.setItem('awe_needs_tutorial', 'true');
+          window.location.href = '/setup';
+        }
+        else { window.location.href = '/game'; }
+      } catch (e) { showErr(errEl, 'Cannot reach server. Is it running?'); }
+    }
+
+    async function doRegister() {
+      const username = document.getElementById('reg-username').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const errEl = document.getElementById('reg-error');
+      errEl.style.display = 'none';
+
+      if (!username || !email || !password) { showErr(errEl, 'Please fill in all fields.'); return; }
+      sessionStorage.removeItem('awe_impersonate_token');
+
+      try {
+        const res = await fetch(`${API}/api/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { showErr(errEl, data.detail || 'Registration failed.'); return; }
+        localStorage.setItem('awe_token', data.access_token);
+        localStorage.setItem('awe_username', data.username);
+        localStorage.setItem('awe_is_admin', data.is_admin);
+        if (data.is_admin) { window.location.href = '/admin'; }
+        else if (data.needs_galaxy_select) {
+          localStorage.setItem('awe_needs_galaxy', 'true');
+          localStorage.setItem('awe_needs_tutorial', 'true');
+          window.location.href = '/setup';
+        }
+        else { window.location.href = '/game'; }
+      } catch (e) { showErr(errEl, 'Cannot reach server. Is it running?'); }
+    }
+
+    function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
+
+    // Enter key support
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        if (document.getElementById('login-form').style.display !== 'none') doLogin();
+        else doRegister();
+      }
+    });
+
+    // Check server status and game state
+    async function checkServer() {
+      const dot = document.getElementById('server-dot');
+      const label = document.getElementById('server-label');
+      const banner = document.getElementById('game-status-banner');
+      const regTab = document.getElementById('reg-tab');
+      try {
+        const res = await fetch(`${API}/api/game/status`);
+        const data = await res.json();
+        dot.classList.add('online');
+        label.textContent = `${data.game_name || 'Private Server'} · ${data.status || 'Setup'}`;
+
+        // Populate statistics
+        document.getElementById('stat-started').textContent = (data.started_days || 0) + ' Days';
+        document.getElementById('stat-players').textContent = data.total_players || 0;
+        document.getElementById('stat-online').textContent = data.online_players || 0;
+        document.getElementById('stat-planets').textContent = (data.total_planets || 0).toLocaleString();
+        document.getElementById('stat-bases').textContent = (data.total_bases || 0).toLocaleString();
+
+        if (data.status === 'finished' && data.winner) {
+          banner.textContent = `🏆 Game Over! Winner: ${data.winner}`;
+          banner.className = 'alert alert-warn mb-12';
+          banner.style.display = 'block';
+        } else if (data.status === 'active') {
+          banner.textContent = `⚔️ Game in progress — join now!`;
+          banner.className = 'alert alert-info mb-12';
+          banner.style.display = 'block';
+        } else if (data.status === 'setup') {
+          banner.textContent = `🛸 Game in setup — register now before launch!`;
+          banner.className = 'alert alert-success mb-12';
+          banner.style.display = 'block';
+        }
+      } catch {
+        dot.classList.remove('online');
+        label.textContent = 'Server offline';
+      }
+    }
+    checkServer();
+
+    // Redirect if already logged in
+    if (localStorage.getItem('awe_token')) {
+      const isAdmin = localStorage.getItem('awe_is_admin') === 'true';
+      // Let them re-authenticate naturally; just check status
+    }
+  </script>
+  <footer style="text-align:center;padding:18px 12px;margin-top:24px;font-size:12px;opacity:0.7;">
+    <a href="https://astrowebengine.com" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">
+      Powered by <strong>AstroWebEngine</strong>
+    </a>
+  </footer>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}</script>
+</body>
+</html>

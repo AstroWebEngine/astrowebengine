@@ -1,0 +1,392 @@
+/* ============================================================
+   BASE DETAIL MODAL (engine-style)
+   ============================================================ */
+
+/* Top layout: 3 columns — planet info | image | base info */
+.bd-layout {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.bd-planet-info {
+  flex: 1;
+  padding: 12px 16px;
+  border-right: 1px solid var(--border);
+  min-width: 200px;
+}
+.bd-planet-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px;
+  background: radial-gradient(ellipse at center, rgba(20,30,50,0.8) 0%, rgba(5,8,15,1) 70%);
+  min-width: 180px;
+}
+.bd-astro-img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(100,150,200,0.2), 0 0 40px rgba(50,80,120,0.1);
+}
+.bd-base-info {
+  flex: 1;
+  padding: 12px 16px;
+  border-left: 1px solid var(--border);
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.bd-coord-path {
+  font-size: 10px;
+  color: var(--accent);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bd-path-link {
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+.bd-path-link:hover {
+  color: var(--accent2);
+  text-decoration: underline;
+}
+.bd-path-sep {
+  color: var(--text-dim);
+  margin: 0 3px;
+}
+
+/* Stat tables */
+.bd-stat-table, .bd-resource-table {
+  font-size: 12px;
+  border-collapse: collapse;
+  width: 100%;
+}
+.bd-stat-table td, .bd-resource-table td, .bd-resource-table th {
+  padding: 2px 6px;
+}
+.bd-stat-label {
+  color: var(--text-dim);
+  font-weight: bold;
+  white-space: nowrap;
+}
+.bd-resource-table {
+  margin-top: 8px;
+  border: 1px solid var(--border);
+}
+.bd-resource-table th {
+  background: var(--bg-panel);
+  color: var(--text-bright);
+  text-align: left;
+  font-size: 11px;
+  padding: 3px 6px;
+}
+.bd-resource-table td:last-child {
+  text-align: right;
+  color: var(--text-bright);
+}
+
+/* Base name + owner card */
+.bd-base-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--text-bright);
+  text-align: center;
+}
+.bd-owner-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  text-align: center;
+  min-width: 150px;
+}
+.bd-info-label {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-bright);
+  margin-bottom: 4px;
+}
+.bd-info-row {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* Summary bar */
+.bd-summary-bar {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.bd-summary-bar th {
+  background: var(--bg-panel);
+  color: var(--text-dim);
+  padding: 4px 12px;
+  font-weight: bold;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.bd-summary-bar td {
+  padding: 4px 12px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+/* Actions */
+.bd-actions {
+  text-align: center;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.bd-action-link {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: bold;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.bd-action-link:hover {
+  color: #EAC767;
+}
+
+/* Section title */
+.bd-section-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--text-bright);
+  text-align: center;
+  padding: 6px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Fleet table */
+.bd-fleet-table {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+.bd-fleet-table th {
+  background: var(--bg-panel);
+  color: var(--text-dim);
+  padding: 4px 10px;
+  text-align: left;
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+.bd-fleet-table td {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+}
+.bd-fleet-table th:last-child, .bd-fleet-table td:last-child {
+  text-align: right;
+}
+
+/* Structures + Defenses two-column layout */
+.bd-struct-defense-wrap {
+  display: flex;
+  border-top: 1px solid var(--border);
+}
+.bd-struct-table {
+  flex: 1;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+.bd-struct-table + .bd-struct-table {
+  border-left: 1px solid var(--border);
+}
+.bd-struct-table th {
+  background: var(--bg-panel);
+  color: var(--text-dim);
+  padding: 4px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.bd-struct-table td {
+  padding: 3px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.bd-struct-table td:last-child {
+  text-align: right;
+  color: var(--text-bright);
+  min-width: 50px;
+}
+
+/* Clickable planet names in map */
+.bd-clickable {
+  cursor: pointer;
+}
+.bd-clickable:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* Responsive: stack on mobile */
+@media (max-width: 700px) {
+  .bd-layout { flex-direction: column; }
+  .bd-planet-info { border-right: none; border-bottom: 1px solid var(--border); }
+  .bd-base-info { border-left: none; border-top: 1px solid var(--border); }
+  .bd-struct-defense-wrap { flex-direction: column; }
+  .bd-struct-table + .bd-struct-table { border-left: none; border-top: 1px solid var(--border); }
+}
+
+/* ════════════════════════════════════════════════════════════
+   SKIN SYSTEM — Color themes applied via [data-skin] on <body>
+   Default (no attribute / "blue-nova") uses :root variables above.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Amber Grid skin ── */
+[data-skin="amber-grid"] {
+  --bg-dark: #000;
+  --bg-panel: #0f1b28;
+  --bg-card: #101F2C;
+  --bg-hover: #05090C;
+  --bg-header: #20374C;
+  --border: #172C3E;
+  --border-bright: #223C53;
+  --accent: #EAC767;
+  --accent-glow: #FFD700;
+  --accent2: #63D0DC;
+  --warn: #FFA500;
+  --danger: #FF2A26;
+  --success: #5db96b;
+  --success-dim: #169429;
+  --text: #CADDEC;
+  --text-dim: #83a4b8;
+  --text-bright: #FFFFFF;
+  --link: #EAC767;
+  --structures: #D97E04;
+  --defenses: #55DA4E;
+  --research: #49D6FE;
+  --production: #DDD;
+  --player-self: #FFF;
+  --player-guild: #55DA4E;
+  --player-npc: #D97E04;
+}
+/* Amber Grid skin: flat boxy look, no rounded corners, table-based feel */
+[data-skin="amber-grid"] .panel,
+[data-skin="amber-grid"] .card,
+[data-skin="amber-grid"] .building-card,
+[data-skin="amber-grid"] .tech-card,
+[data-skin="amber-grid"] .research-card,
+[data-skin="amber-grid"] .fleet-card,
+[data-skin="amber-grid"] .defense-chip {
+  border-radius: 0;
+}
+[data-skin="amber-grid"] .panel-header {
+  background: linear-gradient(#20374C, #1C3043);
+}
+[data-skin="amber-grid"] .awe-nav-btn {
+  border-radius: 0;
+  background: #082241;
+  border-color: #1C3043;
+}
+[data-skin="amber-grid"] .awe-nav-btn:hover { background: #10385a; color: #DDD; }
+[data-skin="amber-grid"] .awe-nav-btn.active {
+  background: #1A425E;
+  color: #FFF;
+  border-color: var(--accent);
+  text-shadow: 0 0 12px #bff0f2;
+}
+[data-skin="amber-grid"] .btn {
+  border-radius: 0;
+  box-shadow: none;
+}
+[data-skin="amber-grid"] .btn-primary { background: #082241; border-color: #2693bb; color: #FFF; }
+[data-skin="amber-grid"] .btn-primary:hover { border-color: #FFF; }
+[data-skin="amber-grid"] .btn-ghost { background: #082241; border-color: #2693bb; }
+[data-skin="amber-grid"] .data-table th {
+  background: #20374C;
+  border-color: #223C53;
+}
+[data-skin="amber-grid"] .data-table td {
+  background: linear-gradient(#101F2C, #0f1b28, #0f1b28, #101F2C);
+  border-color: #172C3E;
+}
+[data-skin="amber-grid"] .data-table tr:hover td {
+  background: #05090C;
+}
+[data-skin="amber-grid"] .form-group input,
+[data-skin="amber-grid"] .form-group select,
+[data-skin="amber-grid"] .form-group textarea {
+  background: #0D2232;
+  border-color: #29587A;
+  border-radius: 4px;
+  color: #FFF;
+}
+[data-skin="amber-grid"] .form-group input:focus,
+[data-skin="amber-grid"] .form-group select:focus {
+  border-color: #FFF;
+}
+[data-skin="amber-grid"] .coord-link { color: var(--accent); }
+[data-skin="amber-grid"] .coord-link:hover { color: #FFD700; }
+[data-skin="amber-grid"] .main-header-row1,
+[data-skin="amber-grid"] #top-header {
+  background: linear-gradient(#0f1b28, #0d1623);
+}
+[data-skin="amber-grid"] .badge-warn { color: #FF2A26; }
+[data-skin="amber-grid"] .empire-subtabs {
+  background: #0f1b28;
+}
+[data-skin="amber-grid"] .awe-subtab.active {
+  color: #FFF;
+  text-shadow: 0 0 5px #FFF;
+}
+
+/* ── DARK ASTROS: warm amber/orange on deep black ── */
+[data-skin="dark-astros"] {
+  --bg-dark: #080808;
+  --bg-panel: #0e1214;
+  --bg-card: #141a1e;
+  --bg-hover: #1a2228;
+  --bg-header: #1c2830;
+  --border: #1e2e38;
+  --border-bright: #2a4050;
+  --accent: #E8A020;
+  --accent-glow: #FFB830;
+  --accent2: #49D6FE;
+  --warn: #E8A020;
+  --danger: #FF2A26;
+  --success: #1DC235;
+  --success-dim: #169429;
+  --text: #c8d4de;
+  --text-dim: #6a8498;
+  --text-bright: #FFFFFF;
+  --link: #E8A020;
+  --structures: #55DA4E;
+  --defenses: #E8A020;
+  --research: #49D6FE;
+}
+[data-skin="dark-astros"] .panel-header {
+  background: linear-gradient(180deg, #1c2830 0%, #101418 100%);
+}
+[data-skin="dark-astros"] .awe-nav-btn {
+  background: #0c1418;
+  border-color: #1e2e38;
+}
+[data-skin="dark-astros"] .awe-nav-btn:hover { background: #142028; }
+[data-skin="dark-astros"] .awe-nav-btn.active {
+  background: #142028;
+  color: #E8A020;
+  border-color: #E8A020;
+  text-shadow: 0 0 8px rgba(232,160,32,0.4);
+}
+[data-skin="dark-astros"] .btn-primary { background: #142028; border-color: #1e2e38; }
+[data-skin="dark-astros"] .btn-primary:hover { background: #1c2830; }
+[data-skin="dark-astros"] .btn-ghost { background: #0c1418; border-color: #1e2e38; }
+[data-skin="dark-astros"] .main-header-row1,
+[data-skin="dark-astros"] #top-header {
+  background: linear-gradient(#101418, #080808);
+}
+[data-skin="dark-astros"] .panel-title { color: #E8A020; }
+[data-skin="dark-astros"] .coord-link { color: var(--accent2); }
+[data-skin="dark-astros"] .data-table th { background: #1c2830; }
+[data-skin="dark-astros"] .data-table tr:hover td { background: #0c1014; }
+[data-skin="dark-astros"] .empire-subtabs { background: #101418; }

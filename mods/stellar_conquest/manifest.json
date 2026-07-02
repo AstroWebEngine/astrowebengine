@@ -1,0 +1,13 @@
+{
+  "id": "stellar_conquest",
+  "name": "Stellar Conquest",
+  "version": "1.0",
+  "author": "AstroWebEngine showcase",
+  "engine_api": "1.0",
+  "kind": "ruleset",
+  "definition": "definition.json",
+  "description": "Neutral multi-resource showcase clone: multi-resource economy (metal/crystal/deuterium), round-based combat, count-built defenses. The opposite-flag-corner counterpart to classic_empire.",
+  "requires": [],
+  "conflicts": [],
+  "load_order": 100
+}

@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
+
+# Test artifacts
+test_spiral.html
+test_spiral.py
+
+# Uploads (screenshots, reference files)
+uploads/
+
+# Logs
+*.log
+
+# Local scripts
+.mcp.json
+*.bat
+universes.json
+
+# Private, local-only material — kept on the dev machine, never published.
+_private/
+
+# Per-instance runtime state: the admin-persisted active game definition.
+_active_definition.json
+
+# On-server backup/reset artifacts (e.g. from AE-Faithful resets run on the VM).
+# Keep these out of the repo so they never clutter `git status` or block a pull.
+backups/
+*.bak
+*.bak-*
+.env.bak*
+.last_ae_reset_backup
+ae-reset-*/
+ae-faithful-*/

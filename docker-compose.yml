@@ -1,0 +1,39 @@
+# AstroWebEngine — self-hosting bundle
+#
+#   cp .env.example .env        # then set AWE_SECRET_KEY to a long random string
+#   docker compose up -d        # -> http://localhost:8000  (first user = admin)
+#
+# Default stack is the app + bundled SQLite on a persistent named volume — one
+# container, no external database. For 50+ concurrent players, switch to Postgres
+# (see the optional `db` service below and the DATABASE_URL note in .env.example).
+
+services:
+  app:
+    build: .
+    image: astrowebengine:latest
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      # Persists the SQLite DB (+ WAL) across restarts and image rebuilds.
+      - awe-data:/data
+    restart: unless-stopped
+
+  # Optional PostgreSQL backend. Enable with:
+  #   docker compose --profile postgres up -d
+  # and set DATABASE_URL in .env to:
+  #   postgresql+psycopg://awe:changeme@db:5432/awe
+  db:
+    image: postgres:16-alpine
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_USER: awe
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: awe
+    volumes:
+      - awe-pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  awe-data:
+  awe-pgdata:

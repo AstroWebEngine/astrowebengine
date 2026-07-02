@@ -1,0 +1,1513 @@
+{
+  "meta": {
+    "name": "Classic Space",
+    "version": "1.0",
+    "description": "Classic single-resource space strategy gameplay with simultaneous combat and level-based defenses.",
+    "author": "Community Project"
+  },
+  "engine": {
+    "resource_model": "single",
+    "resource_types": [
+      "credits"
+    ],
+    "defense_model": "level",
+    "defenses_destructible": true,
+    "defense_repair_percent": 0.0,
+    "buildings_destructible": false,
+    "ships_always_destroyed": true,
+    "combat_model": "simultaneous",
+    "combat_max_rounds": 1,
+    "map_depth": 4,
+    "map_levels": [
+      "galaxy",
+      "region",
+      "system",
+      "orbit"
+    ],
+    "construction_queue_max": 6,
+    "research_queue_max": 6,
+    "production_queue_max": 12,
+    "report_categories": [
+      "scanners",
+      "player",
+      "guild",
+      "galaxy",
+      "top_scouters",
+      "top_jump_gates",
+      "trade",
+      "wormholes",
+      "astros"
+    ]
+  },
+  "economy": {
+    "construction_bonus_base": 20,
+    "construction_bonus_homeworld": 20,
+    "base_energy_bonus": 2,
+    "capital_empire_bonus": 1,
+    "occupation_time_penalty": 1.3,
+    "min_build_time_seconds": 5,
+    "min_research_time_seconds": 5
+  },
+  "combat": {
+    "damage_allocation_exponent": 0.85,
+    "loot_percent": 0.2,
+    "debris_percent": 0.4
+  },
+  "fleet": {
+    "travel_divisor": 200,
+    "base_fleet_count": 5,
+    "size_limit_multiplier": 2500
+  },
+  "ships": {
+    "small_ship_1": {
+      "name": "Small Ship 1",
+      "desc": "Good fighting unit against unshielded units.",
+      "cost": 5,
+      "attack": 2,
+      "armour": 2,
+      "shield": 0,
+      "speed": 0,
+      "hangar": -1,
+      "weapon": "laser",
+      "drive": "inter",
+      "shipyard": 1,
+      "req": {
+        "laser": 1
+      },
+      "rounding": 0
+    },
+    "small_ship_2": {
+      "name": "Small Ship 2",
+      "desc": "Good fighting unit against unshielded and low shield units.",
+      "cost": 10,
+      "attack": 5,
+      "armour": 2,
+      "shield": 0,
+      "speed": 0,
+      "hangar": -1,
+      "weapon": "missiles",
+      "drive": "inter",
+      "shipyard": 2,
+      "req": {
+        "missiles": 1
+      },
+      "rounding": 0
+    },
+    "small_ship_3": {
+      "name": "Small Ship 3",
+      "desc": "Good fighting unit against unshielded and low shield units.",
+      "cost": 30,
+      "attack": 10,
+      "armour": 5,
+      "shield": 0,
+      "speed": 0,
+      "hangar": -2,
+      "weapon": "plasma",
+      "drive": "inter",
+      "shipyard": 3,
+      "req": {
+        "plasma": 14
+      },
+      "rounding": 0
+    },
+    "small_ship_4": {
+      "name": "Small Ship 4",
+      "desc": "Good fighting unit against unshielded and low shield units.",
+      "cost": 60,
+      "attack": 12,
+      "armour": 5,
+      "shield": 1,
+      "speed": 0,
+      "hangar": -2,
+      "weapon": "ion",
+      "drive": "inter",
+      "shipyard": 3,
+      "req": {
+        "ion": 10,
+        "shielding": 10
+      },
+      "rounding": 0
+    },
+    "small_ship_5": {
+      "name": "Small Ship 5",
+      "desc": "Very fast unit, good against unshielded units.",
+      "cost": 20,
+      "attack": 4,
+      "armour": 5,
+      "shield": 0,
+      "speed": 10,
+      "hangar": 0,
+      "weapon": "laser",
+      "drive": "stellar",
+      "shipyard": 4,
+      "req": {
+        "laser": 2,
+        "stellar_drive": 1,
+        "armour": 2
+      },
+      "rounding": 0
+    },
+    "small_ship_6": {
+      "name": "Small Ship 6",
+      "desc": "Can collect debris and convert them into credits.",
+      "cost": 30,
+      "attack": 2,
+      "armour": 2,
+      "shield": 0,
+      "speed": 8,
+      "hangar": 0,
+      "weapon": "laser",
+      "drive": "stellar",
+      "shipyard": 5,
+      "req": {
+        "laser": 1,
+        "stellar_drive": 1,
+        "armour": 2
+      },
+      "rounding": 0,
+      "can_recycle": true
+    },
+    "small_ship_7": {
+      "name": "Small Ship 7",
+      "desc": "Fast unit, good against low shielded units.",
+      "cost": 40,
+      "attack": 10,
+      "armour": 8,
+      "shield": 0,
+      "speed": 8,
+      "hangar": 0,
+      "weapon": "plasma",
+      "drive": "stellar",
+      "shipyard": 6,
+      "req": {
+        "plasma": 1,
+        "stellar_drive": 2,
+        "armour": 6
+      },
+      "rounding": 0
+    },
+    "medium_ship_1": {
+      "name": "Medium Ship 1",
+      "desc": "Versatile unit, has 4 hangar space.",
+      "cost": 80,
+      "attack": 12,
+      "armour": 12,
+      "shield": 0,
+      "speed": 6,
+      "hangar": 4,
+      "weapon": "missiles",
+      "drive": "stellar",
+      "shipyard": 8,
+      "req": {
+        "missiles": 6,
+        "stellar_drive": 4,
+        "armour": 8
+      },
+      "rounding": 0
+    },
+    "medium_ship_2": {
+      "name": "Medium Ship 2",
+      "desc": "Versatile unit, has 4 hangar space.",
+      "cost": 120,
+      "attack": 14,
+      "armour": 12,
+      "shield": 1,
+      "speed": 6,
+      "hangar": 4,
+      "weapon": "ion",
+      "drive": "stellar",
+      "shipyard": 8,
+      "req": {
+        "ion": 10,
+        "stellar_drive": 4,
+        "armour": 8,
+        "shielding": 10
+      },
+      "rounding": 0
+    },
+    "small_ship_8": {
+      "name": "Small Ship 8",
+      "desc": "Fast support unit for exploration.",
+      "cost": 40,
+      "attack": 1,
+      "armour": 2,
+      "shield": 0,
+      "speed": 12,
+      "hangar": 0,
+      "weapon": "laser",
+      "drive": "warp",
+      "shipyard": 4,
+      "req": {
+        "warp_drive": 1
+      },
+      "rounding": 0,
+      "can_autoscout": true
+    },
+    "medium_ship_3": {
+      "name": "Medium Ship 3",
+      "desc": "Colonization unit that can found a new base.",
+      "cost": 100,
+      "attack": 2,
+      "armour": 4,
+      "shield": 0,
+      "speed": 4,
+      "hangar": 0,
+      "weapon": "laser",
+      "drive": "warp",
+      "shipyard": 8,
+      "req": {
+        "warp_drive": 1
+      },
+      "rounding": 0,
+      "can_colonize": true
+    },
+    "medium_ship_4": {
+      "name": "Medium Ship 4",
+      "desc": "Versatile unit, good for long range action and escort.",
+      "cost": 200,
+      "attack": 24,
+      "armour": 24,
+      "shield": 2,
+      "speed": 5,
+      "hangar": 4,
+      "weapon": "plasma",
+      "drive": "warp",
+      "shipyard": 10,
+      "req": {
+        "plasma": 4,
+        "warp_drive": 2,
+        "armour": 10,
+        "shielding": 2
+      },
+      "rounding": 1
+    },
+    "medium_ship_5": {
+      "name": "Medium Ship 5",
+      "desc": "Unit with 80 hangar spaces.",
+      "cost": 400,
+      "attack": 12,
+      "armour": 24,
+      "shield": 2,
+      "speed": 5,
+      "hangar": 80,
+      "weapon": "missiles",
+      "drive": "warp",
+      "shipyard": 12,
+      "req": {
+        "missiles": 6,
+        "warp_drive": 4,
+        "armour": 10,
+        "shielding": 2
+      },
+      "rounding": 1
+    },
+    "medium_ship_6": {
+      "name": "Medium Ship 6",
+      "desc": "Strong unit, good against large units.",
+      "cost": 500,
+      "attack": 48,
+      "armour": 48,
+      "shield": 4,
+      "speed": 4,
+      "hangar": 8,
+      "weapon": "plasma",
+      "drive": "warp",
+      "shipyard": 12,
+      "req": {
+        "plasma": 6,
+        "warp_drive": 4,
+        "armour": 12,
+        "shielding": 4
+      },
+      "rounding": 1
+    },
+    "large_ship_1": {
+      "name": "Large Ship 1",
+      "desc": "Strong unit, good against large units.",
+      "cost": 2000,
+      "attack": 160,
+      "armour": 128,
+      "shield": 12,
+      "speed": 4,
+      "hangar": 40,
+      "weapon": "ion",
+      "drive": "warp",
+      "shipyard": 16,
+      "req": {
+        "ion": 6,
+        "warp_drive": 8,
+        "armour": 16,
+        "shielding": 8
+      },
+      "rounding": 2
+    },
+    "large_ship_2": {
+      "name": "Large Ship 2",
+      "desc": "Large support unit with 500 hangar spaces.",
+      "cost": 2500,
+      "attack": 64,
+      "armour": 96,
+      "shield": 10,
+      "speed": 4,
+      "hangar": 500,
+      "weapon": "ion",
+      "drive": "warp",
+      "shipyard": 16,
+      "req": {
+        "ion": 4,
+        "warp_drive": 8,
+        "armour": 14,
+        "shielding": 6
+      },
+      "rounding": 2
+    },
+    "large_ship_3": {
+      "name": "Large Ship 3",
+      "desc": "Heavy large-class combat unit.",
+      "cost": 10000,
+      "attack": 756,
+      "armour": 512,
+      "shield": 20,
+      "speed": 3.5,
+      "hangar": 200,
+      "weapon": "photon",
+      "drive": "warp",
+      "shipyard": 20,
+      "req": {
+        "photon": 6,
+        "warp_drive": 12,
+        "armour": 20,
+        "shielding": 10
+      },
+      "rounding": 2
+    },
+    "large_ship_4": {
+      "name": "Large Ship 4",
+      "desc": "Advanced large-class combat unit.",
+      "cost": 50000,
+      "attack": 3500,
+      "armour": 2048,
+      "shield": 30,
+      "speed": 3.5,
+      "hangar": 2000,
+      "weapon": "disruptor",
+      "drive": "warp",
+      "shipyard": 22,
+      "req": {
+        "disruptor": 6,
+        "warp_drive": 14,
+        "armour": 22,
+        "shielding": 14
+      },
+      "rounding": 2
+    },
+    "capital_ship_1": {
+      "name": "Capital Ship 1",
+      "desc": "The flagship class; grants +5% fleet bonus.",
+      "cost": 200000,
+      "attack": 10000,
+      "armour": 6600,
+      "shield": 40,
+      "speed": 3,
+      "hangar": 4000,
+      "weapon": "photon",
+      "drive": "warp",
+      "shipyard": 24,
+      "req": {
+        "photon": 12,
+        "warp_drive": 18,
+        "armour": 24,
+        "shielding": 16
+      },
+      "rounding": 2,
+      "fleet_bonus": 0.05
+    },
+    "capital_ship_2": {
+      "name": "Capital Ship 2",
+      "desc": "Advanced flagship class, grants +10% fleet bonus.",
+      "cost": 500000,
+      "attack": 28000,
+      "armour": 15000,
+      "shield": 60,
+      "speed": 3,
+      "hangar": 10000,
+      "weapon": "disruptor",
+      "drive": "warp",
+      "shipyard": 26,
+      "req": {
+        "disruptor": 10,
+        "warp_drive": 20,
+        "armour": 26,
+        "shielding": 18
+      },
+      "rounding": 2,
+      "fleet_bonus": 0.1
+    }
+  },
+  "buildings": {
+    "urban_structures": {
+      "name": "Urban Structures",
+      "base_cost": 1,
+      "cost_mult": 1.5,
+      "time": 60,
+      "desc": "+Pop based on Fertility",
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "population": {
+          "type": "planet_stat",
+          "stat": "fertility",
+          "per_level": 1
+        }
+      },
+      "start_level": 1
+    },
+    "solar_plants": {
+      "name": "Solar Plants",
+      "base_cost": 1,
+      "cost_mult": 1.5,
+      "time": 60,
+      "desc": "+Energy based on Solar",
+      "energy_req": 0,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "energy": {
+          "type": "planet_stat",
+          "stat": "solar",
+          "per_level": 1
+        }
+      }
+    },
+    "gas_plants": {
+      "name": "Gas Plants",
+      "base_cost": 1,
+      "cost_mult": 1.5,
+      "time": 60,
+      "desc": "+Energy based on Gas",
+      "energy_req": 0,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "energy": {
+          "type": "planet_stat",
+          "stat": "gas",
+          "per_level": 1
+        }
+      }
+    },
+    "fusion_plants": {
+      "name": "Fusion Plants",
+      "base_cost": 20,
+      "cost_mult": 1.5,
+      "time": 120,
+      "desc": "+4 Energy (flat)",
+      "energy_req": 0,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "energy": 6
+      },
+      "advanced": false,
+      "contributions": {
+        "energy": {
+          "type": "flat",
+          "per_level": 4
+        }
+      }
+    },
+    "antimatter_plants": {
+      "name": "Antimatter Plants",
+      "base_cost": 2000,
+      "cost_mult": 1.5,
+      "time": 480,
+      "desc": "+10 Energy (flat)",
+      "energy_req": 0,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "energy": 20
+      },
+      "advanced": true,
+      "contributions": {
+        "energy": {
+          "type": "flat",
+          "per_level": 10
+        }
+      }
+    },
+    "orbital_plants": {
+      "name": "Orbital Plants",
+      "base_cost": 40000,
+      "cost_mult": 1.5,
+      "time": 1200,
+      "desc": "+12 Energy (no area)",
+      "energy_req": 0,
+      "pop_req": 1,
+      "area_req": 0,
+      "max_level": 0,
+      "tech_req": {
+        "energy": 25
+      },
+      "advanced": true,
+      "contributions": {
+        "energy": {
+          "type": "flat",
+          "per_level": 12
+        }
+      }
+    },
+    "research_labs": {
+      "name": "Research Labs",
+      "base_cost": 2,
+      "cost_mult": 1.5,
+      "time": 80,
+      "desc": "+Research capacity",
+      "energy_req": 1,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "research": {
+          "type": "flat",
+          "per_level": 8
+        },
+        "research_lab_level": {
+          "type": "flat",
+          "per_level": 1
+        }
+      }
+    },
+    "metal_refineries": {
+      "name": "Metal Refineries",
+      "base_cost": 1,
+      "cost_mult": 1.5,
+      "time": 60,
+      "desc": "+Construction/Prod, +1 econ",
+      "energy_req": 1,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "industrial": {
+          "type": "planet_stat",
+          "stat": "metal",
+          "per_level": 1
+        },
+        "economy": {
+          "type": "flat",
+          "per_level": 1
+        }
+      }
+    },
+    "crystal_mines": {
+      "name": "Crystal Mines",
+      "base_cost": 2,
+      "cost_mult": 1.5,
+      "time": 80,
+      "desc": "+Economy based on Crystal",
+      "energy_req": 1,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "economy": {
+          "type": "planet_stat",
+          "stat": "crystal",
+          "per_level": 1
+        }
+      }
+    },
+    "robotic_factories": {
+      "name": "Robotic Factories",
+      "base_cost": 5,
+      "cost_mult": 1.5,
+      "time": 100,
+      "desc": "+2 Construction/Prod, +1 econ",
+      "energy_req": 1,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "computer": 2
+      },
+      "advanced": false,
+      "contributions": {
+        "industrial": {
+          "type": "flat",
+          "per_level": 2
+        },
+        "economy": {
+          "type": "flat",
+          "per_level": 1
+        }
+      }
+    },
+    "shipyard": {
+      "name": "Shipyard",
+      "base_cost": 5,
+      "cost_mult": 1.5,
+      "time": 100,
+      "desc": "+2 Production, +1 econ, unlocks ships",
+      "energy_req": 1,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "production": {
+          "type": "flat",
+          "per_level": 2
+        },
+        "economy": {
+          "type": "flat",
+          "per_level": 1
+        },
+        "ground_shipyard": {
+          "type": "flat",
+          "per_level": 1
+        },
+        "shipyard_level": {
+          "type": "flat",
+          "per_level": 1
+        }
+      }
+    },
+    "orbital_shipyard": {
+      "name": "Orbital Shipyard",
+      "base_cost": 10000,
+      "cost_mult": 1.5,
+      "time": 960,
+      "desc": "+Prod (no area), extends ship access",
+      "energy_req": 12,
+      "pop_req": 1,
+      "area_req": 0,
+      "max_level": 0,
+      "tech_req": {
+        "cybernetics": 2
+      },
+      "advanced": true,
+      "contributions": {
+        "production": {
+          "type": "flat",
+          "per_level": 8
+        },
+        "economy": {
+          "type": "flat",
+          "per_level": 2
+        },
+        "orbital_shipyard": {
+          "type": "flat",
+          "per_level": 1
+        },
+        "shipyard_level": {
+          "type": "flat",
+          "per_level": 2
+        }
+      }
+    },
+    "spaceports": {
+      "name": "Spaceports",
+      "base_cost": 5,
+      "cost_mult": 1.5,
+      "time": 100,
+      "desc": "+2 econ/hr, trade routes",
+      "energy_req": 1,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {},
+      "advanced": false,
+      "contributions": {
+        "economy": {
+          "type": "flat",
+          "per_level": 2
+        }
+      }
+    },
+    "command_centers": {
+      "name": "Command Centers",
+      "base_cost": 20,
+      "cost_mult": 1.5,
+      "time": 120,
+      "desc": "+5% fleet attack at base",
+      "energy_req": 1,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "computer": 6
+      },
+      "advanced": false,
+      "contributions": {
+        "command_level": {
+          "type": "flat",
+          "per_level": 1
+        }
+      }
+    },
+    "nanite_factories": {
+      "name": "Nanite Factories",
+      "base_cost": 80,
+      "cost_mult": 1.5,
+      "time": 240,
+      "desc": "+4 Construction/Prod, +2 econ",
+      "energy_req": 2,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "computer": 10,
+        "laser": 8
+      },
+      "advanced": true,
+      "contributions": {
+        "industrial": {
+          "type": "flat",
+          "per_level": 4
+        },
+        "economy": {
+          "type": "flat",
+          "per_level": 2
+        }
+      }
+    },
+    "android_factories": {
+      "name": "Android Factories",
+      "base_cost": 1000,
+      "cost_mult": 1.5,
+      "time": 480,
+      "desc": "+Construction/Prod, +2 econ",
+      "energy_req": 4,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "artificial_intelligence": 4
+      },
+      "advanced": true,
+      "contributions": {
+        "industrial": {
+          "type": "flat",
+          "per_level": 6
+        },
+        "economy": {
+          "type": "flat",
+          "per_level": 2
+        }
+      }
+    },
+    "economic_centers": {
+      "name": "Economic Centers",
+      "base_cost": 80,
+      "cost_mult": 1.5,
+      "time": 240,
+      "desc": "+3 econ (advanced)",
+      "energy_req": 2,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "computer": 10
+      },
+      "advanced": true,
+      "contributions": {
+        "economy": {
+          "type": "flat",
+          "per_level": 3
+        }
+      }
+    },
+    "terraform": {
+      "name": "Terraform",
+      "base_cost": 80,
+      "cost_mult": 1.5,
+      "time": 240,
+      "desc": "+5 Area per level",
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "max_level": 0,
+      "tech_req": {
+        "computer": 10,
+        "energy": 10
+      },
+      "advanced": true,
+      "contributions": {
+        "area": {
+          "type": "flat",
+          "per_level": 5
+        }
+      }
+    },
+    "multi_level_platforms": {
+      "name": "Multi-Level Platforms",
+      "base_cost": 10000,
+      "cost_mult": 1.5,
+      "time": 960,
+      "desc": "+10 Area per level",
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "max_level": 0,
+      "tech_req": {
+        "armour": 22
+      },
+      "advanced": true,
+      "contributions": {
+        "area": {
+          "type": "flat",
+          "per_level": 10
+        }
+      }
+    },
+    "orbital_base": {
+      "name": "Orbital Base",
+      "base_cost": 2000,
+      "cost_mult": 1.5,
+      "time": 480,
+      "desc": "+10 Population (no area)",
+      "energy_req": 0,
+      "pop_req": 0,
+      "area_req": 0,
+      "max_level": 0,
+      "tech_req": {
+        "computer": 20
+      },
+      "advanced": true,
+      "contributions": {
+        "population": {
+          "type": "flat",
+          "per_level": 10
+        }
+      }
+    },
+    "biosphere_mod": {
+      "name": "Biosphere Modification",
+      "base_cost": 20000,
+      "cost_mult": 1.5,
+      "time": 1200,
+      "desc": "+1 Fertility per level",
+      "energy_req": 24,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "computer": 24,
+        "energy": 24
+      },
+      "advanced": true,
+      "contributions": {
+        "fertility_modifier": {
+          "type": "flat",
+          "per_level": 1
+        }
+      }
+    },
+    "capital": {
+      "name": "Capital",
+      "base_cost": 15000,
+      "cost_mult": 1.5,
+      "time": 1440,
+      "desc": "+10 econ, +1 econ all other bases, -15% income if occupied",
+      "energy_req": 12,
+      "pop_req": 1,
+      "area_req": 1,
+      "max_level": 0,
+      "tech_req": {
+        "tachyon_communications": 1
+      },
+      "advanced": true,
+      "unique": true,
+      "contributions": {
+        "economy": {
+          "type": "flat",
+          "per_level": 10
+        }
+      }
+    },
+    "jump_gate": {
+      "name": "Jump Gate",
+      "base_cost": 5000,
+      "cost_mult": 1.5,
+      "time": 1200,
+      "desc": "+fleet speed from base",
+      "energy_req": 12,
+      "pop_req": 1,
+      "area_req": 0,
+      "max_level": 0,
+      "tech_req": {
+        "warp_drive": 12,
+        "energy": 20
+      },
+      "advanced": true,
+      "contributions": {
+        "jump_gate_level": {
+          "type": "flat",
+          "per_level": 1
+        }
+      }
+    }
+  },
+  "research": {
+    "energy": {
+      "name": "Energy",
+      "base_cost": 2,
+      "cost_mult": 1.5,
+      "base_time": 80,
+      "lab_req": 1,
+      "prereqs": {},
+      "icon": "\u26a1",
+      "bonus": "+5% energy output per level",
+      "bonuses": [
+        {
+          "type": "stat_multiplier",
+          "stat": "energy",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "computer": {
+      "name": "Computer",
+      "base_cost": 2,
+      "cost_mult": 1.5,
+      "base_time": 80,
+      "lab_req": 1,
+      "prereqs": {},
+      "icon": "\ud83d\udcbb",
+      "bonus": "Allows one campaign fleet per level",
+      "bonuses": [
+        {
+          "type": "fleet_count",
+          "per_level": 1
+        }
+      ]
+    },
+    "armour": {
+      "name": "Armour",
+      "base_cost": 4,
+      "cost_mult": 1.5,
+      "base_time": 120,
+      "lab_req": 2,
+      "prereqs": {},
+      "icon": "\ud83d\udee1\ufe0f",
+      "bonus": "+5% armour per level",
+      "bonuses": [
+        {
+          "type": "combat_stat",
+          "stat": "armour",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "laser": {
+      "name": "Laser",
+      "base_cost": 4,
+      "cost_mult": 1.5,
+      "base_time": 120,
+      "lab_req": 2,
+      "prereqs": {
+        "energy": 2
+      },
+      "icon": "\ud83d\udd34",
+      "bonus": "+5% laser weapon power",
+      "bonuses": [
+        {
+          "type": "weapon_power",
+          "weapon": "laser",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "missiles": {
+      "name": "Missiles",
+      "base_cost": 8,
+      "cost_mult": 1.5,
+      "base_time": 180,
+      "lab_req": 4,
+      "prereqs": {
+        "computer": 4
+      },
+      "icon": "\ud83d\ude80",
+      "bonus": "+5% missile power",
+      "bonuses": [
+        {
+          "type": "weapon_power",
+          "weapon": "missiles",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "stellar_drive": {
+      "name": "Stellar Drive",
+      "base_cost": 16,
+      "cost_mult": 1.5,
+      "base_time": 240,
+      "lab_req": 5,
+      "prereqs": {
+        "energy": 6
+      },
+      "icon": "\ud83c\udf1f",
+      "bonus": "+5% stellar ship speed",
+      "bonuses": [
+        {
+          "type": "speed_multiplier",
+          "drive": "stellar",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "plasma": {
+      "name": "Plasma",
+      "base_cost": 32,
+      "cost_mult": 1.5,
+      "base_time": 360,
+      "lab_req": 6,
+      "prereqs": {
+        "energy": 6,
+        "laser": 4
+      },
+      "icon": "\ud83d\udfe3",
+      "bonus": "+5% plasma weapon power",
+      "bonuses": [
+        {
+          "type": "weapon_power",
+          "weapon": "plasma",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "warp_drive": {
+      "name": "Warp Drive",
+      "base_cost": 64,
+      "cost_mult": 1.5,
+      "base_time": 400,
+      "lab_req": 8,
+      "prereqs": {
+        "energy": 8,
+        "stellar_drive": 4
+      },
+      "icon": "\ud83c\udf00",
+      "bonus": "Enables warp-drive ships",
+      "bonuses": [
+        {
+          "type": "unlock",
+          "unlocks": "warp_ships"
+        }
+      ]
+    },
+    "shielding": {
+      "name": "Shielding",
+      "base_cost": 128,
+      "cost_mult": 1.5,
+      "base_time": 480,
+      "lab_req": 10,
+      "prereqs": {
+        "energy": 10
+      },
+      "icon": "\ud83d\udd35",
+      "bonus": "+5% shield strength",
+      "bonuses": [
+        {
+          "type": "combat_stat",
+          "stat": "shield",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "ion": {
+      "name": "Ion",
+      "base_cost": 256,
+      "cost_mult": 1.5,
+      "base_time": 720,
+      "lab_req": 12,
+      "prereqs": {
+        "energy": 12,
+        "laser": 10
+      },
+      "icon": "\u269b\ufe0f",
+      "bonus": "+5% ion weapon power",
+      "bonuses": [
+        {
+          "type": "weapon_power",
+          "weapon": "ion",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "stealth": {
+      "name": "Stealth",
+      "base_cost": 512,
+      "cost_mult": 1.5,
+      "base_time": 800,
+      "lab_req": 14,
+      "prereqs": {
+        "energy": 14
+      },
+      "icon": "\ud83d\udc7b",
+      "bonus": "Decreases the time your own fleets can be detected before they arrive",
+      "bonuses": [
+        {
+          "type": "stealth",
+          "per_level": 0.1
+        }
+      ]
+    },
+    "photon": {
+      "name": "Photon",
+      "base_cost": 1024,
+      "cost_mult": 1.5,
+      "base_time": 1200,
+      "lab_req": 16,
+      "prereqs": {
+        "energy": 16,
+        "plasma": 8
+      },
+      "icon": "\u2728",
+      "bonus": "+5% photon weapon power",
+      "bonuses": [
+        {
+          "type": "weapon_power",
+          "weapon": "photon",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "artificial_intelligence": {
+      "name": "Artificial Intelligence",
+      "base_cost": 2048,
+      "cost_mult": 1.5,
+      "base_time": 1600,
+      "lab_req": 18,
+      "prereqs": {
+        "computer": 20
+      },
+      "icon": "\ud83e\udd16",
+      "bonus": "Increases all bases research output by 5%",
+      "bonuses": [
+        {
+          "type": "stat_multiplier",
+          "stat": "research",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "disruptor": {
+      "name": "Disruptor",
+      "base_cost": 4096,
+      "cost_mult": 1.5,
+      "base_time": 2000,
+      "lab_req": 20,
+      "prereqs": {
+        "energy": 20,
+        "laser": 18
+      },
+      "icon": "\ud83d\udca5",
+      "bonus": "+5% disruptor weapon power",
+      "bonuses": [
+        {
+          "type": "weapon_power",
+          "weapon": "disruptor",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "cybernetics": {
+      "name": "Cybernetics",
+      "base_cost": 8192,
+      "cost_mult": 1.5,
+      "base_time": 2400,
+      "lab_req": 22,
+      "prereqs": {
+        "artificial_intelligence": 6
+      },
+      "icon": "\ud83e\uddbe",
+      "bonus": "Increases all bases construction and production by 5%",
+      "bonuses": [
+        {
+          "type": "stat_multiplier",
+          "stat": "construction",
+          "per_level": 0.05
+        },
+        {
+          "type": "stat_multiplier",
+          "stat": "production",
+          "per_level": 0.05
+        }
+      ]
+    },
+    "tachyon_communications": {
+      "name": "Tachyon Communications",
+      "base_cost": 32768,
+      "cost_mult": 1.5,
+      "base_time": 3200,
+      "lab_req": 24,
+      "prereqs": {
+        "energy": 24,
+        "computer": 24
+      },
+      "icon": "\ud83d\udce1",
+      "bonus": "Allows 1 research link between 2 bases (min labs 20)",
+      "bonuses": [
+        {
+          "type": "research_link",
+          "per_level": 1,
+          "min_lab_level": 20
+        }
+      ]
+    },
+    "anti_gravity": {
+      "name": "Anti-Gravity",
+      "base_cost": 100000,
+      "cost_mult": 1.5,
+      "base_time": 4800,
+      "lab_req": 26,
+      "prereqs": {
+        "energy": 26,
+        "computer": 26
+      },
+      "icon": "\ud83d\udd2e",
+      "bonus": "Decreases orbital structures construction time by 5% and increases Capital Ship 2 speed by 5%",
+      "bonuses": [
+        {
+          "type": "orbital_build_time",
+          "per_level": -0.05
+        },
+        {
+          "type": "speed_multiplier",
+          "ship": "capital_ship_2",
+          "per_level": 0.05
+        }
+      ]
+    }
+  },
+  "defenses": {
+    "barracks": {
+      "name": "Barracks",
+      "desc": "Help protect your bases, the cheapest defense.",
+      "cost": 5,
+      "cost_mult": 1.5,
+      "energy_req": 0,
+      "pop_req": 1,
+      "area_req": 1,
+      "attack": 4,
+      "armour": 4,
+      "shield": 0,
+      "weapon": "laser",
+      "max_level": 50,
+      "req": {
+        "laser": 1
+      }
+    },
+    "laser_turrets": {
+      "name": "Laser Turrets",
+      "desc": "Small defenses, good against small units.",
+      "cost": 10,
+      "cost_mult": 1.5,
+      "energy_req": 1,
+      "pop_req": 1,
+      "area_req": 1,
+      "attack": 8,
+      "armour": 8,
+      "shield": 0,
+      "weapon": "laser",
+      "max_level": 50,
+      "req": {
+        "laser": 1
+      }
+    },
+    "missile_turrets": {
+      "name": "Missile Turrets",
+      "desc": "Small defenses, good against small and medium units.",
+      "cost": 20,
+      "cost_mult": 1.5,
+      "energy_req": 1,
+      "pop_req": 1,
+      "area_req": 1,
+      "attack": 16,
+      "armour": 16,
+      "shield": 0,
+      "weapon": "missiles",
+      "max_level": 50,
+      "req": {
+        "missiles": 1
+      }
+    },
+    "plasma_turrets": {
+      "name": "Plasma Turrets",
+      "desc": "Average defenses, good against medium units.",
+      "cost": 100,
+      "cost_mult": 1.5,
+      "energy_req": 2,
+      "pop_req": 1,
+      "area_req": 1,
+      "attack": 24,
+      "armour": 24,
+      "shield": 0,
+      "weapon": "plasma",
+      "max_level": 50,
+      "req": {
+        "plasma": 1,
+        "armour": 6
+      }
+    },
+    "ion_turrets": {
+      "name": "Ion Turrets",
+      "desc": "Average defenses, good against medium units.",
+      "cost": 250,
+      "cost_mult": 1.5,
+      "energy_req": 3,
+      "pop_req": 1,
+      "area_req": 1,
+      "attack": 40,
+      "armour": 40,
+      "shield": 2,
+      "weapon": "ion",
+      "max_level": 50,
+      "req": {
+        "ion": 1,
+        "armour": 10,
+        "shielding": 2
+      }
+    },
+    "photon_turrets": {
+      "name": "Photon Turrets",
+      "desc": "Big defenses, good against large units.",
+      "cost": 1000,
+      "cost_mult": 1.5,
+      "energy_req": 4,
+      "pop_req": 1,
+      "area_req": 1,
+      "attack": 80,
+      "armour": 80,
+      "shield": 6,
+      "weapon": "photon",
+      "max_level": 50,
+      "req": {
+        "photon": 1,
+        "armour": 14,
+        "shielding": 6
+      }
+    },
+    "disruptor_turrets": {
+      "name": "Disruptor Turrets",
+      "desc": "Biggest turrets, good against large units.",
+      "cost": 4000,
+      "cost_mult": 1.5,
+      "energy_req": 8,
+      "pop_req": 1,
+      "area_req": 1,
+      "attack": 320,
+      "armour": 320,
+      "shield": 8,
+      "weapon": "disruptor",
+      "max_level": 50,
+      "req": {
+        "disruptor": 1,
+        "armour": 18,
+        "shielding": 8
+      }
+    },
+    "deflection_shields": {
+      "name": "Deflection Shields",
+      "desc": "Strong shields that increase bases protection.",
+      "cost": 4000,
+      "cost_mult": 1.5,
+      "energy_req": 8,
+      "pop_req": 1,
+      "area_req": 1,
+      "attack": 2,
+      "armour": 640,
+      "shield": 16,
+      "weapon": "ion",
+      "max_level": 50,
+      "req": {
+        "ion": 6,
+        "shielding": 10
+      }
+    },
+    "planetary_shield": {
+      "name": "Planetary Shield",
+      "desc": "Massive shield protecting the entire planet.",
+      "cost": 25000,
+      "cost_mult": 1.5,
+      "energy_req": 16,
+      "pop_req": 1,
+      "area_req": 1,
+      "attack": 4,
+      "armour": 2000,
+      "shield": 20,
+      "weapon": "ion",
+      "max_level": 50,
+      "req": {
+        "ion": 10,
+        "shielding": 14
+      }
+    },
+    "planetary_ring": {
+      "name": "Planetary Ring",
+      "desc": "Orbital ring of heavy weapons platforms.",
+      "cost": 50000,
+      "cost_mult": 1.5,
+      "energy_req": 24,
+      "pop_req": 1,
+      "area_req": 0,
+      "attack": 1600,
+      "armour": 1000,
+      "shield": 12,
+      "weapon": "photon",
+      "max_level": 50,
+      "req": {
+        "photon": 10,
+        "armour": 22,
+        "shielding": 12
+      }
+    }
+  },
+  "weapon_types": {
+    "laser": {
+      "name": "Laser",
+      "shield_passthrough": 0.01
+    },
+    "missiles": {
+      "name": "Missiles",
+      "shield_passthrough": 0.01
+    },
+    "plasma": {
+      "name": "Plasma",
+      "shield_passthrough": 0.01
+    },
+    "ion": {
+      "name": "Ion",
+      "shield_passthrough": 0.5
+    },
+    "photon": {
+      "name": "Photon",
+      "shield_passthrough": 0.01
+    },
+    "disruptor": {
+      "name": "Disruptor",
+      "shield_passthrough": 0.01
+    }
+  },
+  "tutorial": "classic"
+}

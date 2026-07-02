@@ -1,0 +1,42 @@
+# Normalize all text files to LF on checkout and in the repo.
+# This prevents the CRLF/BOM churn introduced when editing on Windows.
+* text=auto eol=lf
+
+# Explicit text types (defensive)
+*.py    text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.html  text eol=lf
+*.css   text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf
+*.sh    text eol=lf
+
+# Binary files — never touch line endings or attempt diffs
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.db    binary
+*.sqlite binary
+*.jar   binary
+*.zip   binary
+*.gz    binary
+*.pdf   binary
+
+# ── Public export exclusions ──────────────────────────────────────────────
+# These stay in the private working repo but are stripped from `git archive`
+# (the clean public snapshot). Internal design/planning/process docs and
+# AI/agent config — not useful to someone using, running, or modding the engine.
+CLAUDE.md                                     export-ignore
+IMPLEMENTATION_DETAILS.md                     export-ignore
+EXTRACTION_REPORT.txt                         export-ignore
+docs/ROADMAP.md                               export-ignore
+docs/ship_capabilities_and_rosters_design.md  export-ignore
+docs/example_mods.md                          export-ignore
+docs/project_normalized_client_cache.md       export-ignore
+docs/action_point_economy_design.md           export-ignore
+docs/galaxy_topology_option_bank.md           export-ignore
+docs/graph_map_topology_design.md             export-ignore

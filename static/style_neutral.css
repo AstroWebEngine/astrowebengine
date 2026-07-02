@@ -1,0 +1,757 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Neutral AWE shell  (de-fingerprint UI lane)
+
+   Two independent layers, both selectable per ruleset (engine ui.theme /
+   ui.shell, with a localStorage user override):
+     [data-theme="neutral"]  — palette + density/radius tokens (color/feel)
+     [data-shell="neutral"]  — header/layout structure (flat single app bar)
+
+   The default (no attribute) keeps the classic look untouched. A
+   ruleset (e.g. stellar_conquest) opts into neutral; classic_empire stays classic.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── Neutral THEME: flat slate surfaces, one accent, comfortable density ── */
+[data-theme="neutral"] {
+  --bg-dark:       #0e1014;
+  --bg-panel:      #161922;
+  --bg-card:       #1c2029;
+  --bg-hover:      #232834;
+  --bg-header:     #181b23;
+  --border:        #2a2f3a;
+  --border-bright: #3a414f;
+
+  --accent:        #6ea8fe;   /* single neutral blue accent (was gold) */
+  --accent-glow:   #6ea8fe;
+  --accent2:       #6ea8fe;
+  --warn:          #e0a458;
+  --danger:        #e5534b;
+  --success:       #57b97a;
+  --success-dim:   #3f9460;
+
+  --text:          #d6dbe3;
+  --text-dim:      #8b94a3;
+  --text-bright:   #ffffff;
+  --link:          #6ea8fe;
+
+  --structures:    #7fc99a;
+  --defenses:      #d8a657;
+  --research:      #6ea8fe;
+  --production:    #c7cdd6;
+  --player-self:   #ffffff;
+  --player-guild:  #7fc99a;
+  --player-npc:    #d8a657;
+
+  --font-main: -apple-system, system-ui, 'Segoe UI', roboto, helvetica, arial, sans-serif;
+
+  /* density / shape tokens */
+  --awe-radius: 8px;
+  --awe-row-pad-y: 7px;
+  --awe-card-pad: 14px;
+  --awe-header-height: 52px;
+}
+
+/* Flatten gradient-heavy surfaces + soften type when the neutral theme is on. */
+[data-theme="neutral"] body { background: var(--bg-dark); }
+[data-theme="neutral"] table td,
+[data-theme="neutral"] table th { background-image: none !important; }
+[data-theme="neutral"] .panel,
+[data-theme="neutral"] .card,
+[data-theme="neutral"] .building-card,
+[data-theme="neutral"] .tech-card,
+[data-theme="neutral"] .research-card,
+[data-theme="neutral"] .fleet-card {
+  background: var(--bg-card);
+  border-radius: var(--awe-radius);
+  background-image: none !important;
+}
+
+/* ── Neutral SHELL: collapse the AE 3-row header into one flat app bar ── */
+
+/* Utility row → quiet right-aligned strip, no gold link-rail. */
+[data-shell="neutral"] #top-header {
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+}
+[data-shell="neutral"] #top-header .top-header-menu .awe-btn {
+  color: var(--text-dim);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11px;
+  font-weight: 400;
+  text-shadow: none;
+}
+[data-shell="neutral"] #top-header .top-header-menu .awe-btn:hover { color: var(--text); }
+[data-shell="neutral"] #top-header .awe-sep { display: none; }
+
+/* Main app bar: flat, no gradients, neutral. */
+[data-shell="neutral"] #main-header,
+[data-shell="neutral"] .main-header-row1 {
+  background: var(--bg-header) !important;
+  background-image: none !important;
+  box-shadow: none;
+  border-bottom: 1px solid var(--border);
+}
+[data-shell="neutral"] .main-header-logo {
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  text-shadow: none;
+}
+
+/* Nav tabs: flat pills, no separators, no uppercase/gold. */
+[data-shell="neutral"] .main-header-nav .awe-sep { display: none; }
+[data-shell="neutral"] .awe-nav-btn {
+  background: transparent !important;
+  background-image: none !important;
+  border: none;
+  border-radius: var(--awe-radius);
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  padding: 8px 14px;
+  margin: 0 1px;
+  box-shadow: none;
+  text-shadow: none;
+}
+[data-shell="neutral"] .awe-nav-btn:hover { background: var(--bg-hover) !important; color: var(--text-bright); }
+[data-shell="neutral"] .awe-nav-btn.active {
+  background: var(--bg-hover) !important;
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
+/* Infobox actions: flat, neutral. */
+[data-shell="neutral"] .main-header-infobox .awe-info-btn {
+  background: transparent !important;
+  background-image: none !important;
+  border: 1px solid var(--border);
+  border-radius: var(--awe-radius);
+  color: var(--text);
+  text-transform: none;
+  text-shadow: none;
+}
+[data-shell="neutral"] .main-header-infobox .awe-info-btn:hover { background: var(--bg-hover) !important; }
+
+/* Quieter ticker/stats row. */
+[data-shell="neutral"] .main-header-row2 {
+  background: var(--bg-panel) !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Slice 2: neutralize dense table / card / button / form surfaces ──
+   All scoped to [data-theme="neutral"] so the classic AE look is untouched.
+   Kills the high-fingerprint bits (per-td gradients, bright header bars,
+   uppercase/letter-spaced titles, hardcoded gold/blue button & input colors)
+   while preserving numeric alignment and mono columns. */
+
+[data-theme="neutral"] {
+  --awe-table-pad-y: 7px;
+  --awe-table-pad-x: 10px;
+  --awe-table-font-size: 12.5px;
+  --awe-section-gap: 14px;
+}
+
+/* Tables — flat rows, quiet header, comfortable density. */
+[data-theme="neutral"] .data-table th {
+  background: var(--bg-panel);
+  background-image: none;
+  color: var(--text-dim);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  font-size: 11.5px;
+  padding: var(--awe-table-pad-y) var(--awe-table-pad-x);
+  text-shadow: none;
+}
+[data-theme="neutral"] .data-table th a { color: var(--text); }
+[data-theme="neutral"] .data-table td {
+  background: transparent !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--border);
+  padding: var(--awe-table-pad-y) var(--awe-table-pad-x);
+  font-size: var(--awe-table-font-size);
+}
+[data-theme="neutral"] .data-table tr:hover td { background: var(--bg-hover) !important; }
+
+/* Panels & cards — flatten, radius token, no nested-card gradients. */
+[data-theme="neutral"] .panel,
+[data-theme="neutral"] .panel-body { background: var(--bg-card); background-image: none; }
+[data-theme="neutral"] .panel-header {
+  background: var(--bg-panel);
+  background-image: none;
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+}
+[data-theme="neutral"] .panel-title,
+[data-theme="neutral"] .section-title,
+[data-theme="neutral"] .subtab-title {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+  font-weight: 600;
+  text-shadow: none;
+}
+[data-theme="neutral"] .building-card,
+[data-theme="neutral"] .tech-card,
+[data-theme="neutral"] .research-card,
+[data-theme="neutral"] .fleet-card,
+[data-theme="neutral"] .card {
+  background: var(--bg-card) !important;
+  background-image: none !important;
+  border: 1px solid var(--border);
+  border-radius: var(--awe-radius);
+  box-shadow: none;
+}
+
+/* Buttons — neutral, flat, single accent for primary. */
+[data-theme="neutral"] .btn {
+  background: var(--bg-card);
+  background-image: none;
+  border: 1px solid var(--border);
+  border-radius: var(--awe-radius);
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: none;
+  text-shadow: none;
+}
+[data-theme="neutral"] .btn:hover { background: var(--bg-hover); }
+[data-theme="neutral"] .btn-primary { background: var(--accent); color: #0e1014; border-color: var(--accent); }
+[data-theme="neutral"] .btn-primary:hover { filter: brightness(1.08); background: var(--accent); }
+[data-theme="neutral"] .btn-ghost { background: transparent; border-color: var(--border); color: var(--text-dim); }
+
+/* Forms — neutral inputs (kill hardcoded #171F2F / #444). */
+[data-theme="neutral"] .form-group input,
+[data-theme="neutral"] .form-group select,
+[data-theme="neutral"] .form-group textarea,
+[data-theme="neutral"] .base-selector,
+[data-theme="neutral"] .ship-count-input {
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   Neutral THEME — Slice 3: de-fingerprint sweep (append-only)
+   Everything below is scoped under [data-theme="neutral"] so classic_empire
+   is untouched. This complements style_neutral.css; it does NOT duplicate the
+   header/shell, .data-table, .panel-title/.section-title, .btn/.btn-primary/
+   .btn-ghost, .form-group input, .base-selector, or .ship-count-input rules
+   that already live there.
+   GUARDRAIL: on map/density-critical selectors (.region-grid, .region-cell,
+   .starfield-*, .flatmap-galaxy-table, system/orbit/planet cells) only COLOR /
+   gradient / shadow is neutralized — never padding/size/layout.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Auth screen (logo + box) ──────────────────────────────────────────── */
+[data-theme="neutral"] .auth-logo h1 {
+  text-shadow: none;
+  text-transform: none;
+}
+[data-theme="neutral"] .auth-logo p { text-transform: none; }
+[data-theme="neutral"] .auth-box { box-shadow: none; }
+
+/* ── Form labels & generic inputs not covered by .form-group ───────────── */
+[data-theme="neutral"] .form-group label,
+[data-theme="neutral"] .config-key {
+  text-transform: none;
+  letter-spacing: normal;
+}
+[data-theme="neutral"] .config-item input,
+[data-theme="neutral"] .config-item select,
+[data-theme="neutral"] .base-local-select,
+[data-theme="neutral"] .galaxy-select,
+[data-theme="neutral"] .map-side-coord-jump input {
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* ── Buttons: semantic colors, flat surfaces, no inset glow / text-shadow ─ */
+[data-theme="neutral"] .btn { /* inset glow leak not killed in base block */
+  box-shadow: none;
+}
+[data-theme="neutral"] .btn-success,
+[data-theme="neutral"] .btn-success:hover { background: var(--success); border-color: var(--success); }
+[data-theme="neutral"] .btn-warn,
+[data-theme="neutral"] .btn-warn:hover { background: var(--warn); border-color: var(--warn); }
+[data-theme="neutral"] .btn-danger,
+[data-theme="neutral"] .btn-danger:hover { background: var(--danger); border-color: var(--danger); }
+[data-theme="neutral"] .awe-btn { text-shadow: none; }
+
+/* Input-button family (classic action buttons). */
+[data-theme="neutral"] .input-button {
+  background: var(--bg-dark);
+  border: 1px solid var(--border-bright);
+  color: var(--text-bright);
+  text-shadow: none;
+}
+[data-theme="neutral"] .input-button-important { background: var(--danger); border-color: var(--danger); }
+[data-theme="neutral"] .input-button-accept { background: var(--success); border-color: var(--success); }
+[data-theme="neutral"] .input-button-disabled { background: var(--bg-dark); }
+
+/* Galaxy tabs (button-styled). */
+[data-theme="neutral"] .galaxy-tab { background: var(--bg-card); }
+[data-theme="neutral"] .galaxy-tab.active { background: var(--bg-hover); }
+
+/* ── Header / nav residue not in shell block (theme-only fallbacks) ─────── */
+[data-theme="neutral"] #top-header,
+[data-theme="neutral"] .main-header-row1,
+[data-theme="neutral"] .main-header-row2 {
+  background: var(--bg-dark);
+  background-image: none;
+  box-shadow: none;
+}
+[data-theme="neutral"] .main-header-logo {
+  text-transform: none;
+  text-shadow: none;
+}
+[data-theme="neutral"] .awe-nav-btn {
+  background: var(--bg-card);
+  background-image: none;
+  border: 1px solid var(--border);
+  text-shadow: none;
+  box-shadow: none;
+}
+[data-theme="neutral"] .awe-nav-btn:hover,
+[data-theme="neutral"] .awe-nav-btn.active {
+  background: var(--bg-hover);
+  background-image: none;
+  border-color: var(--accent);
+}
+[data-theme="neutral"] .awe-info-btn {
+  background: var(--bg-card);
+  background-image: none;
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+[data-theme="neutral"] .awe-info-btn:hover { background: var(--bg-hover); background-image: none; }
+
+/* ── Uppercase / letter-spaced labels across the app ───────────────────── */
+[data-theme="neutral"] .hlabel,
+[data-theme="neutral"] .mininav-label,
+[data-theme="neutral"] .stat-mini .label,
+[data-theme="neutral"] .map-side-label,
+[data-theme="neutral"] .map-section-title,
+[data-theme="neutral"] .map-system-empty,
+[data-theme="neutral"] .astro-orb-label,
+[data-theme="neutral"] .badge,
+[data-theme="neutral"] .admin-title,
+[data-theme="neutral"] .admin-tabs .awe-nav-btn,
+[data-theme="neutral"] .base-local-icon-link,
+[data-theme="neutral"] .base-mini-label,
+[data-theme="neutral"] .base-overview-box-title,
+[data-theme="neutral"] .base-overview-section-title,
+[data-theme="neutral"] .base-queue-title,
+[data-theme="neutral"] .base-list-divider,
+[data-theme="neutral"] #tab-account .data-table td:first-child,
+[data-theme="neutral"] .coord-link,
+[data-theme="neutral"] .guild-profile-tag,
+[data-theme="neutral"] .snapshot-badge,
+[data-theme="neutral"] .mobile-nav-label,
+[data-theme="neutral"] .awe-tab-bar a,
+[data-theme="neutral"] #guild-edit-tag {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* ── Tables (beyond .data-table) — borders & active rows ───────────────── */
+[data-theme="neutral"] .data-table tr.row-active td,
+[data-theme="neutral"] .base-prod-active-row td,
+[data-theme="neutral"] .base-overview-resource-table td {
+  background: var(--bg-hover);
+}
+[data-theme="neutral"] .base-overview-resource-table td,
+[data-theme="neutral"] .bd-struct-table td { /* color only — sizing untouched */
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Status / semantic text colors (event log, player tags, fields) ────── */
+[data-theme="neutral"] .ev-structures,
+[data-theme="neutral"] .events-structures { color: var(--structures); }
+[data-theme="neutral"] .ev-defenses,
+[data-theme="neutral"] .events-defenses { color: var(--defenses); }
+[data-theme="neutral"] .ev-research,
+[data-theme="neutral"] .events-research { color: var(--research); }
+[data-theme="neutral"] .ev-credits { color: var(--accent); }
+[data-theme="neutral"] .player-self,
+[data-theme="neutral"] .player-self a { color: var(--player-self); }
+[data-theme="neutral"] .player-guild,
+[data-theme="neutral"] .player-guild a { color: var(--player-guild); }
+[data-theme="neutral"] .player-npc,
+[data-theme="neutral"] .player-npc a { color: var(--player-npc); }
+[data-theme="neutral"] .fld-active,
+[data-theme="neutral"] .fld-active a { color: var(--text-bright); }
+[data-theme="neutral"] .fld-disabled,
+[data-theme="neutral"] .fld-disabled a,
+[data-theme="neutral"] .inactive,
+[data-theme="neutral"] .comment { color: var(--text-dim); }
+[data-theme="neutral"] .fld-special,
+[data-theme="neutral"] .fld-special a { color: var(--accent-glow); }
+[data-theme="neutral"] .fld-important,
+[data-theme="neutral"] .fld-important a { color: var(--danger); }
+[data-theme="neutral"] .hilite { color: var(--warn); }
+[data-theme="neutral"] .mini-action { color: var(--accent2); }
+[data-theme="neutral"] .mini-action:hover { color: var(--text-bright); text-shadow: none; }
+
+/* ── Badges ────────────────────────────────────────────────────────────── */
+[data-theme="neutral"] .badge-info { color: var(--accent); }
+[data-theme="neutral"] .badge-dim { color: var(--text-dim); }
+[data-theme="neutral"] .badge-success { color: var(--success); }
+[data-theme="neutral"] .notif-badge,
+[data-theme="neutral"] .top-badge { color: var(--text-bright); }
+[data-theme="neutral"] .ship-chip {
+  background: rgba(110,168,254,0.06);
+  border: 1px solid rgba(110,168,254,0.15);
+}
+[data-theme="neutral"] .snapshot-badge { background: var(--bg-dark); color: var(--accent); }
+[data-theme="neutral"] .debris-badge {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+
+/* ── Coord / bbcode links ──────────────────────────────────────────────── */
+[data-theme="neutral"] .coord-link,
+[data-theme="neutral"] .bbcode-content a,
+[data-theme="neutral"] .available-section[open] summary { color: var(--accent2); }
+[data-theme="neutral"] .coord-link:hover { color: var(--accent2); }
+[data-theme="neutral"] .bbcode-content a:hover,
+[data-theme="neutral"] .available-section summary:hover,
+[data-theme="neutral"] .bd-action-link:hover,
+[data-theme="neutral"] .bbcode-color-swatch:hover { color: var(--accent); border-color: var(--accent); }
+[data-theme="neutral"] .bbcode-content img,
+[data-theme="neutral"] .bbcode-color-swatch,
+[data-theme="neutral"] .bbcode-toolbar,
+[data-theme="neutral"] .res-bar { border: 1px solid var(--border); }
+[data-theme="neutral"] .res-label,
+[data-theme="neutral"] .available-section summary { color: var(--text-dim); }
+[data-theme="neutral"] .res-nums { color: var(--text-bright); }
+
+/* ── Map / sidebar panels (COLOR ONLY — no sizing on density surfaces) ─── */
+[data-theme="neutral"] .map-side-box,
+[data-theme="neutral"] .map-side-picker,
+[data-theme="neutral"] .map-side-region-display,
+[data-theme="neutral"] .map-side-section-switch,
+[data-theme="neutral"] .galaxy-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+[data-theme="neutral"] .map-side-region-display { color: var(--text); }
+[data-theme="neutral"] .map-side-section-switch { border-color: var(--border-bright); }
+[data-theme="neutral"] .map-side-section-switch::before,
+[data-theme="neutral"] .map-side-section-switch::after { background: var(--text); }
+[data-theme="neutral"] .map-side-section-body { border-bottom: 1px solid var(--border); }
+[data-theme="neutral"] .map-side-count { color: var(--text-bright); }
+[data-theme="neutral"] .map-side-picker-item,
+[data-theme="neutral"] .map-system-empty-label { color: var(--text-dim); }
+[data-theme="neutral"] .map-side-tab {
+  background: var(--bg-card);
+  background-image: none;
+  border: 1px solid var(--border);
+}
+[data-theme="neutral"] .map-side-tab.active,
+[data-theme="neutral"] .map-side-tab.picker-open { border-color: var(--accent); box-shadow: none; }
+[data-theme="neutral"] .map-side-back,
+[data-theme="neutral"] .map-side-go {
+  background: var(--bg-card);
+  background-image: none;
+  border: 1px solid var(--border-bright);
+}
+
+/* Map viewports & starfields — flatten radial/linear bg to a flat surface.
+   No padding/size touched (these define the play area). */
+[data-theme="neutral"] .map-view,
+[data-theme="neutral"] .region-grid-viewport,
+[data-theme="neutral"] .starfield-map,
+[data-theme="neutral"] .starfield-map-region {
+  background: var(--bg-dark);
+  background-image: none;
+}
+[data-theme="neutral"] .map-view { border: 1px solid var(--border); }
+[data-theme="neutral"] .starfield-map-region { box-shadow: none; }
+[data-theme="neutral"] .map-galaxy-density { background: transparent; background-image: none; }
+
+/* Region grid / cells — color & border only (sizing is load-bearing). */
+[data-theme="neutral"] .region-grid { border: 1px solid var(--border); }
+[data-theme="neutral"] .region-cell {
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+}
+[data-theme="neutral"] .region-cell:hover,
+[data-theme="neutral"] .region-cell.void:hover { background: var(--bg-hover); }
+[data-theme="neutral"] .region-cell:hover { outline-color: var(--accent); }
+[data-theme="neutral"] .region-cell.active { background: rgba(110,168,254,0.1); }
+[data-theme="neutral"] .region-cell.fog { background: var(--bg-dark); }
+[data-theme="neutral"] .region-cell.fog:hover { background: var(--bg-hover); }
+[data-theme="neutral"] .region-cell.fog .rg-name { border-color: var(--border); }
+[data-theme="neutral"] .region-cell.snapshot { background: var(--bg-card); }
+[data-theme="neutral"] .void-name { color: var(--text) !important; }
+[data-theme="neutral"] .rg-name {
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  text-shadow: none;
+}
+[data-theme="neutral"] .rg-cell-label,
+[data-theme="neutral"] .rg-cell-meta {
+  color: var(--text-dim);
+  letter-spacing: normal;
+  text-shadow: none;
+}
+
+/* Starfield stars / labels — color only. */
+[data-theme="neutral"] .starfield-bg-star { background: var(--text-bright); }
+[data-theme="neutral"] .starfield-label { color: var(--text-dim); text-shadow: none; }
+[data-theme="neutral"] .starfield-system:hover .starfield-label { color: var(--text-bright); text-shadow: none; }
+[data-theme="neutral"] .star-mine .starfield-star,
+[data-theme="neutral"] .star-mine .starfield-star-img,
+[data-theme="neutral"] .star-enemy .starfield-star,
+[data-theme="neutral"] .star-enemy .starfield-star-img { box-shadow: none; }
+[data-theme="neutral"] .star-mine .starfield-label { color: var(--success); }
+[data-theme="neutral"] .star-enemy .starfield-label { color: var(--danger); }
+
+/* Galaxy highlight ring — strip gold glow, neutral ring. */
+[data-theme="neutral"] .map-galaxy-highlight-base::before {
+  border: 1px solid var(--accent);
+  box-shadow: none;
+  background: transparent;
+}
+[data-theme="neutral"] .map-galaxy-highlight-base::after {
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+[data-theme="neutral"] .map-galaxy-highlight:hover::before { box-shadow: none; }
+
+/* System cells / boxes — flatten gradient, semantic borders (color only). */
+[data-theme="neutral"] .map-system-cell,
+[data-theme="neutral"] .map-system-box {
+  background: var(--bg-card);
+  background-image: none;
+  box-shadow: none;
+}
+[data-theme="neutral"] .map-system-box { border: 1px solid var(--border); }
+[data-theme="neutral"] .map-system-cell:hover { background: var(--bg-hover); background-image: none; }
+[data-theme="neutral"] .map-system-cell.mine { border-color: var(--success); }
+[data-theme="neutral"] .map-system-cell.enemy { border-color: var(--danger); }
+[data-theme="neutral"] .map-system-astro-img { border: 1px solid var(--border); }
+[data-theme="neutral"] .map-system-astro-visual.fogged::before { background: none; box-shadow: none; }
+[data-theme="neutral"] .map-system-astro-visual.has-debris::after { color: var(--warn); text-shadow: none; }
+[data-theme="neutral"] .astro-orb-label { color: var(--text); text-shadow: none; }
+
+/* Star glints on system tiles — kill the gold/white radial sheen. */
+[data-theme="neutral"] .map-system-yellow::before,
+[data-theme="neutral"] .map-system-orange::before,
+[data-theme="neutral"] .map-system-white::before,
+[data-theme="neutral"] .map-system-white-dwarf::before,
+[data-theme="neutral"] .map-system-neutron::before,
+[data-theme="neutral"] .map-system-blue::before,
+[data-theme="neutral"] .map-system-blue-giant::before,
+[data-theme="neutral"] .map-system-red::before,
+[data-theme="neutral"] .map-system-red-giant::before,
+[data-theme="neutral"] .map-system-super-giant::before { background: none; }
+
+/* System planet tiles — neutral borders (color only). */
+[data-theme="neutral"] .sys-planet.colonized { border-color: var(--border); }
+[data-theme="neutral"] .sys-planet.mine { border-color: var(--border); background: var(--bg-hover); }
+
+/* flat galaxy table — color only, never sizing. */
+[data-theme="neutral"] .flatmap-nav-item,
+[data-theme="neutral"] .flatmap-astro { color: var(--text-bright); }
+[data-theme="neutral"] .flatmap-nav select,
+[data-theme="neutral"] .flatmap-sys-input {
+  background: var(--bg-card);
+  color: var(--text-bright);
+  border: 1px solid var(--border);
+}
+[data-theme="neutral"] .flatmap-step {
+  background: var(--bg-card);
+  color: var(--accent2);
+  border: 1px solid var(--border);
+}
+[data-theme="neutral"] .flatmap-step:hover,
+[data-theme="neutral"] .flatmap-row:hover,
+[data-theme="neutral"] .flatmap-row.mine { background: var(--bg-hover); }
+[data-theme="neutral"] .flatmap-row.enemy { background: var(--bg-dark); }
+[data-theme="neutral"] .flatmap-loc { color: var(--accent); }
+[data-theme="neutral"] .flatmap-galaxy-table th { color: var(--text-dim); border-bottom: 1px solid var(--border); }
+[data-theme="neutral"] .flatmap-galaxy-table td { border-bottom: 1px solid var(--border); }
+[data-theme="neutral"] .flatmap-pos,
+[data-theme="neutral"] .flatmap-coord { color: var(--text-dim); }
+
+/* ── Base detail / overview panels — flatten gradients, neutral borders ── */
+[data-theme="neutral"] .base-local-shell,
+[data-theme="neutral"] .base-overview-shell,
+[data-theme="neutral"] .base-local-icon-link {
+  background: var(--bg-panel);
+  background-image: none;
+  box-shadow: none;
+}
+[data-theme="neutral"] .base-local-icon-link {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+[data-theme="neutral"] .base-local-icon-link:hover { border-color: var(--border); }
+[data-theme="neutral"] .base-local-cell { border-left: 1px solid var(--border); border-top: 1px solid var(--border); }
+[data-theme="neutral"] .base-local-menu { border-top: 1px solid var(--border); }
+[data-theme="neutral"] .base-overview-specs,
+[data-theme="neutral"] .base-overview-info { background: var(--bg-dark); }
+[data-theme="neutral"] .base-overview-specs { border-right: 1px solid var(--border); }
+[data-theme="neutral"] .base-overview-info { border-left: 1px solid var(--border); }
+[data-theme="neutral"] .base-overview-planet,
+[data-theme="neutral"] .base-planet-img-wrap,
+[data-theme="neutral"] .bd-planet-image {
+  background: var(--bg-dark);
+  background-image: none;
+}
+[data-theme="neutral"] .bd-astro-img { box-shadow: none; }
+[data-theme="neutral"] .base-queue-item,
+[data-theme="neutral"] .base-item-row { border-bottom: 1px solid var(--border); }
+[data-theme="neutral"] .base-queue-active { background: var(--bg-hover); }
+
+/* ── Account / guild panels — flatten gradients, kill inset glow ───────── */
+[data-theme="neutral"] .account-nav-group,
+[data-theme="neutral"] .account-content-shell,
+[data-theme="neutral"] .account-box,
+[data-theme="neutral"] .account-private-notify,
+[data-theme="neutral"] .account-password-box,
+[data-theme="neutral"] .guild-profile-specs,
+[data-theme="neutral"] .guild-profile-description,
+[data-theme="neutral"] .guild-create-box,
+[data-theme="neutral"] .guild-internal-shell,
+[data-theme="neutral"] .guild-graphs-menu,
+[data-theme="neutral"] .guild-graphs-compare,
+[data-theme="neutral"] .guild-graphs-chart-wrap,
+[data-theme="neutral"] .guild-edit-body-wrap,
+[data-theme="neutral"] .guild-edit-board-table-wrap {
+  background: var(--bg-card);
+  background-image: none;
+  box-shadow: none;
+}
+[data-theme="neutral"] .account-box,
+[data-theme="neutral"] .account-private-notify,
+[data-theme="neutral"] .account-password-box,
+[data-theme="neutral"] .guild-internal-content,
+[data-theme="neutral"] .guild-internal-preview { border: 1px solid var(--border); }
+[data-theme="neutral"] .guild-internal-content,
+[data-theme="neutral"] .guild-internal-preview { background: var(--bg-dark); }
+[data-theme="neutral"] .guild-profile-emblem { box-shadow: none; }
+[data-theme="neutral"] .guild-profile-name,
+[data-theme="neutral"] .guild-empty-title,
+[data-theme="neutral"] .guild-directory-title,
+[data-theme="neutral"] .guild-create-title,
+[data-theme="neutral"] .guild-profile-tag,
+[data-theme="neutral"] .account-box-title { text-shadow: none; }
+[data-theme="neutral"] .guild-member-self td { background: var(--bg-hover); background-image: none; }
+
+/* Account sidebar links — flatten gradient, neutral active state. */
+[data-theme="neutral"] .account-nav-group .awe-sidebar-link {
+  background: var(--bg-card);
+  background-image: none;
+  border: 1px solid var(--border);
+  text-shadow: none;
+}
+[data-theme="neutral"] .account-nav-group .awe-sidebar-link:hover { background: var(--bg-hover); background-image: none; }
+[data-theme="neutral"] .account-nav-group .awe-sidebar-link.active,
+[data-theme="neutral"] .awe-sidebar-link.active {
+  background: var(--accent);
+  background-image: none;
+  color: var(--bg-dark);
+  border-color: var(--accent);
+}
+
+/* Account/guild tab bar — flatten gradient pills, neutral active. */
+[data-theme="neutral"] .awe-tab-bar a {
+  background: var(--bg-panel);
+  background-image: none;
+  border: 1px solid var(--border);
+  text-shadow: none;
+}
+[data-theme="neutral"] .awe-tab-bar a:hover { background: var(--bg-hover); background-image: none; }
+[data-theme="neutral"] .awe-tab-bar a.active {
+  background: var(--accent);
+  background-image: none;
+  border-color: var(--accent);
+}
+
+/* Skin swatches — keep the swatch readable but drop the literal cyan/gold. */
+[data-theme="neutral"] .skin-swatch-blue-nova { background: linear-gradient(135deg, var(--bg-card) 50%, var(--accent) 100%); }
+
+/* ── Modals & banners ──────────────────────────────────────────────────── */
+[data-theme="neutral"] .modal-overlay { background: rgba(0,0,0,0.6); }
+[data-theme="neutral"] .modal { box-shadow: 0 12px 60px rgba(0,0,0,0.8); }
+[data-theme="neutral"] .win-banner,
+[data-theme="neutral"] .occupy-banner {
+  background: var(--bg-panel);
+  background-image: none;
+  text-shadow: none;
+}
+[data-theme="neutral"] .occupy-banner { background: var(--bg-card); border-bottom: 1px solid var(--border); }
+[data-theme="neutral"] .snapshot-notice {
+  background: rgba(110,168,254,0.08);
+  border: 1px solid rgba(110,168,254,0.3);
+}
+
+/* ── Mobile — shadow/border only; no padding changes (keep < 390px safe) ─ */
+[data-theme="neutral"] .mobile-more-menu { box-shadow: none; }
+[data-theme="neutral"] .base-local-cell { border-top: 1px solid var(--border); }
+
+/* ── Slice A (structural): Tools menu replaces the AE utility link rail ──
+   The .awe-tools dropdown lives in the app bar but is hidden everywhere except
+   the neutral shell; classic keeps its #top-header rail untouched. */
+.awe-tools { display: none; position: relative; }
+
+[data-shell="neutral"] .awe-tools { display: inline-block; }
+[data-shell="neutral"] #top-header { display: none; }   /* utility rail folded into Tools */
+[data-shell="neutral"] .news-ticker { display: none; }  /* quieter row2: stats only */
+
+[data-shell="neutral"] .awe-tools-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 150px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--awe-radius);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+  padding: 6px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+[data-shell="neutral"] .awe-tools-menu .awe-btn {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 6px;
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: 0;
+  text-shadow: none;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+[data-shell="neutral"] .awe-tools-menu .awe-btn:hover { background: var(--bg-hover); }
+[data-shell="neutral"] .awe-tools-time {
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  padding: 6px 10px 2px;
+  color: var(--text-dim);
+  font-size: 10.5px;
+}
+
+/* Mobile: the bottom mobile-more menu already carries these links; the infobox
+   is a horizontal scroll strip there, so hide the Tools entry to avoid an
+   undiscoverable rightmost button. */
+@media (max-width: 640px) {
+  [data-shell="neutral"] .awe-tools { display: none; }
+}

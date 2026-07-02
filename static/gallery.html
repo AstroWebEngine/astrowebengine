@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Made with AstroWebEngine</title>
+<link rel="stylesheet" href="/static/style.css" />
+<style>
+  :root{
+    --g-bg: var(--bg-deep, #0a0e17);
+    --g-panel: var(--bg, #121826);
+    --g-text: var(--text, #e6ecf5);
+    --g-dim: var(--text-dim, #8b97ad);
+    --g-accent: var(--accent, #4aa3ff);
+    --g-border: var(--border, #233048);
+  }
+  * { box-sizing: border-box; }
+  html, body { max-width:100%; overflow-x:hidden; }
+  body{
+    margin:0; min-height:100vh; color:var(--g-text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 70% -10%, rgba(74,163,255,.10), transparent 60%),
+      radial-gradient(900px 500px at 10% 110%, rgba(70,209,127,.08), transparent 60%),
+      var(--g-bg);
+  }
+  .wrap{ max-width:1120px; margin:0 auto; padding:48px 20px 80px; }
+  header.hero{ text-align:center; margin-bottom:40px; }
+  .hero h1{ font-size:clamp(28px,5vw,44px); margin:0 0 10px; letter-spacing:-.5px; }
+  .hero h1 .accent{ color:var(--g-accent); }
+  .hero p{ color:var(--g-dim); font-size:16px; max-width:640px; margin:0 auto 18px; line-height:1.55; }
+  .hero .links a{ color:var(--g-accent); text-decoration:none; font-size:13px; margin:0 10px; border-bottom:1px solid transparent; }
+  .hero .links a:hover{ border-color:var(--g-accent); }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px; }
+  .card{ background:var(--g-panel); border:1px solid var(--g-border); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; transition:transform .15s ease, border-color .15s ease; }
+  .card:hover{ transform:translateY(-3px); border-color:var(--g-accent); }
+  .thumb{ aspect-ratio:16/9; background-size:cover; background-position:center; display:flex; align-items:center; justify-content:center; font-size:42px; font-weight:800; color:rgba(255,255,255,.9); position:relative; }
+  .badge{ position:absolute; top:10px; left:10px; background:var(--g-accent); color:#04121f; font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px; text-transform:uppercase; letter-spacing:.5px; }
+  .body{ padding:14px 16px 16px; display:flex; flex-direction:column; flex:1; }
+  .body h3{ margin:0 0 6px; font-size:17px; }
+  .tagline{ color:var(--g-dim); font-size:13px; line-height:1.45; flex:1; margin-bottom:12px; }
+  .tags{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px; }
+  .chip{ font-size:10px; color:var(--g-dim); border:1px solid var(--g-border); border-radius:20px; padding:2px 8px; }
+  .meta{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .creator{ color:var(--g-dim); font-size:12px; }
+  .creator a{ color:var(--g-dim); }
+  .play{ background:var(--g-accent); color:#04121f; text-decoration:none; font-weight:700; font-size:13px; padding:7px 14px; border-radius:8px; white-space:nowrap; }
+  .play:hover{ filter:brightness(1.12); }
+  .submit{ border:1px dashed var(--g-border); border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:28px; color:var(--g-dim); text-decoration:none; min-height:160px; }
+  .submit:hover{ border-color:var(--g-accent); }
+  .submit h3{ color:var(--g-text); margin:0 0 8px; font-size:16px; }
+  .submit code{ color:var(--g-accent); background:rgba(74,163,255,.10); padding:1px 5px; border-radius:4px; }
+  .empty{ text-align:center; color:var(--g-dim); padding:40px; grid-column:1/-1; }
+  footer{ text-align:center; color:var(--g-dim); font-size:12px; margin-top:54px; }
+  footer a{ color:var(--g-dim); }
+  @media (max-width: 640px) {
+    .wrap { padding: 30px 14px 52px; }
+    header.hero { text-align: left; margin-bottom: 26px; }
+    .hero h1 { font-size: 29px; line-height: 1.12; letter-spacing: 0; }
+    .hero p { font-size: 15px; margin-left: 0; margin-right: 0; }
+    .hero .links {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .hero .links a {
+      margin: 0;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--g-border);
+      border-radius: 8px;
+      background: rgba(255,255,255,.02);
+    }
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
+    }
+    .card { border-radius: 10px; }
+    .body { padding: 13px 14px 15px; }
+    .meta {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .play {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 40px;
+      width: 100%;
+    }
+    .submit { min-height: 140px; padding: 22px 16px; }
+    footer { margin-top: 34px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>Made with <span class="accent">AstroWebEngine</span></h1>
+    <p>A gallery of browser-based, multiplayer space-strategy games built on the open-source engine. Each one is hosted by its creator — click through to play.</p>
+    <div class="links">
+      <a href="https://github.com/AstroWebEngine/astrowebengine" target="_blank" rel="noopener">⭐ Engine on GitHub</a>
+      <a href="/">▶ Play the demo</a>
+    </div>
+  </header>
+  <div class="grid" id="grid"><div class="empty">Loading games…</div></div>
+  <footer>
+    Powered by <a href="https://github.com/AstroWebEngine/astrowebengine" target="_blank" rel="noopener">AstroWebEngine</a> — a data-driven engine for multiplayer space-strategy games.
+  </footer>
+</div>
+<script>
+  const REPO = 'https://github.com/AstroWebEngine/astrowebengine';
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const isUrl = u => /^https?:\/\//i.test(u || '') || String(u || '').startsWith('/');
+  function gradient(name){
+    let h = 0; for (const ch of String(name || '?')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    return `linear-gradient(135deg, hsl(${h % 360} 60% 28%), hsl(${(h >> 3) % 360} 55% 17%))`;
+  }
+  function card(g){
+    const hasImg = g.image && isUrl(g.image);
+    const thumbStyle = hasImg ? `background-image:url('${esc(g.image)}')` : `background:${gradient(g.name)}`;
+    const initial = esc(String(g.name || '?').trim().charAt(0).toUpperCase());
+    const badge = g.featured ? '<span class="badge">Featured</span>' : '';
+    const tags = (Array.isArray(g.tags) ? g.tags : []).slice(0, 4).map(t => `<span class="chip">${esc(t)}</span>`).join('');
+    const creator = (g.creator_url && isUrl(g.creator_url))
+      ? `by <a href="${esc(g.creator_url)}" target="_blank" rel="noopener">${esc(g.creator || '')}</a>`
+      : (g.creator ? `by ${esc(g.creator)}` : '');
+    const playUrl = isUrl(g.url) ? esc(g.url) : '#';
+    return `<div class="card">
+      <div class="thumb" style="${thumbStyle}">${hasImg ? '' : initial}${badge}</div>
+      <div class="body">
+        <h3>${esc(g.name || 'Untitled')}</h3>
+        <div class="tagline">${esc(g.tagline || '')}</div>
+        ${tags ? `<div class="tags">${tags}</div>` : ''}
+        <div class="meta">
+          <span class="creator">${creator}</span>
+          <a class="play" href="${playUrl}" target="_blank" rel="noopener noreferrer">Play &rarr;</a>
+        </div>
+      </div>
+    </div>`;
+  }
+  const submitCard = () => `<a class="submit" href="${REPO}/blob/master/static/games.json" target="_blank" rel="noopener">
+      <h3>+ Add your game</h3>
+      <div>Built something with AstroWebEngine?<br>Edit <code>static/games.json</code> and open a pull request.</div>
+    </a>`;
+  fetch('/static/games.json', { cache: 'no-cache' })
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(data => {
+      const games = (data && Array.isArray(data.games)) ? data.games : [];
+      const ordered = [...games.filter(g => g.featured), ...games.filter(g => !g.featured)];
+      document.getElementById('grid').innerHTML = ordered.map(card).join('') + submitCard();
+    })
+    .catch(() => {
+      document.getElementById('grid').innerHTML =
+        '<div class="empty">Couldn&#39;t load the games list yet.</div>' + submitCard();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+AstroWebEngine License (v1.0)
+
+Copyright (c) 2026 Steven Graham ("AstroWebEngine", "AWE").
+
+Permission is hereby granted, free of charge, to any person or organization
+(the "Operator") obtaining a copy of this software and associated files (the
+"Engine") to use, copy, modify, merge, publish, and distribute the Engine, and
+to build and operate games and other works with it (a "Derived Work"), subject
+to the following conditions:
+
+1. Copyright & license notice.
+   The above copyright notice, this license, and the accompanying NOTICE (if
+   any) must be included in all copies or substantial portions of the Engine.
+
+2. Attribution (the "Powered by AstroWebEngine" requirement).
+   Every publicly accessible Derived Work must preserve clear, visible
+   attribution to AstroWebEngine. Specifically, the Operator must NOT remove,
+   hide, obscure, or alter, and must keep functional:
+     (a) the visible "Powered by AstroWebEngine" notice shown in the user
+         interface, with a working link to the AstroWebEngine homepage;
+     (b) the machine-readable identity response served at "/api/engine" and at
+         "/.well-known/astrowebengine"; and
+     (c) the "X-Powered-By: AstroWebEngine" HTTP response header.
+   The attribution may be styled to fit the Derived Work but must remain
+   legible and discoverable by an ordinary user and by an automated check.
+
+3. No misrepresentation.
+   The Operator must not represent the Engine, in whole or in substantial part,
+   as their own engine, framework, or original work, nor remove the attribution
+   in 2 in order to do so. Naming an individual game built on the Engine is
+   fine; claiming authorship of the Engine itself is not.
+
+4. Optional registry.
+   The Engine may offer to register a Derived Work with a public AstroWebEngine
+   registry. Registration is OPT-IN and disabled by default; nothing in this
+   license requires an Operator to enable it.
+
+5. No warranty.
+   THE ENGINE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING
+   FROM, OUT OF, OR IN CONNECTION WITH THE ENGINE OR ITS USE.
+
+6. Termination.
+   Any breach of Section 2 or 3 automatically terminates the rights granted by
+   this license until the breach is cured.
+
+This license covers the Engine itself. Game-specific content authored by an
+Operator (game rules, names, art, balance) belongs to that Operator.

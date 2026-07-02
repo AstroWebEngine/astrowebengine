@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "name": "Multi-Resource (Metal / Crystal / Deuterium)",
+    "version": "1.0",
+    "description": "Three separate resources mined and spent independently — a multi-resource economy.",
+    "component_type": "resources"
+  },
+  "engine": {
+    "resource_model": "multi",
+    "resource_types": ["metal", "crystal", "deuterium"]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "classic_empire",
+  "name": "Classic Empire",
+  "version": "1.0",
+  "author": "AstroWebEngine showcase",
+  "engine_api": "1.0",
+  "kind": "ruleset",
+  "definition": "definition.json",
+  "description": "Neutral persistent hierarchical-galaxy 4X clone: single-resource economy, simultaneous combat, upgrade-level defenses, 20-ship tiered roster (generic names). One of two showcase clones proving the engine is configurable; the multi-resource mod sits at the opposite flag corner.",
+  "requires": [],
+  "conflicts": [],
+  "load_order": 100
+}

@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "name": "Hardcore Rules overlay",
+    "version": "1.0",
+    "description": "Tougher survival: no defense repair, richer spoils, tighter queues.",
+    "component_type": "ruleset_overlay"
+  },
+  "engine": {
+    "defense_repair_percent": 0.0,
+    "construction_queue_max": 3,
+    "research_queue_max": 3
+  },
+  "economy": {
+    "occupation_time_penalty": 1.5
+  },
+  "combat": {
+    "loot_percent": 0.35,
+    "debris_percent": 0.5
+  }
+}

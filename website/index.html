@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AstroWebEngine — an open engine for space-strategy games</title>
+<meta name="description" content="A data-driven, self-hostable engine for browser-based, multiplayer space-strategy games. No hardcoded ruleset — build your own game from a definition, no code required." />
+<style>
+  :root{
+    --bg:#05070f; --panel:#0d1424; --panel2:#111a30;
+    --text:#e8eef7; --dim:#93a2bd; --accent:#5ea0ff; --accent2:#9a7bff;
+    --green:#48d38a; --border:#1b2740; --radius:16px;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0; color:var(--text); background:var(--bg);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height:1.6;
+    overflow-x:hidden;
+    background-image:
+      radial-gradient(1200px 700px at 78% -8%, rgba(94,160,255,.16), transparent 55%),
+      radial-gradient(900px 600px at 8% 8%, rgba(154,123,255,.14), transparent 55%),
+      radial-gradient(1000px 800px at 50% 120%, rgba(72,211,138,.08), transparent 55%);
+  }
+  a{ color:var(--accent); text-decoration:none; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 22px; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:15px; padding:12px 20px; border-radius:12px; border:1px solid var(--border); color:var(--text); background:var(--panel2); transition:transform .12s, border-color .12s, background .12s; }
+  .btn:hover{ transform:translateY(-2px); border-color:var(--accent); }
+  .btn.primary{ background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#06101f; border:none; }
+  .btn.primary:hover{ filter:brightness(1.08); }
+
+  /* nav */
+  nav{ position:sticky; top:0; z-index:20; backdrop-filter:blur(10px); background:rgba(5,7,15,.72); border-bottom:1px solid var(--border); }
+  nav .wrap{ display:flex; align-items:center; height:62px; gap:22px; }
+  .logo{ font-weight:800; letter-spacing:-.4px; font-size:18px; }
+  .logo span{ color:var(--accent); }
+  nav .spacer{ flex:1; }
+  nav .navlink{ color:var(--dim); font-size:14px; font-weight:600; }
+  nav .navlink:hover{ color:var(--text); }
+  @media(max-width:680px){ nav .navlink{ display:none; } }
+
+  /* hero */
+  header.hero{ text-align:center; padding:90px 0 70px; }
+  .badges{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:22px; }
+  .pill{ font-size:12px; font-weight:600; color:var(--dim); border:1px solid var(--border); border-radius:30px; padding:5px 13px; background:rgba(255,255,255,.02); }
+  .pill b{ color:var(--accent); font-weight:700; }
+  h1{ font-size:clamp(34px,6vw,60px); line-height:1.08; letter-spacing:-1.5px; margin:0 0 18px; }
+  h1 .grad{ background:linear-gradient(120deg,var(--accent),var(--accent2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub{ font-size:clamp(16px,2.4vw,20px); color:var(--dim); max-width:640px; margin:0 auto 30px; }
+  .cta{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+  section{ padding:56px 0; }
+  .eyebrow{ text-transform:uppercase; letter-spacing:2px; font-size:12px; font-weight:700; color:var(--accent); margin-bottom:10px; }
+  h2{ font-size:clamp(24px,4vw,34px); letter-spacing:-.6px; margin:0 0 14px; }
+  .lead{ color:var(--dim); max-width:680px; font-size:17px; }
+
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:34px; }
+  .feat{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:22px; }
+  .feat .ic{ width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; background:linear-gradient(135deg, rgba(94,160,255,.22), rgba(154,123,255,.22)); margin-bottom:14px; }
+  .feat h3{ margin:0 0 7px; font-size:17px; }
+  .feat p{ margin:0; color:var(--dim); font-size:14px; }
+
+  /* showcase */
+  .clones{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:34px; }
+  @media(max-width:680px){ .clones{ grid-template-columns:1fr; } }
+  .clone{ border:1px solid var(--border); border-radius:var(--radius); padding:24px; background:var(--panel); position:relative; overflow:hidden; }
+  .clone.a{ background:linear-gradient(180deg, rgba(94,160,255,.08), var(--panel)); }
+  .clone.b{ background:linear-gradient(180deg, rgba(72,211,138,.08), var(--panel)); }
+  .clone h3{ margin:0 0 4px; font-size:20px; }
+  .clone .kind{ font-size:12px; color:var(--dim); margin-bottom:16px; }
+  .clone ul{ margin:0; padding:0; list-style:none; }
+  .clone li{ padding:6px 0; border-top:1px solid var(--border); font-size:14px; color:var(--dim); display:flex; justify-content:space-between; gap:12px; }
+  .clone li b{ color:var(--text); font-weight:600; }
+  .clone .tag{ position:absolute; top:16px; right:16px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; padding:3px 9px; border-radius:20px; }
+  .clone.a .tag{ background:var(--accent); color:#06101f; }
+  .clone.b .tag{ background:var(--green); color:#052014; }
+  .same{ text-align:center; margin-top:22px; color:var(--dim); font-size:15px; }
+  .same b{ color:var(--text); }
+
+  /* code */
+  .startgrid{ display:grid; grid-template-columns:1.1fr 1fr; gap:22px; align-items:center; margin-top:30px; }
+  @media(max-width:680px){ .startgrid{ grid-template-columns:1fr; } }
+  pre{ background:#070b16; border:1px solid var(--border); border-radius:14px; padding:18px 20px; overflow:auto; font-size:13.5px; line-height:1.7; margin:0; }
+  pre .c{ color:#5b6b86; }
+  pre .k{ color:var(--accent); }
+
+  footer{ border-top:1px solid var(--border); margin-top:40px; padding:34px 0 50px; color:var(--dim); font-size:13px; }
+  footer .cols{ display:flex; flex-wrap:wrap; gap:26px; justify-content:space-between; align-items:center; }
+  footer a{ color:var(--dim); } footer a:hover{ color:var(--text); }
+
+  @media(max-width:680px){
+    .wrap{ padding:0 16px; }
+    nav .wrap{ min-height:56px; height:auto; gap:12px; }
+    .logo{ flex:1; min-width:0; font-size:16px; }
+    nav .btn.primary{ padding:8px 12px !important; font-size:13px !important; min-height:40px; border-radius:10px; }
+    header.hero{ padding:48px 0 40px; text-align:left; }
+    .badges{ justify-content:flex-start; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; margin-bottom:18px; padding-bottom:2px; }
+    .badges::-webkit-scrollbar{ display:none; }
+    .pill{ flex:0 0 auto; }
+    h1{ font-size:34px; letter-spacing:0; line-height:1.12; }
+    h1 br{ display:none; }
+    .sub{ font-size:16px; margin:0 0 24px; max-width:none; }
+    .cta{ display:grid; grid-template-columns:1fr; gap:10px; width:100%; }
+    .cta .btn{ justify-content:center; width:100%; min-height:44px; border-radius:10px; }
+    section{ padding:38px 0; }
+    h2{ font-size:26px; letter-spacing:0; }
+    .lead{ font-size:15px; max-width:none; }
+    .grid{ grid-template-columns:1fr; gap:12px; margin-top:22px; }
+    .feat,.clone{ padding:18px; border-radius:12px; }
+    .clone .tag{ position:static; display:inline-flex; margin-bottom:10px; }
+    .clone li{ display:block; }
+    .clone li b{ display:block; margin-top:2px; }
+    .startgrid{ gap:16px; margin-top:20px; }
+    pre{ max-width:100%; padding:14px; border-radius:10px; font-size:12px; line-height:1.55; }
+    footer{ margin-top:20px; padding:26px 0 80px; }
+    footer .cols{ align-items:flex-start; gap:16px; }
+    footer .cols > div:last-child{ width:100%; display:flex !important; flex-wrap:wrap; gap:14px !important; }
+  }
+
+  @media(max-width:380px){
+    .wrap{ padding:0 14px; }
+    h1{ font-size:30px; }
+    nav .btn.primary{ max-width:142px; }
+  }
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <div class="logo">Astro<span>WebEngine</span></div>
+  <div class="spacer"></div>
+  <a class="navlink" href="#features">Features</a>
+  <a class="navlink" href="#games">Games</a>
+  <a class="navlink" href="#start">Get started</a>
+  <a class="navlink" data-link="github" href="#">GitHub</a>
+  <a class="navlink" data-link="discord" href="#">Discord</a>
+  <a class="btn primary" data-link="demo" href="#" style="padding:8px 16px;font-size:14px;">Play the demo</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="badges">
+    <span class="pill"><b>Open</b> &amp; self-hostable</span>
+    <span class="pill">No hardcoded ruleset</span>
+    <span class="pill"><b>No-code</b> game builder</span>
+  </div>
+  <h1>Build your own <span class="grad">space-strategy game</span>.<br>No engine code required.</h1>
+  <p class="sub">AstroWebEngine is a data-driven engine for browser-based, multiplayer space-strategy games. Every rule — units, economy, combat, resources, the map itself — lives in a game definition you compose in a GUI. One engine, endlessly different games.</p>
+  <div class="cta">
+    <a class="btn primary" data-link="demo" href="#">▶ Play the demo</a>
+    <a class="btn" data-link="github" href="#">⭐ Source on GitHub</a>
+    <a class="btn" data-link="discord" href="#">💬 Join Discord</a>
+    <a class="btn" data-link="gallery" href="#">🛰 Games made with it</a>
+  </div>
+</div></header>
+
+<section id="features"><div class="wrap">
+  <div class="eyebrow">What it is</div>
+  <h2>A whole game, defined — not hardcoded</h2>
+  <p class="lead">The engine ships with zero baked-in ruleset. Units, buildings, research, defenses, the combat model, the resource economy, and the map layout are all a <b>game definition</b> (JSON or Python) — loaded at startup and hot-swappable at runtime. Compose one in the admin GUI, or author your own.</p>
+  <div class="grid">
+    <div class="feat"><div class="ic">🎛️</div><h3>No-code Build Game</h3><p>Pick a base game, snap on rule fragments, edit ship / building / research stats, and activate — all from the admin panel, no code.</p></div>
+    <div class="feat"><div class="ic">🧬</div><h3>Fully data-driven</h3><p>Resource model, combat, defenses, map depth, entire rosters — it's all one definition. Change the game without touching the engine.</p></div>
+    <div class="feat"><div class="ic">🪐</div><h3>One engine, many games</h3><p>Flip single ↔ multi-resource, simultaneous ↔ round combat, level ↔ count defenses, hierarchical ↔ flat maps. Same code, different worlds.</p></div>
+    <div class="feat"><div class="ic">🧩</div><h3>Mods &amp; prebuilt games</h3><p>Package a ruleset as a mod, layer content and behaviour overlays on top, and ship your game for others to run.</p></div>
+    <div class="feat"><div class="ic">🌌</div><h3>Multiplayer &amp; persistent</h3><p>Procedural spiral galaxies, fleets, real combat, trade, and configurable NPC factions in a living, shared universe.</p></div>
+    <div class="feat"><div class="ic">⚡</div><h3>Self-host in minutes</h3><p>FastAPI + SQLite, no frontend build step. <code>docker compose up</code> or <code>python run.py</code> and you're live on :8000.</p></div>
+  </div>
+</div></section>
+
+<section id="games"><div class="wrap">
+  <div class="eyebrow">Proof</div>
+  <h2>One engine → two very different games</h2>
+  <p class="lead">These aren't forks. They're the <b>same engine</b> running two different definitions — every axis below is a config choice, not a code change.</p>
+  <div class="clones">
+    <div class="clone a"><span class="tag">Classic</span>
+      <h3>Classic Empire</h3>
+      <div class="kind">Persistent 4X, classic style</div>
+      <ul>
+        <li>Economy <b>Single resource</b></li>
+        <li>Combat <b>Simultaneous</b></li>
+        <li>Defenses <b>Upgrade levels</b></li>
+        <li>Map <b>Galaxy → region → system → orbit</b></li>
+      </ul>
+    </div>
+    <div class="clone b"><span class="tag">Multi-resource</span>
+      <h3>Stellar Conquest</h3>
+      <div class="kind">Resource-race, multi-resource</div>
+      <ul>
+        <li>Economy <b>Metal / crystal / deuterium</b></li>
+        <li>Combat <b>Round-based</b></li>
+        <li>Defenses <b>Count-built</b></li>
+        <li>Map <b>Galaxy → system → slot</b></li>
+      </ul>
+    </div>
+  </div>
+  <p class="same">Switch between them — or your own game — with <b>one click</b> in the admin panel.</p>
+</div></section>
+
+<section id="start"><div class="wrap">
+  <div class="eyebrow">Get started</div>
+  <h2>Running in a couple of commands</h2>
+  <div class="startgrid">
+    <pre><span class="c"># clone it</span>
+git clone https://github.com/AstroWebEngine/astrowebengine
+cd astrowebengine
+
+<span class="c"># option A — Docker</span>
+docker compose up
+
+<span class="c"># option B — Python</span>
+pip install -r requirements.txt
+python run.py
+
+<span class="c"># then open</span>
+<span class="k">http://localhost:8000</span></pre>
+    <div>
+      <p class="lead" style="font-size:15px;">The first account you register is the admin. From there, open <b>Build Game</b> to pick a prebuilt ruleset, tweak the content, and launch a universe — or point the engine at a definition of your own.</p>
+      <div class="cta" style="justify-content:flex-start;margin-top:18px;">
+        <a class="btn primary" data-link="github" href="#">⭐ Star on GitHub</a>
+        <a class="btn" data-link="demo" href="#">Try the live demo</a>
+        <a class="btn" data-link="discord" href="#">Join Discord</a>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap"><div class="cols">
+  <div>© 2026 AstroWebEngine — a data-driven engine for space-strategy games. <a data-link="license" href="#">License</a>.</div>
+  <div style="display:flex;gap:20px;">
+    <a data-link="github" href="#">GitHub</a>
+    <a data-link="discord" href="#">Discord</a>
+    <a data-link="demo" href="#">Demo</a>
+    <a data-link="gallery" href="#">Gallery</a>
+  </div>
+</div></div></footer>
+
+<script>
+  // ── Single source of truth for outbound links. Repoint as domains come up. ──
+  const LINKS = {
+    github:  'https://github.com/AstroWebEngine/astrowebengine',
+    discord: 'https://discord.gg/DeuWTuwCkz',
+    demo:    'https://play.astrowebengine.com',
+    gallery: 'https://play.astrowebengine.com/gallery',                // (gallery served by the demo VM; can move to outerringlabs.com later)
+    license: 'https://github.com/AstroWebEngine/astrowebengine/blob/main/LICENSE',
+  };
+  document.querySelectorAll('[data-link]').forEach(el => {
+    const k = el.getAttribute('data-link');
+    if (LINKS[k]) { el.href = LINKS[k]; if (k !== 'license') { el.target = '_blank'; el.rel = 'noopener'; } }
+  });
+</script>
+</body>
+</html>

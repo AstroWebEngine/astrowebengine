@@ -1,0 +1,14 @@
+{
+  "_comment": "Add your game by appending an object to the 'games' array and opening a PR. Fields: name, tagline, url (play link), creator, creator_url (optional), image (optional URL), tags (optional array), featured (optional bool).",
+  "games": [
+    {
+      "name": "AstroWebEngine — Live Demo",
+      "tagline": "The reference server: colonize planets, build fleets, and fight for control of a procedurally generated galaxy.",
+      "image": "",
+      "url": "/",
+      "creator": "Outer Ring Labs",
+      "tags": ["official", "demo", "space-strategy"],
+      "featured": true
+    }
+  ]
+}

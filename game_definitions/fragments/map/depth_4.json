@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "name": "4-Tier Map (Galaxy → Region → System → Orbit)",
+    "version": "1.0",
+    "description": "Deeper coordinate space with a region tier between galaxy and system — the classic hierarchical map.",
+    "component_type": "map"
+  },
+  "engine": {
+    "map_depth": 4
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "conquest",
+  "name": "Conquest",
+  "version": "1.0",
+  "author": "AstroWebEngine",
+  "engine_api": "1.0",
+  "kind": "content",
+  "definition": "definition.json",
+  "description": "Turns any base ruleset into an elimination game. Occupied bases stop producing and, if held past the threshold, are lost — disbanded (the owner keeps the structure-refund discount) by default, or transferred to the occupier. Victory goes to the last team still holding a base (your guild if you're in one, else you alone). A pure content overlay: enable it on top of any ruleset; no code runs.",
+  "requires": [],
+  "conflicts": [],
+  "load_order": 150
+}

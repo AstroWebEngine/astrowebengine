@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "name": "Six-Round Combat",
+    "version": "1.0",
+    "description": "Run up to six combat exchanges before resolving losses.",
+    "component_type": "combat"
+  },
+  "engine": {
+    "combat_model": "rounds",
+    "combat_max_rounds": 6
+  }
+}

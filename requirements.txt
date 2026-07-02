@@ -1,0 +1,13 @@
+# Core dependencies
+fastapi>=0.100.0
+uvicorn[standard]>=0.25.0
+sqlalchemy>=2.0.0
+psycopg[binary]>=3.2.0
+bcrypt>=4.0.0
+python-jose[cryptography]>=3.3.0
+pydantic>=2.0.0
+email-validator>=2.0.0
+
+# Optional: Install ONE of these if you want MySQL or PostgreSQL
+# pip install pymysql          # for MySQL (python run.py --mysql user:pass@host/db)
+# psycopg is included above for PostgreSQL production use

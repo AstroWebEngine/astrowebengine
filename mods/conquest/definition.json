@@ -1,0 +1,13 @@
+{
+  "meta": {
+    "name": "Conquest",
+    "description": "Elimination overlay: occupation escalates to permanent base loss; last team standing wins."
+  },
+  "engine": {
+    "occupation_zero_production": true,
+    "occupation_capture": true,
+    "occupation_capture_hours": 6,
+    "occupation_capture_mode": "disband",
+    "win_condition": "annihilation"
+  }
+}
