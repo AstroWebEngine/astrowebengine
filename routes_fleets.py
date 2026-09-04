@@ -15,7 +15,8 @@ from game_logic import (calc_base_stats, calc_economy_rate, collect_resources,
                         _fleet_value, calc_max_fleet_size, calc_max_fleet_count,
                         check_hangar_capacity, get_building_level, get_tech_level,
                         _record_region_snapshot, _update_unrest, _fleet_is_empty,
-                        calc_player_level, calc_colony_cost, apply_colony_reserve)
+                        calc_player_level, calc_colony_cost, apply_colony_reserve,
+                        resolve_base_name)
 from specs import SHIP_SPECS, ALL_SHIP_TYPES, DEFENSE_SPECS, GOODS_SPEC
 from config_defaults import *
 from typing import Optional
@@ -1077,7 +1078,8 @@ def register_fleet_routes(app):
                         "colonize")
 
         planet.is_colonized = True
-        colony = Colony(planet_id=planet.id, user_id=user.id, name=f"Colony on {planet.name}")
+        colony = Colony(planet_id=planet.id, user_id=user.id,
+                        name=resolve_base_name(req.name, planet.name))
         db.add(colony)
         db.flush()
         # Track peak base count for the rebuild discount (never decreases on abandon)

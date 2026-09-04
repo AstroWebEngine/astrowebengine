@@ -2,7 +2,7 @@
 
 Opt-in via engine flags in a game definition's ``engine`` section (or an admin
 ``game_config`` override). The default rulesets leave these off, so bases stay
-permanent (AE/OGame-style: you can be occupied, never eliminated).
+permanent (the genre default: you can be occupied, never eliminated).
 
     occupation_zero_production : bool  — an occupied base produces nothing for its owner
     occupation_capture         : bool  — occupation can escalate to permanent capture

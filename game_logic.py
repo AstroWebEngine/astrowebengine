@@ -27,6 +27,20 @@ from config_defaults import *
 
 # ======================== GAME CALCULATION HELPERS ========================
 
+MAX_BASE_NAME = 40  # same cap the rename endpoint enforces
+
+
+def resolve_base_name(requested: str, planet_name: str) -> str:
+    """Name for a newly founded base: the player's choice, else the astro's designation.
+
+    Players name their own colonies (only the starting base is auto-named
+    'Homeworld'). Blank or whitespace-only input falls back to the astro name so
+    a base is never nameless.
+    """
+    name = (requested or "").strip()[:MAX_BASE_NAME]
+    return name or planet_name
+
+
 def _building_dict(colony) -> dict:
     """Build a {type: level} dict for O(1) lookups. Cached on the colony object per request."""
     cache = getattr(colony, '_blv_cache', None)

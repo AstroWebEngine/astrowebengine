@@ -1321,7 +1321,7 @@ def _assign_homeworld_in_galaxy(user, galaxy_id, db):
             return
         planet = random.choice(planets)
     planet.is_colonized = True
-    base = Colony(planet_id=planet.id, user_id=user.id, name=f"{user.username}'s Homeworld")
+    base = Colony(planet_id=planet.id, user_id=user.id, name="Homeworld")
     db.add(base)
     db.flush()
     # Homeworld establishes the peak base count (=1) for the rebuild-discount invariant.
@@ -1359,7 +1359,7 @@ def _assign_homeworld(user, db):
             return
         planet = random.choice(planets)
     planet.is_colonized = True
-    base = Colony(planet_id=planet.id, user_id=user.id, name=f"{user.username}'s Homeworld")
+    base = Colony(planet_id=planet.id, user_id=user.id, name="Homeworld")
     db.add(base)
     db.flush()
     # Homeworld establishes the peak base count (=1) for the rebuild-discount invariant.

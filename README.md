@@ -1,48 +1,118 @@
 # AstroWebEngine
 
-A data-driven web engine for browser-based, multiplayer space-strategy games.
-The engine ships as a FastAPI backend with a vanilla-JavaScript single-page
-frontend, and is designed for self-hosting.
+**A self-hostable engine for browser-based, multiplayer space-strategy games — with no hardcoded ruleset.**
 
-Gameplay is **fully data-driven**: units, structures, research, defenses,
-combat behavior, the resource model, and the map layout are all defined in a
-**game definition** (JSON or Python dict). Operators compose or author their own
-definitions to build different game styles — the engine code itself contains no
-hardcoded ruleset.
+Units, structures, research, defenses, combat behavior, the resource model and the
+map topology all live in a **game definition** (JSON). The engine code itself knows
+nothing about any particular game: swap the definition and you get a different game,
+not a reskin of the same one.
+
+[**Live demo**](https://play.astrowebengine.com) · [Website](https://www.astrowebengine.com) · [Quick start](QUICK_START.md) · [Docker](DOCKER.md) · [Code examples](CODE_EXAMPLES.md)
+
+![Base view — structures, research queue and empire stats](docs/images/base-view.png)
+
+## Why it's different
+
+Most open-source browser 4X projects are one game with the rules baked into the
+source. Here, the rules are data, and the admin panel is a game *compiler*: pick a
+base definition, layer optional rule fragments, compile, activate. No restart, no
+code edit, no redeploy.
+
+![Admin panel — engine configuration flags and the Build Game compiler](docs/images/build-game.png)
+
+Engine flags that reshape gameplay, set per definition:
+
+| Flag | Options | Effect |
+|---|---|---|
+| `resource_model` | `single` / `multi` | One currency, or metal/crystal/gas-style economies |
+| `defense_model` | `level` / `count` | Upgradeable turret levels, or build N discrete units |
+| `defenses_destructible` | `true` / `false` | Permanent losses, or regenerating effectiveness % |
+| `combat_model` | `simultaneous` / `rounds` | One exchange, or up to `combat_max_rounds` |
+| `map_depth` | `4` / `3` | galaxy→region→system→orbit, or galaxy→system→slot |
+| `map_topology` | `hierarchy` / `graph` | Nested coordinates, or systems linked by lanes and wormholes |
+| `galaxy_network` | `ring`, `line`, `tree`, `small_world`, `wormhole_only`, … | How galaxies connect and how travel distance is computed |
+| `economy_actions` | off / `action_points` | Free actions, or a regenerating action-point budget per player |
+| `win_condition` | incl. `annihilation` | Score-based, or last team standing |
 
 ## Features
 
-- **Configurable game definitions** — units, buildings, research, defenses,
-  terrain, weapon types, and economy, all loaded at startup and hot-swappable.
-- **Composable rule fragments** — build a game by combining fragments (e.g. combat
-  model, defense destructibility) via the admin Build Game UI.
-- **Combat engine** — proportional damage allocation, shields, weapon types with
-  configurable shield passthrough, per-unit rounding classes, debris/loot.
-- **Economy & construction** — energy, population, industry, research, and
-  production formulas driven by building contributions and tech bonuses.
-- **Procedural galaxy generation** — multi-cluster, spiral-density universe with
-  configurable presets.
-- **Admin panel** — runtime configuration of game speed, balance constants,
-  spec overrides, and galaxy presets without a restart.
-- **Skins** — themeable UI via CSS variables with client-side persistence.
-- **NPC factions** — configurable non-player empires with stability/lifecycle rules.
+- **Composable rule fragments** — combine combat, defense, resource and map
+  fragments over a base definition via the admin Build Game UI.
+- **Mod system** — content overlays (pure data) and behavioral mods (Python hooks
+  such as `on_battle`, `compute_victory`). Seven ship with the engine.
+- **Combat engine** — proportional damage allocation with sub-linear weighting,
+  overflow redistribution, shields with per-weapon passthrough, per-unit rounding
+  classes, debris and loot fractions.
+- **Economy & construction** — energy, population, industry, research and production
+  derived from building contributions and tech bonuses, all definition-driven.
+- **Procedural galaxy generation** — multi-cluster spiral-density universe with
+  configurable presets; colonized planets survive regeneration.
+- **Admin panel** — game speed, balance constants, spec overrides, NPC settings and
+  galaxy presets, changeable at runtime.
+- **NPC factions** — configurable non-player empires with stability decay and
+  disband/respawn lifecycle, excluded from player rankings.
+- **Responsive UI** — the same SPA on desktop and phone, themeable via CSS variables.
 
-## Stack
-
-- **Backend:** FastAPI + SQLAlchemy (SQLite with WAL by default; Postgres/MySQL supported)
-- **Auth:** JWT (HS256) + bcrypt
-- **Frontend:** vanilla-JS SPA (no build step)
+<img src="docs/images/mobile.png" alt="Galaxy map on mobile" width="300">
 
 ## Quick start
 
+**Docker (recommended):**
+
 ```bash
-pip install -r requirements.txt
-python run.py            # serves on http://localhost:8000
+git clone https://github.com/AstroWebEngine/astrowebengine.git
+cd astrowebengine
+docker compose up -d          # http://localhost:8000
 ```
 
-The first registered account is the admin/observer. Configure game rules from the
-admin panel, or point the engine at a custom game definition.
+**Python:**
+
+```bash
+pip install -r requirements.txt
+python run.py                 # http://localhost:8000
+```
+
+The first registered account becomes the admin/observer. From the admin panel, pick
+or compile a ruleset, then launch the game to generate the universe.
+
+See [QUICK_START.md](QUICK_START.md) for the full walkthrough and [DOCKER.md](DOCKER.md)
+for deployment options.
+
+## Bundled rulesets & mods
+
+| Mod | Type | What it does |
+|---|---|---|
+| `classic_empire` | ruleset | Hierarchical-galaxy 4X: single-resource economy, simultaneous combat |
+| `stellar_conquest` | ruleset | Multi-resource showcase (metal/crystal/deuterium), flat map |
+| `solar_empire` | ruleset | Five-commodity economy, action-point budget, graph map with wormholes |
+| `conquest` | overlay | Turns any ruleset into an elimination game — occupation escalates to base loss |
+| `hardcore_rules` | overlay | No defense auto-repair, higher loot and debris |
+| `last_standing` | behavioral | `annihilation` win condition via the `compute_victory` hook |
+| `battle_logger` | behavioral | Example `on_battle` hook — a one-line summary per battle |
+
+Definitions live in `game_definitions/`, fragments in `game_definitions/fragments/`,
+mods in `mods/`. See [docs/mod_system_design.md](docs/mod_system_design.md).
+
+## Stack
+
+- **Backend:** FastAPI + SQLAlchemy — SQLite (WAL) by default, Postgres/MySQL supported
+- **Auth:** JWT (HS256) + bcrypt
+- **Frontend:** vanilla-JS SPA, no build step
+- **Deploy:** Docker Compose, or any ASGI host
+
+## Documentation
+
+- [QUICK_START.md](QUICK_START.md) — install, first launch, first game
+- [DOCKER.md](DOCKER.md) — container deployment
+- [CODE_EXAMPLES.md](CODE_EXAMPLES.md) — working with definitions and mods in code
+- [docs/mod_system_design.md](docs/mod_system_design.md) — mod format and hook API
+- [docs/registry_protocol.md](docs/registry_protocol.md) — optional public game registry
 
 ## License
 
-See [LICENSE](LICENSE).
+Source-available under the [AstroWebEngine License](LICENSE) — free to use, modify,
+distribute and run commercially, on one condition: publicly accessible games built
+on the engine keep the "Powered by AstroWebEngine" attribution (UI notice,
+`/api/engine` identity response, and `X-Powered-By` header) intact.
+
+Game content you author — rules, names, art, balance — is yours.

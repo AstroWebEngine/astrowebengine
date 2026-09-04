@@ -362,13 +362,21 @@
   .base-selector { min-width: 120px; font-size: 11px; }
   .base-selector-info { font-size: 10px; }
   .base-page-shell { gap: 0; }
-  .base-local-top { grid-template-columns: 1fr; }
+  /* Base header: selector spans the row, then stats pair up two-across
+     ((Location | Trade), (Pop block | Econ block)) — halves the header
+     height so the build list starts a screen earlier */
+  .base-local-top { grid-template-columns: 1fr 1fr; }
   .base-local-cell {
     min-height: 0;
     border-left: none;
     border-top: 1px solid rgba(255,255,255,0.06);
   }
   .base-local-cell:first-child { border-top: none; }
+  .base-local-selector { grid-column: 1 / -1; order: 0; }
+  .base-local-cell:nth-child(2) { order: 1; } /* location */
+  .base-local-cell:nth-child(5) { order: 2; border-left: 1px solid rgba(255,255,255,0.06); } /* trade routes */
+  .base-local-cell:nth-child(3) { order: 3; } /* pop / energy / area */
+  .base-local-cell:nth-child(4) { order: 4; border-left: 1px solid rgba(255,255,255,0.06); } /* econ / constr / prod / res */
   .base-local-menu a { font-size: 11px; }
   .base-overview-col { padding: 12px; }
   .base-overview-planet { min-height: 180px; }
@@ -694,11 +702,24 @@
 
   .awe-struct-table:not(.mobile-cards):not(.base-research-table),
   #empire-content .data-table,
-  #tab-fleets .data-table,
   #tab-rankings .data-table,
   #tab-battles .data-table,
   #tab-commanders .data-table {
     min-width: 560px;
+  }
+
+  /* ── Fleet list: the 4 mobile columns (name / location / arrival / size)
+       fit the viewport once the location cell may wrap — no forced width,
+       no horizontal scroll hiding the ETA (real AE shows all four too) ── */
+  #tab-fleets .data-table {
+    min-width: 0;
+  }
+  #tab-fleets .data-table td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  #tab-fleets .data-table td:first-child {
+    white-space: nowrap; /* fleet name stays on one line */
   }
 
   /* ── Build tables (Structures / Defenses): reflow rows into cards so the
@@ -733,6 +754,7 @@
   .awe-struct-table.mobile-cards td {
     display: inline-block;
     border: none !important;
+    background: none !important; /* kill .data-table's per-cell gradient — it reads as stray stripes in card layout */
     padding: 1px 0 !important;
     text-align: left !important;
     white-space: normal;

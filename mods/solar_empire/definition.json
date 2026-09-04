@@ -2,8 +2,8 @@
   "meta": {
     "name": "Solar Empire",
     "version": "0.1",
-    "description": "A Solar Empire-like adaptation (Generic-engine lineage). Captures the ship roster, commodity economy, and module-flavored weapons of SolarEmpireReborn as a loadable AstroWebEngine definition. Approximate, not a line-for-line clone — see docs/example_mods.md for the mapping and the engine-feature gaps (turns economy, graph map, bombs/bounty) that remain mod-hook/roadmap work.",
-    "author": "AstroWebEngine example (from the user's SolarEmpireReborn)"
+    "description": "A BBS-era-flavoured trading and conquest ruleset: a five-commodity economy, an action-point budget instead of free actions, module-style weapon flavour, and a graph map where systems are joined by lanes and wormholes. Demonstrates most of the engine's non-default axes in one definition.",
+    "author": "AstroWebEngine example"
   },
   "engine": {
     "resource_model": "multi",

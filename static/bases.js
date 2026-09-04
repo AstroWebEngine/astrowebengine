@@ -324,13 +324,32 @@ function renderStructuresTab(base) {
   let html = `<table class="data-table awe-struct-table mobile-cards" style="width:100%;font-size:11px;">
     <thead><tr><th style="text-align:left;">${t('base.structures')}</th><th>${t('general.cost')}</th><th>${t('stat.energy')}</th><th>${t('general.time')}</th><th></th></tr></thead><tbody>`;
   for (const bl of visibleBlds) {
-    html += renderBuildingRow(bl, base.id, queueFull);
+    html += renderBuildingRow(bl, base.id, queueFull, base);
   }
   html += `</tbody></table>`;
   return html;
 }
 
-function renderBuildingRow(bl, baseId, queueFull) {
+// Which of energy / population / area a build would exceed. Measured against the
+// capacity projected after the current queue finishes — the same figures the
+// build endpoint validates against, so what looks blocked here is what the
+// server would refuse (and a queued power plant unblocks its dependents).
+function capacityShortfall(item, base) {
+  const short = [];
+  const need = (req, free) => (req || 0) > 0 && (free ?? Infinity) < req;
+  if (need(item.energy_req, base.energy_free_projected)) short.push({ label: 'energy', hint: 'Build power plants first' });
+  if (need(item.pop_req, base.pop_free_projected)) short.push({ label: 'population', hint: 'Build Urban Structures first' });
+  if (need(item.area_req, base.area_free_projected)) short.push({ label: 'area', hint: 'Terraform or add platforms first' });
+  return short;
+}
+
+function capacityBlockHtml(short) {
+  const what = short.map(s => s.label).join(' + ');
+  const title = short.map(s => s.hint).join('. ');
+  return `<span class="text-danger" style="font-size:10px;" title="${escAttr(title)}">Needs ${escStr(what)}</span>`;
+}
+
+function renderBuildingRow(bl, baseId, queueFull, base) {
   const isMaxed = bl.is_maxed === true || (bl.max_level > 0 && (bl.effective_level || bl.level) >= bl.max_level);
   const effLevel = bl.effective_level || bl.level;
   const hasQueued = effLevel > bl.level;
@@ -347,6 +366,8 @@ function renderBuildingRow(bl, baseId, queueFull) {
   const energyReq = bl.energy_req || 0;
   const energyStr = energyReq ? `<span style="color:var(--danger);">-${energyReq}</span>` : '';
 
+  const short = isMaxed ? [] : capacityShortfall(bl, base || {});
+
   let actionHtml = '';
   if (isMaxed) {
     actionHtml = `<span class="text-dim">MAX</span>`;
@@ -354,11 +375,13 @@ function renderBuildingRow(bl, baseId, queueFull) {
     actionHtml = `<span class="text-danger" style="font-size:10px;">${escStr(bl.cannot_reason)}</span>`;
   } else if (queueFull) {
     actionHtml = `<span class="text-dim">${t('queue.full')}</span>`;
+  } else if (short.length) {
+    actionHtml = capacityBlockHtml(short);
   } else {
     actionHtml = `<a href="#" class="text-accent" style="font-weight:bold;" onclick="upgradeBuilding(${baseId},'${bl.type}',this);return false;">${t('btn.build')}</a>`;
   }
 
-  const rowStyle = !bl.can_build && bl.level === 0 && !bl.is_constructing ? 'opacity:0.55;' : '';
+  const rowStyle = (short.length || (!bl.can_build && bl.level === 0 && !bl.is_constructing)) ? 'opacity:0.55;' : '';
 
   // Click the name to view per-level costs and disband a level (only when built).
   const nameHtml = bl.level > 0
@@ -382,7 +405,7 @@ function renderDefensesTab(base) {
   let html = `<table class="data-table awe-struct-table mobile-cards" style="width:100%;font-size:11px;">
     <thead><tr><th style="text-align:left;">${t('base.defenses')}</th><th>${t('general.cost')}</th><th>Attack/Armour (Shield)</th><th>${t('stat.energy')}</th><th>${t('general.time')}</th><th></th></tr></thead><tbody>`;
   for (const d of visibleDefs) {
-    html += renderDefenseRow(d, base.id, queueFull);
+    html += renderDefenseRow(d, base.id, queueFull, base);
   }
   if (!visibleDefs.length) {
     html += `<tr><td colspan="6" class="text-dim" style="padding:20px;text-align:center;">No defenses available</td></tr>`;
@@ -391,7 +414,7 @@ function renderDefensesTab(base) {
   return html;
 }
 
-function renderDefenseRow(d, baseId, queueFull) {
+function renderDefenseRow(d, baseId, queueFull, base) {
   const defModel = getEngineFlag('defense_model', 'level');
   const effLevel = d.effective_level || d.level;
   const isMaxed = defModel === 'level' && (d.is_maxed || effLevel >= d.max_level);
@@ -423,6 +446,9 @@ function renderDefenseRow(d, baseId, queueFull) {
   // Build time — check if next_time is available
   const timeStr = d.next_time ? fmtTime(d.next_time) : '';
 
+  // Defenses draw energy and area, never population.
+  const short = isMaxed ? [] : capacityShortfall({ energy_req: d.energy_req, area_req: d.area_req }, base || {});
+
   let actionHtml = '';
   if (isMaxed) {
     actionHtml = `<span class="text-dim">MAX</span>`;
@@ -430,6 +456,8 @@ function renderDefenseRow(d, baseId, queueFull) {
     actionHtml = `<span class="text-danger" style="font-size:10px;">${escStr(d.cannot_reason)}</span>`;
   } else if (queueFull) {
     actionHtml = `<span class="text-dim">${t('queue.full')}</span>`;
+  } else if (short.length) {
+    actionHtml = capacityBlockHtml(short);
   } else if (defModel === 'count') {
     // Count model: show quantity input + build button
     actionHtml = `<input type="number" min="1" value="1" style="width:40px;text-align:center;font-size:11px;" id="def-qty-${d.type}-${baseId}">
@@ -438,7 +466,7 @@ function renderDefenseRow(d, baseId, queueFull) {
     actionHtml = `<a href="#" class="text-accent" style="font-weight:bold;" onclick="buildDefense(${baseId},'${d.type}');return false;">${t('btn.build')}</a>`;
   }
 
-  const rowStyle = !d.can_build && d.level === 0 && !d.is_constructing ? 'opacity:0.55;' : '';
+  const rowStyle = (short.length || (!d.can_build && d.level === 0 && !d.is_constructing)) ? 'opacity:0.55;' : '';
 
   // Disband UI is only meaningful for the level model (count model uses flat per-unit cost).
   const nameHtml = (d.level > 0 && defModel === 'level')

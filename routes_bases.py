@@ -258,6 +258,7 @@ def register_bases_routes(app):
                     "next_time": next_time,
                     "max_level": dspec.get("max_level", 50),
                     "energy_req": dspec.get("energy_req", 0),
+                    "area_req": dspec.get("area_req", 0),  # defenses take area too; the build endpoint enforces it
                     "attack": dspec.get("attack", 0),
                     "armour": dspec.get("armour", 0),
                     "shield": dspec.get("shield", 0),
@@ -275,6 +276,14 @@ def register_bases_routes(app):
             pop_used = sum(get_effective_building_spec(db, b.building_type).get("pop_req", 0) * b.level for b in colony.buildings)
             area_used = sum(get_effective_building_spec(db, b.building_type).get("area_req", 0) * b.level for b in colony.buildings)
             area_used += sum(get_effective_defense_spec(db, d.defense_type).get("area_req", 0) * d.level for d in colony.defenses)
+
+            # Free capacity the *build* endpoint will validate against: projected
+            # after the whole queue completes, not current. Sending it lets the UI
+            # grey out what the server would reject, using the same numbers.
+            _proj = project_resources_after_queue(colony, user, colony_queue, db)
+            energy_free_projected = _proj["energy"] - _proj["energy_used"]
+            pop_free_projected = _proj["population"] - _proj["pop_used"]
+            area_free_projected = _proj["area"] - _proj["area_used"]
 
             # Build full construction queue for this colony
             queue_items = []
@@ -315,6 +324,9 @@ def register_bases_routes(app):
                 "pop_used": pop_used,
                 "area": stats["area"],
                 "area_used": area_used,
+                "energy_free_projected": energy_free_projected,
+                "pop_free_projected": pop_free_projected,
+                "area_free_projected": area_free_projected,
                 "shipyard_level": stats["shipyard_level"],
                 "research_capacity": stats.get("research", 0),
                 "research_lab_level": stats.get("research_lab_level", 0),

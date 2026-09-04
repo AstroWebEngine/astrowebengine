@@ -14,15 +14,39 @@
   </script>
   <style>
     html, body { max-width: 100%; overflow-x: hidden; }
-    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Verdana, sans-serif; }
+    body { background: var(--bg-dark); color: var(--text); font-family: var(--font-main); }
 
-    .setup-page { max-width: 960px; margin: 0 auto; padding: 20px; }
-    .setup-header { text-align: center; padding: 30px 0 20px; }
-    .setup-header h1 { color: var(--accent); font-size: 24px; margin: 0; }
-    .setup-header p { color: var(--text-dim); font-size: 13px; margin-top: 6px; }
+    /* Shared first-run backdrop — same sky as the login page */
+    .stars-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        radial-gradient(60% 45% at 18% 8%, rgba(73,214,254,0.05) 0%, transparent 70%),
+        radial-gradient(45% 38% at 84% 28%, rgba(234,199,103,0.04) 0%, transparent 70%),
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 30%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 70%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 42% 45%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 50%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 5% 50%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 25% 40%, rgba(100,170,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 75% 60%, rgba(100,170,255,0.3) 0%, transparent 100%);
+    }
+    .horizon-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        radial-gradient(115vw 46vh at 50% 121%, transparent 61.5%, rgba(73,214,254,0.30) 63%, rgba(73,214,254,0.08) 66%, transparent 72%),
+        radial-gradient(115vw 46vh at 50% 121%, #0d1623 0%, #0a1420 55%, rgba(13,22,35,0.95) 62%, transparent 62.6%);
+    }
+
+    .setup-page { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 20px; }
+    .setup-header { padding: 30px 0 20px; }
 
     /* Galaxy Selection */
-    .galaxy-select-panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; }
+    .galaxy-select-panel { background: rgba(13, 22, 35, 0.75); border: 1px solid var(--border); border-radius: 6px; padding: 20px; }
     .galaxy-select-panel h2 { color: var(--accent); font-size: 18px; margin: 0 0 6px; }
     .galaxy-select-panel .subtitle { color: var(--text-dim); font-size: 12px; margin-bottom: 16px; }
     .galaxy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 16px; }
@@ -106,7 +130,7 @@
     .tut-collect-btn:hover { filter: brightness(1.1); }
     .tut-collect-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .tut-start-btn {
-      background: #e44; color: #fff; border: none; padding: 10px 24px;
+      background: var(--accent); color: #07100b; border: none; padding: 10px 24px;
       border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;
     }
     .tut-start-btn:hover { filter: brightness(1.1); }
@@ -114,17 +138,22 @@
     .tut-skip-link { color: var(--text-dim); font-size: 11px; cursor: pointer; margin-top: 12px; display: inline-block; }
     .tut-skip-link:hover { color: var(--text); text-decoration: underline; }
     .tut-finish-btn {
-      background: var(--accent); color: #fff; border: none; padding: 10px 24px;
+      background: var(--accent); color: #07100b; border: none; padding: 10px 24px;
       border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;
     }
+    .tut-finish-btn:hover { filter: brightness(1.1); }
 
     @media (max-width: 700px) {
       .setup-page { padding: 14px; }
       .setup-header { padding: 22px 0 14px; }
       .setup-header h1 { font-size: 21px; }
       .galaxy-select-panel { padding: 16px; }
-      .galaxy-grid { grid-template-columns: minmax(0, 1fr); }
-      .galaxy-card { min-height: 72px; display: flex; flex-direction: column; justify-content: center; }
+      /* Two-across: a 20-galaxy list is ~1600px of scrolling at one per row,
+         and the cards only carry a name + player count. */
+      .galaxy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .galaxy-card { min-height: 68px; padding: 10px 8px; display: flex; flex-direction: column; justify-content: center; }
+      .galaxy-card .gname { font-size: 15px; }
+      .galaxy-card .recommended { font-size: 9px; }
       .galaxy-actions .btn,
       .tut-actions .btn,
       .tut-start-btn,
@@ -153,19 +182,22 @@
   </style>
 </head>
 <body>
+  <div class="stars-bg"></div>
+  <div class="horizon-bg"></div>
+
   <div class="setup-page">
-    <div class="setup-header">
-      <h1>AstroWebEngine</h1>
+    <div class="setup-header auth-logo">
+      <h1><svg width="26" height="26" viewBox="0 0 32 32" style="vertical-align:-4px;" aria-hidden="true"><circle cx="16" cy="16" r="7" fill="#0a2a4a" stroke="#49D6FE" stroke-width="1.5"/><ellipse cx="16" cy="16" rx="14" ry="5.5" fill="none" stroke="#EAC767" stroke-width="1.2" transform="rotate(-18 16 16)" opacity="0.9"/><circle cx="29.3" cy="11.7" r="1.6" fill="#EAC767"/></svg> AstroWebEngine</h1>
       <p id="setup-subtitle">Choose your starting galaxy</p>
     </div>
 
     <!-- PHASE 1: Galaxy Selection -->
     <div id="galaxy-select-container" class="galaxy-select-panel">
       <h2>Select Galaxy</h2>
-      <p class="subtitle">Pick a galaxy for your starting base. The recommended galaxy has the fewest players.</p>
+      <p class="subtitle">Pick a galaxy for your homeworld. The recommended galaxy has the fewest players.</p>
       <div id="galaxy-grid" class="galaxy-grid"></div>
       <div class="galaxy-actions">
-        <button class="btn btn-primary" id="confirm-galaxy-btn" onclick="confirmGalaxy()" disabled>Confirm Galaxy Selection</button>
+        <button class="btn btn-primary" id="confirm-galaxy-btn" onclick="confirmGalaxy()" disabled>Establish Homeworld</button>
       </div>
     </div>
 
@@ -243,7 +275,7 @@
       if (!selectedGalaxyId) return;
       const btn = document.getElementById('confirm-galaxy-btn');
       btn.disabled = true;
-      btn.textContent = 'Setting up your base...';
+      btn.textContent = 'Establishing your homeworld…';
       try {
         const res = await fetch(`${API}/api/select-galaxy`, {
           method: 'POST', headers: headers(),
@@ -253,7 +285,7 @@
           const err = await res.json();
           alert(err.detail || 'Failed to select galaxy');
           btn.disabled = false;
-          btn.textContent = 'Confirm Galaxy Selection';
+          btn.textContent = 'Establish Homeworld';
           return;
         }
         // Move to tutorial
@@ -261,7 +293,7 @@
       } catch (e) {
         console.error('confirmGalaxy error:', e);
         btn.disabled = false;
-        btn.textContent = 'Confirm Galaxy Selection';
+        btn.textContent = 'Establish Homeworld';
       }
     }
 

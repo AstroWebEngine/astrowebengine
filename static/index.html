@@ -16,6 +16,9 @@
     .stars-bg {
       position: fixed; inset: 0; pointer-events: none; z-index: 0;
       background-image:
+        /* faint nebula washes: research-cyan upper left, link-gold upper right */
+        radial-gradient(60% 45% at 18% 8%, rgba(73,214,254,0.05) 0%, transparent 70%),
+        radial-gradient(45% 38% at 84% 28%, rgba(234,199,103,0.04) 0%, transparent 70%),
         radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
         radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
         radial-gradient(1px 1px at 50% 30%, rgba(255,255,255,0.5) 0%, transparent 100%),
@@ -26,10 +29,62 @@
         radial-gradient(1px 1px at 42% 45%, rgba(255,255,255,0.3) 0%, transparent 100%),
         radial-gradient(1px 1px at 90% 50%, rgba(255,255,255,0.4) 0%, transparent 100%),
         radial-gradient(1px 1px at 5% 50%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 22% 33%, rgba(255,255,255,0.35) 0%, transparent 100%),
+        radial-gradient(1px 1px at 64% 12%, rgba(255,255,255,0.45) 0%, transparent 100%),
+        radial-gradient(1px 1px at 78% 42%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 37% 78%, rgba(255,255,255,0.35) 0%, transparent 100%),
+        radial-gradient(1px 1px at 8% 68%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 95% 82%, rgba(255,255,255,0.4) 0%, transparent 100%),
         radial-gradient(2px 2px at 25% 40%, rgba(100,170,255,0.4) 0%, transparent 100%),
-        radial-gradient(2px 2px at 75% 60%, rgba(100,170,255,0.3) 0%, transparent 100%);
+        radial-gradient(2px 2px at 75% 60%, rgba(100,170,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 48% 88%, rgba(234,199,103,0.25) 0%, transparent 100%);
+    }
+    /* Planet limb rising past the bottom edge — anchors the page the way an
+       orbital view anchors the game. Rim light in research cyan. */
+    .horizon-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        radial-gradient(115vw 46vh at 50% 121%, transparent 61.5%, rgba(73,214,254,0.30) 63%, rgba(73,214,254,0.08) 66%, transparent 72%),
+        radial-gradient(115vw 46vh at 50% 121%, #0d1623 0%, #0a1420 55%, rgba(13,22,35,0.95) 62%, transparent 62.6%);
     }
     #auth-page { position: relative; z-index: 1; }
+    /* ── Live-universe stat strip ── */
+    .stat-strip {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      max-width: 720px;
+      margin: 0 auto;
+      border: 1px solid var(--border);
+      background: rgba(13, 22, 35, 0.55);
+      border-radius: 6px;
+    }
+    .stat-tile {
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 14px 10px 11px;
+      border-left: 1px solid rgba(255,255,255,0.05);
+      min-width: 0;
+    }
+    .stat-tile:first-child { border-left: none; }
+    .stat-num {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--accent);
+      line-height: 1;
+      letter-spacing: 0.01em;
+    }
+    .stat-label {
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
     .server-status {
       position: fixed; bottom: 20px; right: 20px;
       background: var(--bg-panel); border: 1px solid var(--border);
@@ -43,21 +98,6 @@
     .server-status .dot.online { background: var(--success); box-shadow: 0 0 6px var(--success); }
     .version-note { font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 8px; }
     html, body { max-width: 100%; overflow-x: hidden; }
-    .auth-layout {
-      display: flex;
-      gap: 24px;
-      max-width: 800px;
-      margin: 0 auto;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      justify-content: center;
-      width: 100%;
-    }
-    .auth-stats {
-      flex: 1;
-      min-width: 280px;
-      max-width: 380px;
-    }
     @media (max-width: 640px) {
       #auth-page {
         justify-content: flex-start;
@@ -78,17 +118,15 @@
         max-width: none !important;
         margin-bottom: 4px !important;
       }
-      .auth-layout {
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 14px !important;
+      .stat-strip { flex-wrap: wrap; width: 100%; }
+      .stat-tile {
+        flex: 1 1 33%;
+        padding: 10px 6px 8px;
+        border-top: 1px solid rgba(255,255,255,0.05);
       }
-      .auth-stats {
-        min-width: 0 !important;
-        max-width: none;
-        width: 100%;
-        order: 2;
-      }
+      .stat-tile:nth-child(-n+3) { border-top: none; }
+      .stat-tile:nth-child(4) { border-left: none; }
+      .stat-num { font-size: 19px; }
       .auth-box {
         width: 100%;
         max-width: none;
@@ -99,7 +137,6 @@
       .btn {
         min-height: 42px;
       }
-      #server-stats td { padding: 6px 8px; }
       .server-status {
         position: static;
         width: 100%;
@@ -112,32 +149,27 @@
 </head>
 <body>
   <div class="stars-bg"></div>
+  <div class="horizon-bg"></div>
 
   <div id="auth-page">
     <div class="auth-logo">
-      <h1>⚡ AstroWebEngine</h1>
+      <h1><svg width="26" height="26" viewBox="0 0 32 32" style="vertical-align:-4px;" aria-hidden="true"><circle cx="16" cy="16" r="7" fill="#0a2a4a" stroke="#49D6FE" stroke-width="1.5"/><ellipse cx="16" cy="16" rx="14" ry="5.5" fill="none" stroke="#EAC767" stroke-width="1.2" transform="rotate(-18 16 16)" opacity="0.9"/><circle cx="29.3" cy="11.7" r="1.6" fill="#EAC767"/></svg> AstroWebEngine</h1>
       <p>Private Server · Space Strategy</p>
     </div>
 
-    <div id="game-status-banner" class="alert alert-info mb-12" style="display:none;max-width:800px;margin:0 auto 12px;"></div>
+    <div id="game-status-banner" class="alert alert-info mb-12" style="display:none;max-width:720px;margin:0 auto 12px;"></div>
 
-    <div class="auth-layout" style="display:flex;gap:24px;max-width:800px;margin:0 auto;align-items:flex-start;flex-wrap:wrap;justify-content:center;">
-      <!-- STATISTICS -->
-      <div class="auth-stats" style="flex:1;min-width:280px;">
-        <div style="text-align:center;font-size:14px;font-weight:bold;margin-bottom:8px;color:var(--text-bright);">Statistics</div>
-        <table class="data-table" style="width:100%;font-size:12px;" id="server-stats">
-          <tbody>
-            <tr><td style="text-align:right;font-weight:bold;width:50%;">Started</td><td id="stat-started">—</td></tr>
-            <tr><td style="text-align:right;font-weight:bold;">Players</td><td><span id="stat-players">—</span></td></tr>
-            <tr><td style="text-align:right;font-weight:bold;">Online</td><td><span id="stat-online">—</span></td></tr>
-            <tr><td style="text-align:right;font-weight:bold;">Planets</td><td><span id="stat-planets">—</span></td></tr>
-            <tr><td style="text-align:right;font-weight:bold;">Bases</td><td><span id="stat-bases">—</span></td></tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- THE UNIVERSE RIGHT NOW -->
+    <div class="stat-strip" id="server-stats">
+      <div class="stat-tile"><span class="stat-num" id="stat-planets">—</span><span class="stat-label">Planets</span></div>
+      <div class="stat-tile"><span class="stat-num" id="stat-bases">—</span><span class="stat-label">Bases</span></div>
+      <div class="stat-tile"><span class="stat-num" id="stat-players">—</span><span class="stat-label">Commanders</span></div>
+      <div class="stat-tile"><span class="stat-num" id="stat-online">—</span><span class="stat-label">Online Now</span></div>
+      <div class="stat-tile"><span class="stat-num" id="stat-started">—</span><span class="stat-label">Day</span></div>
+    </div>
 
-      <!-- LOGIN / REGISTER -->
-      <div class="auth-box" style="margin:0;">
+    <!-- LOGIN / REGISTER -->
+    <div class="auth-box" style="margin:16px auto 0;">
         <div class="auth-tabs">
           <button class="auth-tab active" onclick="switchTab('login')">Login</button>
           <button class="auth-tab" onclick="switchTab('register')" id="reg-tab">Register</button>
@@ -175,7 +207,6 @@
           <button class="btn btn-success btn-full" onclick="doRegister()">Register</button>
         </div>
       </div>
-    </div>
   </div>
 
   <div class="server-status">
@@ -278,8 +309,8 @@
         dot.classList.add('online');
         label.textContent = `${data.game_name || 'Private Server'} · ${data.status || 'Setup'}`;
 
-        // Populate statistics
-        document.getElementById('stat-started').textContent = (data.started_days || 0) + ' Days';
+        // Populate the live-universe stat strip
+        document.getElementById('stat-started').textContent = data.started_days || 0;
         document.getElementById('stat-players').textContent = data.total_players || 0;
         document.getElementById('stat-online').textContent = data.online_players || 0;
         document.getElementById('stat-planets').textContent = (data.total_planets || 0).toLocaleString();

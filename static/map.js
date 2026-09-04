@@ -996,6 +996,15 @@ function renderPlanetDetail(planets) {
     </div>
   </div>`;
   document.getElementById('planet-detail').innerHTML = html;
+
+  // Mobile: the system diagram is a fixed 700px stage; scale it to the
+  // container so all orbits are visible at once instead of panning.
+  // (zoom scales layout too — unsupported browsers keep the scroll fallback)
+  const sysBox = document.querySelector('#planet-detail .map-system-box');
+  const sysAvail = document.getElementById('planet-detail').clientWidth;
+  if (sysBox && sysAvail && sysAvail < 700) {
+    sysBox.style.zoom = Math.max(0.45, sysAvail / 700);
+  }
 }
 
 function renderAstroCard(p) {
@@ -1045,9 +1054,13 @@ function renderAstroCard(p) {
 // ============================================================
 
 let _colonizePlanetId = null;
-async function openColonizeModal(planetId, planetName) {
+// preselectFleetId: when the action was started from a specific fleet (its
+// Build Base tab), that fleet is chosen for you instead of re-picked.
+async function openColonizeModal(planetId, planetName, preselectFleetId = null) {
   _colonizePlanetId = planetId;
   document.getElementById('colonize-planet-name').textContent = planetName;
+  const nameBox = document.getElementById('colonize-name-input');
+  if (nameBox) nameBox.value = '';  // don't carry a name over from a previous colonize
   document.getElementById('colonize-info').textContent = '';
   document.getElementById('colonize-info').className = 'alert alert-info mb-12';
   document.getElementById('colonize-info').style.display = 'none';
@@ -1065,6 +1078,9 @@ async function openColonizeModal(planetId, planetName) {
         const cnt = f.ships[f.colonizer_ship] || 0;
         return `<option value="${f.id}">${escStr(f.name)} (${cnt} ${escStr(shipName(f.colonizer_ship))})</option>`;
       }).join('');
+      if (preselectFleetId && eligible.some(f => f.id === preselectFleetId)) {
+        sel.value = String(preselectFleetId);
+      }
       document.getElementById('colonize-no-fleet-msg').style.display = 'none';
       document.getElementById('colonize-btn').disabled = false;
     } else {
@@ -1083,15 +1099,19 @@ async function doColonize() {
   const fleetId = parseInt(document.getElementById('colonize-fleet-sel').value);
   if (!fleetId) return;
   const infoEl = document.getElementById('colonize-info');
+  const nameEl = document.getElementById('colonize-name-input');
   try {
     const res = await apiFetch('/api/colonize', {
-      method: 'POST', body: JSON.stringify({ planet_id: _colonizePlanetId, fleet_id: fleetId })
+      method: 'POST', body: JSON.stringify({ planet_id: _colonizePlanetId, fleet_id: fleetId, name: nameEl ? nameEl.value.trim() : '' })
     });
     const data = await res.json();
     if (data.success) {
       closeModal('colonize-modal');
       showSnack('Colony established!');
       await updateHUD();
+      // The colonizer ship was consumed, so the fleet view is stale wherever
+      // the action was started from.
+      if (typeof loadFleets === 'function') await loadFleets();
       if (currentRegionId) await selectRegion(currentRegionId);
     } else {
       infoEl.textContent = data.detail || 'Failed';

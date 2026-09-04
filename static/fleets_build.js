@@ -1,6 +1,6 @@
 /* ============================================================
    AstroWebEngine - Frontend (fleets_build.js)
-   Fleet base colonization and ship build/queue flows
+   Fleet colonization entry point and ship build/queue flows
    Split from fleets.js for easier maintenance
    ============================================================ */
 function renderFleetBuildBase(f) {
@@ -12,27 +12,17 @@ function renderFleetBuildBase(f) {
     return '<div class="text-dim" style="padding:12px;">Fleet must be at an uncolonized astro to build a base. Land at a nearby uninhabited astro first.</div>';
   }
 
+  // Hand this fleet and the astro it is sitting on to the shared Colonize
+  // dialog, so neither has to be picked again.
+  const astroLabel = f.location_name || f.location_coords || '';
   return `<div style="padding:12px;">
     <p class="text-dim" style="font-size:12px;margin-bottom:10px;">
       Colonize the astro at ${f.location_coords ? coordLink(f.location_coords) : escStr(f.location_name)}.
       This will consume one ${escStr(shipName(f.colonizer_ship, 'colony ship'))}.
     </p>
-    <button class="btn btn-primary btn-sm" onclick="doColonizeFromFleet(${f.id}, ${f.location_planet_id})">Build Base</button>
+    <button class="btn btn-primary btn-sm"
+      onclick="openColonizeModal(${f.location_planet_id}, '${escAttr(astroLabel)}', ${f.id})">Colonize</button>
   </div>`;
-}
-
-async function doColonizeFromFleet(fleetId, planetId) {
-  try {
-    const res = await apiFetch('/api/colonize', {
-      method: 'POST',
-      body: JSON.stringify({ fleet_id: fleetId, planet_id: planetId })
-    });
-    const data = await res.json();
-    if (data.success) {
-      showSnack('Base established!');
-      await loadFleets(); await updateHUD();
-    } else showSnack(data.detail || 'Colonize failed');
-  } catch (e) { console.error(e); }
 }
 
 // â”€â”€ Attack tab â”€â”€

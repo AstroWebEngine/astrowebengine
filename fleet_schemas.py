@@ -24,5 +24,6 @@ class FleetAttack(BaseModel):
 class ColonizeRequest(BaseModel):
     fleet_id: int
     planet_id: int
+    name: str = ""  # player-chosen base name; blank -> named after the astro
 
 
