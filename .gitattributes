@@ -40,3 +40,4 @@ docs/project_normalized_client_cache.md       export-ignore
 docs/action_point_economy_design.md           export-ignore
 docs/galaxy_topology_option_bank.md           export-ignore
 docs/graph_map_topology_design.md             export-ignore
+tools/                                        export-ignore
