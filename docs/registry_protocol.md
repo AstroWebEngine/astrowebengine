@@ -77,4 +77,4 @@ the header, the footer) shipped in Phase 3a.
   `docs/mod_system_design.md` §8; registration reuses the same identity/verify
   flow.
 - **Privacy:** only operator-provided, already-public fields are sent; no user
-  PII. Registration stays opt-in per the AstroWebEngine License §4.
+  PII. Registration is opt-in by design and no license term requires it.

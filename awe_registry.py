@@ -7,7 +7,8 @@ on in the admin panel and sets their public URL; the engine then POSTs a small
 registration payload to the registry and refreshes it on a heartbeat.
 
 Design contract:
-  * OPT-IN — does nothing unless AWE_REGISTRY_ENABLED is true (LICENSE §4).
+  * OPT-IN - does nothing unless AWE_REGISTRY_ENABLED is true. Nothing in the
+    license requires an operator to register; this is a convenience, not a duty.
   * FAIL-SOFT — registry errors are logged and swallowed; they never affect the
     running game.
   * VERIFIABLE — the payload points at this deployment's /api/engine, so the

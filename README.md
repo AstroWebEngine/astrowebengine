@@ -114,9 +114,22 @@ mods in `mods/`. See [docs/mod_system_design.md](docs/mod_system_design.md).
 
 ## License
 
-Source-available under the [AstroWebEngine License](LICENSE) — free to use, modify,
-distribute and run commercially, on one condition: publicly accessible games built
-on the engine keep the "Powered by AstroWebEngine" attribution (UI notice,
-`/api/engine` identity response, and `X-Powered-By` header) intact.
+Copyright © 2026 Steven Graham. Licensed under the
+[GNU Affero General Public License v3.0](LICENSE).
 
-Game content you author — rules, names, art, balance — is yours.
+Self-host it, modify it, run games on it — including games you charge for. The one
+obligation is reciprocity: if you modify the engine and let other people use it
+over a network, those users must be able to get your modified source under the same
+license. That is what stops a closed, proprietary fork from being packaged and sold
+as somebody else's product.
+
+**Your game content is yours.** Game definitions, rule fragments, data-only mods,
+and the names, art and balance you author are your own work — the engine loads them,
+it doesn't absorb them. Behavioral mods are more entangled, since they run in-process
+against engine code; treat those as covered by the AGPL.
+
+The engine still serves a "Powered by AstroWebEngine" notice, an `/api/engine`
+identity response and an `X-Powered-By` header. Keeping them was mandatory under the
+engine's previous license; under the AGPL it's a courtesy. Appreciated, not required.
+
+*Plain-language summary, not legal advice — [the license text](LICENSE) governs.*

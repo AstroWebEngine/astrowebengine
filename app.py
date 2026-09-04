@@ -103,7 +103,8 @@ async def get_version():
     return {"version": __version__}
 
 
-# ── Engine identity / attribution (see engine_identity.py & LICENSE) ──
+# ── Engine identity (see engine_identity.py). Lets a deployment identify the
+# engine and version it runs, and lets the optional registry verify a listing. ──
 @app.get("/api/engine")
 async def get_engine_identity():
     return engine_identity(__version__)
