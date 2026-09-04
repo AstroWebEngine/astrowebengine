@@ -197,6 +197,25 @@ a:hover { color: var(--accent-glow); text-decoration: underline; }
   justify-content: space-between;
   padding: 0 10px;
 }
+/* Header strips hold a ruleset-driven number of items — tabs, HUD stats and
+   utility links all change with the active game definition. A flex item won't
+   shrink below its own content by default, so without min-width:0 one extra
+   tab pushes its neighbours out of the bar instead of fitting. These strips
+   shrink and scroll instead; the infobox (credits, messages) stays rigid so
+   the numbers a player checks constantly never slide away. */
+.top-header-menu,
+.main-header-nav,
+.main-header-stats {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.top-header-menu::-webkit-scrollbar,
+.main-header-nav::-webkit-scrollbar,
+.main-header-stats::-webkit-scrollbar { display: none; }
+
 .top-header-menu {
   display: flex;
   align-items: center;
@@ -288,7 +307,10 @@ a:hover { color: var(--accent-glow); text-decoration: underline; }
 .awe-nav-btn.active { background: linear-gradient(180deg, #254e75 0%, #123351 100%); color: var(--accent); border-color: #6a8fb5; }
 
 .main-header-logo {
-  flex: 0 0 220px;
+  flex: 0 1 220px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-family: var(--font-main);
   font-size: 13px;
   font-weight: 700;
@@ -372,7 +394,7 @@ a:hover { color: var(--accent-glow); text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
+  flex-shrink: 1;
 }
 .hstat {
   font-size: 11px;
@@ -1957,13 +1979,25 @@ body.map-sidebar-dragging {
 }
 .config-item input:focus, .config-item select:focus { border-color: var(--accent); }
 
+/* Balance fields hold anything from 3.5 to 500000, so a fixed pixel width
+   either clips the big values or wastes a column on the small ones. They size
+   to their content where the browser supports it, and fall back to a width
+   that fits six digits. The native spinner is dropped: it overlapped the
+   digits in the narrow columns, and these are typed, not nudged. */
 .stat-input {
   background: rgba(0,0,0,0.4); color: var(--text-bright); border: 1px solid var(--border);
   border-radius: 3px; padding: 3px 5px; font-family: var(--font-mono); font-size: 11px;
   text-align: right;
+  box-sizing: content-box;
+  width: 7ch;
+  min-width: 4ch;
+  max-width: 16ch;
+  field-sizing: content;
 }
 .stat-input:focus { border-color: var(--accent); outline: none; }
-.stat-input::-webkit-inner-spin-button { opacity: 0.4; }
+.stat-input[type="number"]::-webkit-inner-spin-button,
+.stat-input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.stat-input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 
 /* ── MISC ── */
 .section-title {

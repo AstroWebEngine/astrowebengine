@@ -285,21 +285,21 @@
           <details style="margin-top:12px;">
             <summary class="text-accent" style="cursor:pointer; font-size:12px;">+ Add New Ship Type</summary>
             <div style="padding:8px; display:flex; flex-wrap:wrap; gap:6px; align-items:end;">
-              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-ship-key" placeholder="my_ship" style="width:100px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-ship-name" placeholder="My Ship" style="width:100px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Cost</label><br><input type="number" class="stat-input" id="new-ship-cost" value="100" style="width:60px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Atk</label><br><input type="number" class="stat-input" id="new-ship-attack" value="10" style="width:50px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Arm</label><br><input type="number" class="stat-input" id="new-ship-armour" value="10" style="width:50px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Shd</label><br><input type="number" class="stat-input" id="new-ship-shield" value="0" style="width:50px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Spd</label><br><input type="number" class="stat-input" id="new-ship-speed" value="4" step="0.1" style="width:50px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">SY Req</label><br><input type="number" class="stat-input" id="new-ship-shipyard" value="10" style="width:50px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Hangar</label><br><input type="number" class="stat-input" id="new-ship-hangar" value="0" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-ship-key" placeholder="my_ship" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-ship-name" placeholder="My Ship" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Cost</label><br><input type="number" class="stat-input" id="new-ship-cost" value="100" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Atk</label><br><input type="number" class="stat-input" id="new-ship-attack" value="10" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Arm</label><br><input type="number" class="stat-input" id="new-ship-armour" value="10" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Shd</label><br><input type="number" class="stat-input" id="new-ship-shield" value="0" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Spd</label><br><input type="number" class="stat-input" id="new-ship-speed" value="4" step="0.1" /></div>
+              <div><label class="text-dim" style="font-size:10px;">SY Req</label><br><input type="number" class="stat-input" id="new-ship-shipyard" value="10" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Hangar</label><br><input type="number" class="stat-input" id="new-ship-hangar" value="0" /></div>
               <div><label class="text-dim" style="font-size:10px;">Weapon</label><br>
-                <select class="stat-input" id="new-ship-weapon" style="width:80px;">
+                <select class="stat-input" id="new-ship-weapon">
                   <option>laser</option><option>missiles</option><option>plasma</option><option>ion</option><option>photon</option><option>disruptor</option>
                 </select></div>
               <div><label class="text-dim" style="font-size:10px;">Drive</label><br>
-                <select class="stat-input" id="new-ship-drive" style="width:80px;">
+                <select class="stat-input" id="new-ship-drive">
                   <option>stellar</option><option>warp</option><option>inter</option>
                 </select></div>
               <button class="btn btn-primary btn-sm" onclick="addNewShip()">Add Ship</button>
@@ -330,14 +330,14 @@
           <details style="margin-top:12px;">
             <summary class="text-accent" style="cursor:pointer; font-size:12px;">+ Add New Defense Type</summary>
             <div style="padding:8px; display:flex; flex-wrap:wrap; gap:6px; align-items:end;">
-              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-def-key" placeholder="my_turret" style="width:100px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-def-name" placeholder="My Turret" style="width:100px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Cost</label><br><input type="number" class="stat-input" id="new-def-cost" value="100" style="width:60px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Atk</label><br><input type="number" class="stat-input" id="new-def-attack" value="10" style="width:50px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Arm</label><br><input type="number" class="stat-input" id="new-def-armour" value="10" style="width:50px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Shd</label><br><input type="number" class="stat-input" id="new-def-shield" value="0" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-def-key" placeholder="my_turret" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-def-name" placeholder="My Turret" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Cost</label><br><input type="number" class="stat-input" id="new-def-cost" value="100" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Atk</label><br><input type="number" class="stat-input" id="new-def-attack" value="10" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Arm</label><br><input type="number" class="stat-input" id="new-def-armour" value="10" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Shd</label><br><input type="number" class="stat-input" id="new-def-shield" value="0" /></div>
               <div><label class="text-dim" style="font-size:10px;">Weapon</label><br>
-                <select class="stat-input" id="new-def-weapon" style="width:80px;">
+                <select class="stat-input" id="new-def-weapon">
                   <option>laser</option><option>missiles</option><option>plasma</option><option>ion</option><option>photon</option><option>disruptor</option>
                 </select></div>
               <button class="btn btn-primary btn-sm" onclick="addNewDefense()">Add Defense</button>
@@ -368,13 +368,13 @@
           <details style="margin-top:12px;">
             <summary class="text-accent" style="cursor:pointer; font-size:12px;">+ Add New Building Type</summary>
             <div style="padding:8px; display:flex; flex-wrap:wrap; gap:6px; align-items:end;">
-              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-bld-key" placeholder="my_building" style="width:100px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-bld-name" placeholder="My Building" style="width:100px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Base Cost</label><br><input type="number" class="stat-input" id="new-bld-cost" value="100" style="width:60px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Energy Req</label><br><input type="number" class="stat-input" id="new-bld-energy" value="1" style="width:50px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Pop Req</label><br><input type="number" class="stat-input" id="new-bld-pop" value="1" style="width:50px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Area Req</label><br><input type="number" class="stat-input" id="new-bld-area" value="1" style="width:50px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Max Level</label><br><input type="number" class="stat-input" id="new-bld-maxlv" value="20" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-bld-key" placeholder="my_building" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-bld-name" placeholder="My Building" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Base Cost</label><br><input type="number" class="stat-input" id="new-bld-cost" value="100" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Energy Req</label><br><input type="number" class="stat-input" id="new-bld-energy" value="1" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Pop Req</label><br><input type="number" class="stat-input" id="new-bld-pop" value="1" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Area Req</label><br><input type="number" class="stat-input" id="new-bld-area" value="1" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Max Level</label><br><input type="number" class="stat-input" id="new-bld-maxlv" value="20" /></div>
               <button class="btn btn-primary btn-sm" onclick="addNewBuilding()">Add Building</button>
             </div>
           </details>
@@ -402,11 +402,11 @@
           <details style="margin-top:12px;">
             <summary class="text-accent" style="cursor:pointer; font-size:12px;">+ Add New Research Type</summary>
             <div style="padding:8px; display:flex; flex-wrap:wrap; gap:6px; align-items:end;">
-              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-res-key" placeholder="my_tech" style="width:100px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-res-name" placeholder="My Tech" style="width:100px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Base Cost</label><br><input type="number" class="stat-input" id="new-res-cost" value="100" style="width:60px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Cost Mult</label><br><input type="number" class="stat-input" id="new-res-mult" value="2.0" step="0.1" style="width:50px;" /></div>
-              <div><label class="text-dim" style="font-size:10px;">Lab Req</label><br><input type="number" class="stat-input" id="new-res-lab" value="10" style="width:50px;" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Key</label><br><input class="stat-input" id="new-res-key" placeholder="my_tech" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Name</label><br><input class="stat-input" id="new-res-name" placeholder="My Tech" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Base Cost</label><br><input type="number" class="stat-input" id="new-res-cost" value="100" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Cost Mult</label><br><input type="number" class="stat-input" id="new-res-mult" value="2.0" step="0.1" /></div>
+              <div><label class="text-dim" style="font-size:10px;">Lab Req</label><br><input type="number" class="stat-input" id="new-res-lab" value="10" /></div>
               <button class="btn btn-primary btn-sm" onclick="addNewResearch()">Add Research</button>
             </div>
           </details>
@@ -1308,7 +1308,7 @@
       const opts = (allTechs || []).map(t => `<option value="${t}" ${t===rk?'selected':''}>${t.replace(/_/g,' ')}</option>`).join('');
       return `<div style="display:flex; gap:4px; margin-bottom:2px; align-items:center;" id="${prefix}-req-row-${key}-${idx}">
         <select class="stat-input" style="width:140px; font-size:10px;" data-req-key="${prefix}-${key}">${opts}<option value="" ${!rk?'selected':''}>— select —</option></select>
-        <input type="number" class="stat-input" style="width:50px;" value="${rv||1}" data-req-val="${prefix}-${key}" />
+        <input type="number" class="stat-input" value="${rv||1}" data-req-val="${prefix}-${key}" />
         <button class="btn btn-ghost btn-sm" style="padding:0 4px; font-size:10px;" onclick="this.parentElement.remove()">✕</button>
       </div>`;
     }
@@ -1373,13 +1373,13 @@
         return `<tr style="${rowStyle}">
           <td class="text-bright font-bold">${s.name}${customBadge}</td>
           <td><span class="badge ${enabledCls}">${enabledLabel}</span></td>
-          <td><input type="number" class="stat-input" id="ship-cost-${s.key}" value="${s.cost}" style="width:70px;" /></td>
-          <td><input type="number" class="stat-input" id="ship-attack-${s.key}" value="${s.attack}" style="width:60px;" /></td>
-          <td><input type="number" class="stat-input" id="ship-armour-${s.key}" value="${s.armour}" style="width:60px;" /></td>
-          <td><input type="number" class="stat-input" id="ship-shield-${s.key}" value="${s.shield}" style="width:50px;" /></td>
-          <td><input type="number" class="stat-input" id="ship-speed-${s.key}" value="${s.speed}" step="0.1" style="width:50px;" /></td>
-          <td><input type="number" class="stat-input" id="ship-shipyard-${s.key}" value="${s.shipyard}" style="width:50px;" /></td>
-          <td><input type="number" class="stat-input" id="ship-hangar-${s.key}" value="${s.hangar}" style="width:55px;" /></td>
+          <td><input type="number" class="stat-input" id="ship-cost-${s.key}" value="${s.cost}" /></td>
+          <td><input type="number" class="stat-input" id="ship-attack-${s.key}" value="${s.attack}" /></td>
+          <td><input type="number" class="stat-input" id="ship-armour-${s.key}" value="${s.armour}" /></td>
+          <td><input type="number" class="stat-input" id="ship-shield-${s.key}" value="${s.shield}" /></td>
+          <td><input type="number" class="stat-input" id="ship-speed-${s.key}" value="${s.speed}" step="0.1" /></td>
+          <td><input type="number" class="stat-input" id="ship-shipyard-${s.key}" value="${s.shipyard}" /></td>
+          <td><input type="number" class="stat-input" id="ship-hangar-${s.key}" value="${s.hangar}" /></td>
           <td style="font-size:10px;">${fmtReqs(s.req)}
             <button class="btn btn-ghost btn-sm" style="font-size:9px; padding:0 4px;" onclick="toggleReqEditor('ship','${s.key}')">Edit</button>
             ${reqEditorHtml('ship', s.key, s.req, _allTechKeys)}
@@ -1495,10 +1495,10 @@
         return `<tr style="${rowStyle}">
           <td class="text-bright font-bold">${d.name}${customBadge}</td>
           <td><span class="badge ${enabledCls}">${enabledLabel}</span></td>
-          <td><input type="number" class="stat-input" id="def-cost-${d.key}" value="${d.cost}" style="width:70px;" /></td>
-          <td><input type="number" class="stat-input" id="def-attack-${d.key}" value="${d.attack}" style="width:60px;" /></td>
-          <td><input type="number" class="stat-input" id="def-armour-${d.key}" value="${d.armour}" style="width:60px;" /></td>
-          <td><input type="number" class="stat-input" id="def-shield-${d.key}" value="${d.shield}" style="width:50px;" /></td>
+          <td><input type="number" class="stat-input" id="def-cost-${d.key}" value="${d.cost}" /></td>
+          <td><input type="number" class="stat-input" id="def-attack-${d.key}" value="${d.attack}" /></td>
+          <td><input type="number" class="stat-input" id="def-armour-${d.key}" value="${d.armour}" /></td>
+          <td><input type="number" class="stat-input" id="def-shield-${d.key}" value="${d.shield}" /></td>
           <td style="font-size:10px;">${fmtReqs(d.req)}
             <button class="btn btn-ghost btn-sm" style="font-size:9px; padding:0 4px;" onclick="toggleReqEditor('def','${d.key}')">Edit</button>
             ${reqEditorHtml('def', d.key, d.req, _allTechKeys)}
@@ -1607,11 +1607,11 @@
         return `<tr style="${rowStyle}">
           <td class="text-bright font-bold">${b.name || b.key.replace(/_/g, ' ')}${customBadge}</td>
           <td><span class="badge ${enabledCls}">${enabledLabel}</span></td>
-          <td><input type="number" class="stat-input" id="bld-cost-${b.key}" value="${b.base_cost || 0}" style="width:60px;" /></td>
-          <td><input type="number" class="stat-input" id="bld-energy-${b.key}" value="${b.energy_req || 0}" style="width:50px;" /></td>
-          <td><input type="number" class="stat-input" id="bld-pop-${b.key}" value="${b.pop_req || 0}" style="width:50px;" /></td>
-          <td><input type="number" class="stat-input" id="bld-area-${b.key}" value="${b.area_req || 0}" style="width:50px;" /></td>
-          <td><input type="number" class="stat-input" id="bld-maxlv-${b.key}" value="${b.max_level != null ? b.max_level : 0}" style="width:50px;" title="0 = unlimited" /></td>
+          <td><input type="number" class="stat-input" id="bld-cost-${b.key}" value="${b.base_cost || 0}" /></td>
+          <td><input type="number" class="stat-input" id="bld-energy-${b.key}" value="${b.energy_req || 0}" /></td>
+          <td><input type="number" class="stat-input" id="bld-pop-${b.key}" value="${b.pop_req || 0}" /></td>
+          <td><input type="number" class="stat-input" id="bld-area-${b.key}" value="${b.area_req || 0}" /></td>
+          <td><input type="number" class="stat-input" id="bld-maxlv-${b.key}" value="${b.max_level != null ? b.max_level : 0}" title="0 = unlimited" /></td>
           <td style="font-size:10px;">${fmtReqs(b.tech_req)}
             <button class="btn btn-ghost btn-sm" style="font-size:9px; padding:0 4px;" onclick="toggleReqEditor('bld','${b.key}')">Edit</button>
             ${reqEditorHtml('bld', b.key, b.tech_req, _allTechKeys)}
@@ -1724,8 +1724,8 @@
         return `<tr style="${rowStyle}">
           <td class="text-bright font-bold">${r.name || r.key.replace(/_/g, ' ')}${customBadge}</td>
           <td><span class="badge ${enabledCls}">${enabledLabel}</span></td>
-          <td><input type="number" class="stat-input" id="res-cost-${r.key}" value="${r.base_cost || 0}" style="width:70px;" /></td>
-          <td><input type="number" class="stat-input" id="res-lab-${r.key}" value="${r.lab_req || 0}" style="width:50px;" /></td>
+          <td><input type="number" class="stat-input" id="res-cost-${r.key}" value="${r.base_cost || 0}" /></td>
+          <td><input type="number" class="stat-input" id="res-lab-${r.key}" value="${r.lab_req || 0}" /></td>
           <td style="font-size:10px;">${fmtReqs(r.prereqs)}
             <button class="btn btn-ghost btn-sm" style="font-size:9px; padding:0 4px;" onclick="toggleReqEditor('res','${r.key}')">Edit</button>
             ${reqEditorHtml('res', r.key, r.prereqs, _allTechKeys)}
@@ -1829,13 +1829,13 @@
         return `<tr style="${rowStyle}">
           <td class="text-bright font-bold">${a.name || a.key.replace(/_/g, ' ')}</td>
           <td><span class="badge ${enabledCls}">${enabledLabel}</span></td>
-          <td><input type="number" class="stat-input" id="ast-metal-${a.key}" value="${a.metal || 0}" style="width:70px;" /></td>
-          <td><input type="number" class="stat-input" id="ast-crystal-${a.key}" value="${a.crystal || 0}" style="width:70px;" /></td>
-          <td><input type="number" class="stat-input" id="ast-fertility-${a.key}" value="${a.fertility || 0}" style="width:70px;" /></td>
-          <td><input type="number" class="stat-input" id="ast-solar-${a.key}" value="${a.solar || 0}" style="width:70px;" /></td>
-          <td><input type="number" class="stat-input" id="ast-gas-${a.key}" value="${a.gas || 0}" style="width:70px;" /></td>
-          <td><input type="number" class="stat-input" id="ast-area-planet-${a.key}" value="${a.area_planet || 0}" style="width:70px;" /></td>
-          <td><input type="number" class="stat-input" id="ast-area-moon-${a.key}" value="${a.area_moon || 0}" style="width:70px;" /></td>
+          <td><input type="number" class="stat-input" id="ast-metal-${a.key}" value="${a.metal || 0}" /></td>
+          <td><input type="number" class="stat-input" id="ast-crystal-${a.key}" value="${a.crystal || 0}" /></td>
+          <td><input type="number" class="stat-input" id="ast-fertility-${a.key}" value="${a.fertility || 0}" /></td>
+          <td><input type="number" class="stat-input" id="ast-solar-${a.key}" value="${a.solar || 0}" /></td>
+          <td><input type="number" class="stat-input" id="ast-gas-${a.key}" value="${a.gas || 0}" /></td>
+          <td><input type="number" class="stat-input" id="ast-area-planet-${a.key}" value="${a.area_planet || 0}" /></td>
+          <td><input type="number" class="stat-input" id="ast-area-moon-${a.key}" value="${a.area_moon || 0}" /></td>
           <td style="white-space:nowrap;">
             <button class="btn ${toggleCls} btn-sm" onclick="toggleAstro('${a.key}')">${toggleLabel}</button>
             <button class="btn btn-primary btn-sm" onclick="saveAstroStats('${a.key}')">Save</button>
