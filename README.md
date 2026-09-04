@@ -106,6 +106,7 @@ mods in `mods/`. See [docs/mod_system_design.md](docs/mod_system_design.md).
 
 ## Documentation
 
+- [CHANGELOG.md](CHANGELOG.md) — what changed in each release
 - [QUICK_START.md](QUICK_START.md) — install, first launch, first game
 - [DOCKER.md](DOCKER.md) — container deployment
 - [CODE_EXAMPLES.md](CODE_EXAMPLES.md) — working with definitions and mods in code
