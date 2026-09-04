@@ -67,15 +67,15 @@ HOTSWAP_SAFE = {
 # Flags that require a universe wipe / fresh game to change safely.
 # NOTE on consumption: the engine reads resource_model/resource_types,
 # defense_model, map_topology, galaxy_network and galaxy_shape at runtime.
-# combat_model is validated and carried in definitions but battle behavior is
-# actually governed by combat_max_rounds (1 = simultaneous, >1 = rounds), so the
-# flag is effectively descriptive. map_depth/map_levels are declared for a future
-# 3-level map but NOT yet consumed (the engine always builds the 4-level map).
+# combat_model IS consumed: "simultaneous" forces a single exchange regardless of
+# combat_max_rounds (combat.py). map_depth IS consumed - universe.py builds the
+# flat galaxy:system:position layout at 3 and the hierarchical one at 4. Only
+# map_levels remains descriptive, tied to map_depth.
 SETUP_ONLY = {
-    "combat_model",     # descriptive; battle behavior follows combat_max_rounds
+    "combat_model",     # selects the battle model; "simultaneous" pins rounds to 1
     "resource_model",    # Changing single->multi mid-game: costs become dicts, user.credits meaningless
     "defense_model",     # Changing level->count: defense.level means different things in each model
-    "map_depth",         # FUTURE/not-yet-consumed: engine always builds the 4-level map
+    "map_depth",         # 3 = flat galaxy/system/slot, 4 = galaxy/region/system/orbit
     "map_levels",        # FUTURE/not-yet-consumed: tied to map_depth
     "map_topology",      # hierarchy<->graph rewires travel + needs link generation (fresh universe)
     "galaxy_network",    # galaxy/cluster arrangement: ring/equal_distance/line/pumpkin/wormhole_only

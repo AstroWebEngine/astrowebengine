@@ -28,6 +28,8 @@ Engine flags that reshape gameplay, set per definition:
 | `defense_model` | `level` / `count` | Upgradeable turret levels, or build N discrete units |
 | `defenses_destructible` | `true` / `false` | Permanent losses, or regenerating effectiveness % |
 | `combat_model` | `simultaneous` / `rounds` | One exchange, or up to `combat_max_rounds` |
+| `shield_bounce_threshold` | off / fraction | A shot under this fraction of the target's shields is absorbed entirely |
+| `rapid_fire` (per unit) | `{target: shots}` | Hard counters — a hull's shots multiply against the units it answers |
 | `map_depth` | `4` / `3` | galaxy→region→system→orbit, or galaxy→system→slot |
 | `map_topology` | `hierarchy` / `graph` | Nested coordinates, or systems linked by lanes and wormholes |
 | `galaxy_network` | `ring`, `line`, `tree`, `small_world`, `wormhole_only`, … | How galaxies connect and how travel distance is computed |

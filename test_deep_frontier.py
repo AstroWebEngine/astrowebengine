@@ -89,3 +89,30 @@ def test_content_is_present_and_named(compiled):
             assert not name[-1].isdigit() or not name[:-1].strip().endswith(
                 ("Ship", "Building", "Defense", "Tech")
             ), f"{section}.{key} still has a placeholder name: {name!r}"
+
+
+def test_rapid_fire_targets_all_resolve(compiled):
+    """A rapid-fire key naming a unit that doesn't exist is silently dead weight."""
+    known = set(compiled["ships"]) | set(compiled["defenses"])
+    tables = {k: v["rapid_fire"] for k, v in compiled["ships"].items() if v.get("rapid_fire")}
+    assert tables, "the ruleset declares round combat but no counters"
+    for hull, table in tables.items():
+        unknown = set(table) - known
+        assert not unknown, f"{hull} rapid-fires at nonexistent {unknown}"
+        assert all(int(n) > 1 for n in table.values()), f"{hull} has a no-op entry"
+
+
+def test_shield_bouncing_is_on(compiled):
+    assert compiled["engine"]["shield_bounce_threshold"] == pytest.approx(0.01)
+
+
+def test_the_cheap_swarm_cannot_hurt_the_apex_hull(compiled):
+    """With bouncing on, the top hull's shields put it out of a swarm's reach."""
+    import combat
+    ships = compiled["ships"]
+    threshold = compiled["engine"]["shield_bounce_threshold"]
+    apex = max(ships.values(), key=lambda s: s.get("shield", 0))
+    swarm = ships["interceptor"]
+    assert combat._single_attack_damage(
+        swarm["attack"], swarm["weapon"], apex["shield"],
+        bounce_threshold=threshold) == 0.0

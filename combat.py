@@ -421,7 +421,8 @@ def _make_ship_stats(spec, wpn_tech, arm_tech, shd_tech, cc_lv, tc_lv, fleet_bon
     armour = spec["armour"] * arm_mult * fleet_bonus
     shield = spec.get("shield", 0) * shd_mult
     return {"power": power, "armour": armour, "shield": shield,
-            "cost": spec["cost"], "weapon": spec["weapon"]}
+            "cost": spec["cost"], "weapon": spec["weapon"],
+            "rapid_fire": spec.get("rapid_fire") or {}}
 
 
 def _make_def_stats(spec, wpn_tech, arm_tech, shd_tech, dc_lv, dc_bonus=None,
@@ -448,12 +449,22 @@ def _make_def_stats(spec, wpn_tech, arm_tech, shd_tech, dc_lv, dc_bonus=None,
     armour = spec["armour"] * arm_mult * dc_mult
     shield = spec.get("shield", 0) * shd_mult * dc_mult
     return {"power": power, "armour": armour, "shield": shield,
-            "cost": spec["cost"], "weapon": spec["weapon"]}
+            "cost": spec["cost"], "weapon": spec["weapon"],
+            "rapid_fire": spec.get("rapid_fire") or {}}
 
 
-def _single_attack_damage(attacker_power, attacker_weapon, defender_shield, is_ion_crossshield=False):
+def _single_attack_damage(attacker_power, attacker_weapon, defender_shield,
+                          is_ion_crossshield=False, bounce_threshold=0.0):
     """Calculate damage from one unit type attacking one defender type.
-    Shield passthrough is now data-driven from WEAPON_TYPES spec."""
+    Shield passthrough is now data-driven from WEAPON_TYPES spec.
+
+    `bounce_threshold` enables shield bouncing: a shot weaker than this fraction
+    of the target's shields is absorbed completely. It is what stops a swarm of
+    the cheapest hull from grinding down a capital ship by sheer count, and is
+    off (0.0) unless a ruleset asks for it.
+    """
+    if bounce_threshold > 0 and defender_shield > 0 and attacker_power < defender_shield * bounce_threshold:
+        return 0.0
     if defender_shield == 0:
         return attacker_power
     # Data-driven: look up weapon's shield passthrough from specs
@@ -474,11 +485,20 @@ def _single_attack_damage_exp(attacker_power, attacker_weapon, defender_shield, 
     return dmg ** exponent if dmg > 0 else 0.0
 
 
-def _apply_fleet_attack(attackers, atk_stat_map, defenders, def_stat_map, exponent, eff_ship_specs=None):
+def _apply_fleet_attack(attackers, atk_stat_map, defenders, def_stat_map, exponent,
+                        eff_ship_specs=None, bounce_threshold=0.0):
     """One side fires at the other.
 
     Per-target damage is rounded before allocation, and overflow is reprocessed
     as a fresh wave of the same attacker type.
+
+    Rapid fire (`rapid_fire: {target_key: shots}` on a unit spec) multiplies a
+    shot's effect against that target type. Note the deviation from the game the
+    mechanic comes from: there, extra shots come out of random targeting, so some
+    are wasted. Allocation here is proportional and deterministic, so rapid fire
+    both raises the damage against a target and pulls more fire onto it. The
+    outcome it exists to produce - hard counters, where the right hull shreds its
+    prey - holds either way, and combat stays reproducible.
     """
     total_damage_dealt = 0.0
     atk_types = [t for t in attackers if attackers[t] > 0]
@@ -496,15 +516,23 @@ def _apply_fleet_attack(attackers, atk_stat_map, defenders, def_stat_map, expone
         while current_qty > 1e-6 and max_waves > 0:
             max_waves -= 1
 
+            a_rapid_fire = a_stats.get("rapid_fire") or {}
+
             damage_vs = {}
             total_damage_sum = 0.0
             for d_type in defenders:
                 if defenders[d_type] <= 0:
                     continue
                 d_stats = def_stat_map[d_type]
-                single_dmg = _rd2(_single_attack_damage(a_power, a_weapon, d_stats["shield"]))
+                single_dmg = _rd2(_single_attack_damage(
+                    a_power, a_weapon, d_stats["shield"], bounce_threshold=bounce_threshold))
                 if single_dmg <= 0:
                     continue
+                # Rapid fire scales the shot's effect against this target. Applied
+                # here so weighting, kill count and overflow all use one figure.
+                rf = a_rapid_fire.get(d_type, 1)
+                if rf and rf > 1:
+                    single_dmg = _rd2(single_dmg * float(rf))
                 dmg_exp = single_dmg if exponent == 1.0 else single_dmg ** exponent
                 damage_vs[d_type] = (single_dmg, dmg_exp)
                 total_damage_sum += dmg_exp
@@ -769,7 +797,12 @@ def _resolve_battle_default(attacker_fleet, attacker_user, defender_colony, defe
     game_def = get_game_definition()
     engine_cfg = game_def.get("engine", {})
     combat_cfg = game_def.get("combat", {})
-    max_rounds = engine_cfg.get("combat_max_rounds", 1)
+    # combat_model is authoritative: "simultaneous" is a single exchange no matter
+    # what combat_max_rounds says. It used to be carried in definitions and never
+    # read, so a ruleset could declare one model and fight the other.
+    combat_model = engine_cfg.get("combat_model", "simultaneous")
+    max_rounds = 1 if combat_model == "simultaneous" else engine_cfg.get("combat_max_rounds", 1)
+    bounce_threshold = float(engine_cfg.get("shield_bounce_threshold", 0.0) or 0.0)
     defenses_destructible = engine_cfg.get("defenses_destructible", False)
     defense_repair_pct = engine_cfg.get("defense_repair_percent", 1.0)
     rebuild_model = engine_cfg.get("rebuild_model", "fixed")
@@ -809,12 +842,14 @@ def _resolve_battle_default(attacker_fleet, attacker_user, defender_colony, defe
         atk_damage_dealt += _apply_fleet_attack(
             atk_before, combined_atk_stats,
             combined_def_counts, combined_def_stats,
-            damage_allocation_exponent, eff_ship_specs)
+            damage_allocation_exponent, eff_ship_specs,
+            bounce_threshold=bounce_threshold)
 
         def_damage_dealt += _apply_fleet_attack(
             round_def_atk_counts, round_def_atk_stats,
             combined_atk_counts, combined_atk_stats,
-            damage_allocation_exponent, eff_ship_specs)
+            damage_allocation_exponent, eff_ship_specs,
+            bounce_threshold=bounce_threshold)
 
         # Apply rounding per unit type
         for st in ALL_SHIP_TYPES:

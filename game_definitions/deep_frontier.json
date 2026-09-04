@@ -37,7 +37,8 @@
     "rebuild_model": "binomial",
     "fleet_rebuild_factor": 0.0,
     "plunder_model": "cargo",
-    "plunder_percent": 0.5
+    "plunder_percent": 0.5,
+    "shield_bounce_threshold": 0.01
   },
   "ui": {
     "theme": "neutral",
@@ -244,7 +245,12 @@
         "ion_tech": 2
       },
       "rounding": 1,
-      "cargo": 800
+      "cargo": 800,
+      "rapid_fire": {
+        "interceptor": 6,
+        "rocket_turret": 10,
+        "recon_drone": 5
+      }
     },
     "capital_ship": {
       "name": "Capital Ship",
@@ -266,7 +272,10 @@
         "ion_tech": 5
       },
       "rounding": 2,
-      "cargo": 1500
+      "cargo": 1500,
+      "rapid_fire": {
+        "recon_drone": 5
+      }
     },
     "battlecruiser": {
       "name": "Battlecruiser",
@@ -290,7 +299,15 @@
         "shield_matrix": 5
       },
       "rounding": 2,
-      "cargo": 750
+      "cargo": 750,
+      "rapid_fire": {
+        "light_hauler": 3,
+        "heavy_hauler": 3,
+        "strike_fighter": 4,
+        "cruiser": 4,
+        "capital_ship": 7,
+        "recon_drone": 5
+      }
     },
     "bomber": {
       "name": "Bomber",
@@ -313,7 +330,14 @@
         "plasma_tech": 5
       },
       "rounding": 2,
-      "cargo": 500
+      "cargo": 500,
+      "rapid_fire": {
+        "rocket_turret": 20,
+        "light_laser": 20,
+        "heavy_laser": 10,
+        "ion_battery": 10,
+        "recon_drone": 5
+      }
     },
     "destroyer": {
       "name": "Destroyer",
@@ -336,7 +360,12 @@
         "plasma_tech": 5
       },
       "rounding": 2,
-      "cargo": 2000
+      "cargo": 2000,
+      "rapid_fire": {
+        "light_laser": 10,
+        "cruiser": 5,
+        "recon_drone": 5
+      }
     },
     "worldbreaker": {
       "name": "Worldbreaker",
@@ -361,7 +390,26 @@
       },
       "rounding": 3,
       "can_destroy_moons": true,
-      "cargo": 1000000
+      "cargo": 1000000,
+      "rapid_fire": {
+        "light_hauler": 250,
+        "heavy_hauler": 250,
+        "interceptor": 200,
+        "strike_fighter": 100,
+        "cruiser": 33,
+        "capital_ship": 30,
+        "settler": 250,
+        "reclaimer": 250,
+        "recon_drone": 1250,
+        "bomber": 25,
+        "destroyer": 5,
+        "rocket_turret": 200,
+        "light_laser": 200,
+        "heavy_laser": 100,
+        "coil_cannon": 50,
+        "ion_battery": 100,
+        "plasma_battery": 10
+      }
     },
     "settler": {
       "name": "Settler",
