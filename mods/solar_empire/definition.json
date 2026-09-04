@@ -2,12 +2,12 @@
   "meta": {
     "name": "Solar Empire",
     "version": "0.1",
-    "description": "A BBS-era-flavoured trading and conquest ruleset: a five-commodity economy, an action-point budget instead of free actions, module-style weapon flavour, and a graph map where systems are joined by lanes and wormholes. Demonstrates most of the engine's non-default axes in one definition.",
+    "description": "A BBS-era-flavoured trading and conquest ruleset: an action-point budget instead of free actions, module-style weapon flavour, and a graph map where systems are joined by lanes and wormholes. Demonstrates several of the engine's non-default axes in one definition.",
     "author": "AstroWebEngine example"
   },
   "engine": {
-    "resource_model": "multi",
-    "resource_types": ["credits", "metal", "fuel", "electronics", "organics"],
+    "resource_model": "single",
+    "resource_types": ["credits"],
     "defense_model": "count",
     "defenses_destructible": true,
     "defense_repair_percent": 0.0,

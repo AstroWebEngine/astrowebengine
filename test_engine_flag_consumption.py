@@ -95,3 +95,37 @@ def test_unimplemented_flags_are_rejected_not_ignored():
         errors = gd.validate_definition(broken)
         assert errors, f"engine.{flag}={bad_value!r} was accepted despite doing nothing"
         assert any(flag in str(e) for e in errors), f"error should name {flag}: {errors}"
+
+
+def test_multi_resource_with_scalar_costs_is_rejected():
+    """The Build Game UI can offer this combination, so validation has to catch it.
+
+    Base default resources + the multi-resource component gives resource_model
+    'multi' over a roster whose costs are plain numbers. normalize_cost maps a
+    bare number onto the primary resource, so the other two are mined and never
+    spent - a degenerate economy that raises nothing at runtime.
+    """
+    import game_definition as gd
+
+    compiled = gd.compile_definition(
+        {"extends": ["classic_space.json", "fragments/resources/multi_mcd.json"],
+         "meta": {"name": "Classic Space Custom", "version": "1.0", "description": "x"}},
+        base_dir=str(ROOT / "game_definitions"))
+    assert compiled["engine"]["resource_model"] == "multi", "fixture no longer reproduces"
+
+    errors = gd.validate_definition(compiled)
+    assert errors, "a multi-resource economy with scalar costs was accepted"
+    assert any("resource_model" in str(e) for e in errors)
+
+
+@pytest.mark.parametrize("path", [
+    "game_definitions/classic_space.json",
+    "game_definitions/deep_frontier.json",
+    "mods/stellar_conquest/definition.json",
+])
+def test_shipped_rulesets_stay_valid(path):
+    """The new check must not catch anything that legitimately ships."""
+    import game_definition as gd
+    data = json.loads((ROOT / path).read_text(encoding="utf-8"))
+    compiled = gd.compile_definition(data, base_dir=str(ROOT / "game_definitions"))
+    assert not gd.validate_definition(compiled)

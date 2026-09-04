@@ -6,7 +6,7 @@
   "engine_api": "1.0",
   "kind": "ruleset",
   "definition": "definition.json",
-  "description": "BBS-era-flavoured trading and conquest: five commodities, an action-point budget, module-style weapons, and a graph map of lanes and wormholes.",
+  "description": "BBS-era-flavoured trading and conquest: an action-point budget instead of free actions, module-style weapons, and a graph map of lanes and wormholes.",
   "requires": [],
   "conflicts": [],
   "load_order": 100

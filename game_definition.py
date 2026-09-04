@@ -442,6 +442,26 @@ def validate_definition(definition: dict) -> list:
     if combat_model == "rounds" and (not isinstance(max_rounds, int) or max_rounds < 1):
         errors.append("engine.combat_max_rounds must be a positive integer for rounds-based combat")
 
+    # A multi-resource economy whose costs are all scalars is degenerate rather
+    # than broken: normalize_cost maps a bare number onto the primary resource,
+    # so every other resource is mined and never spent. Nothing errors and the
+    # game looks fine. Reachable by clicking - the Build Game UI offers the
+    # multi-resource component on top of a single-resource base.
+    resource_types = engine.get("resource_types") or []
+    if engine.get("resource_model") == "multi" and len(resource_types) > 1:
+        costed = []
+        for section in ("ships", "buildings", "research", "defenses"):
+            for spec in (definition.get(section) or {}).values():
+                for field in ("cost", "base_cost"):
+                    if field in spec:
+                        costed.append(spec[field])
+        if costed and not any(isinstance(c, dict) for c in costed):
+            errors.append(
+                f"engine.resource_model is 'multi' with {len(resource_types)} resources, but "
+                f"no cost in the definition is a per-resource dict. Every cost would fall on "
+                f"'{resource_types[0]}' and the others would never be spent. Give costs as "
+                f"{{\"{resource_types[0]}\": n, ...}} or use the single-resource model.")
+
     # Flags the engine carries but does not yet implement. Only one value of each
     # is honest; the other would be accepted and then quietly ignored, which is
     # how a ruleset ends up describing a game it isn't running. Reject rather
