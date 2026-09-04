@@ -62,6 +62,7 @@ Engine flags that reshape gameplay, set per definition:
 ```bash
 git clone https://github.com/AstroWebEngine/astrowebengine.git
 cd astrowebengine
+cp .env.example .env          # then set AWE_SECRET_KEY to a long random string
 docker compose up -d          # http://localhost:8000
 ```
 
@@ -71,6 +72,9 @@ docker compose up -d          # http://localhost:8000
 pip install -r requirements.txt
 python run.py                 # http://localhost:8000
 ```
+
+Without `AWE_SECRET_KEY` set, a random signing key is generated per process, so
+logins don't survive a restart. Set it for anything long-lived.
 
 The first registered account becomes the admin/observer. From the admin panel, pick
 or compile a ruleset, then launch the game to generate the universe.
