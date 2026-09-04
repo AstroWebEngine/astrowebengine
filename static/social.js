@@ -250,7 +250,7 @@ async function loadRankings() {
       const isMe = p.username === USERNAME;
       const rowStyle = isMe ? ' style="background:rgba(234,199,103,0.06);"' : '';
       return `<tr${rowStyle}><td class="text-dim">${i+1}</td>
-        <td class="${isMe ? 'text-accent font-bold' : 'text-bright'}">${escStr(p.username)}</td>
+        <td class="${isMe ? 'text-accent font-bold' : 'text-bright'}">${escStr(p.username)}${p.is_npc ? ' <span class="badge badge-warn" style="font-size:9px;vertical-align:1px;">NPC</span>' : ''}</td>
         <td>${p.level || 0}</td><td>${p.bases}</td>
         <td class="text-warn font-mono">${fmtNum(p.economy || 0)}</td>
         <td class="font-mono">${fmtNum(p.fleet_value || 0)}</td>

@@ -37,7 +37,14 @@ def register_social_routes(app):
 
     @app.get("/api/leaderboard")
     def leaderboard(db: Session = Depends(get_db)):
-        users = db.query(User).filter(User.is_admin == False, User.is_bot == False).order_by(User.score.desc()).limit(50).all()
+        # NPC empires are hidden by default so human players are ranked against
+        # each other. Operators running a mostly-NPC world (or a public demo)
+        # can show them with `leaderboard_show_npcs`; they stay badged as NPCs.
+        show_npcs = get_config(db, "leaderboard_show_npcs", "false").lower() == "true"
+        q = db.query(User).filter(User.is_admin == False)
+        if not show_npcs:
+            q = q.filter(User.is_bot == False)
+        users = q.order_by(User.score.desc()).limit(50).all()
         game_speed = get_config_float(db, "game_speed", 1.0)
         result = []
         for u in users:
@@ -50,6 +57,7 @@ def register_social_routes(app):
             protection_broken = bool(u.protection_broken_until and u.protection_broken_until > datetime.utcnow())
             result.append({
                 "username": u.username,
+                "is_npc": bool(u.is_bot),
                 "score": u.score,
                 "credits": round(u.credits, 0),
                 "bases": base_count,
