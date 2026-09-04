@@ -57,8 +57,8 @@ HOTSWAP_SAFE = {
     "combat_max_rounds",       # Just affects future battles
     "defenses_destructible",   # Just affects post-combat repair logic
     "defense_repair_percent",  # Just a number used in combat
-    "buildings_destructible",  # FUTURE/not-yet-consumed: mechanism not implemented
-    "ships_always_destroyed",  # FUTURE/not-yet-consumed: combat always destroys ships
+    "buildings_destructible",  # NOT IMPLEMENTED: validate_definition rejects true
+    "ships_always_destroyed",  # NOT IMPLEMENTED: validate_definition rejects false
     "construction_queue_max",  # live: read via get_config_int in routes_bases
     "research_queue_max",      # live: read via get_config_int in routes_research
     "production_queue_max",    # live: read via get_config_int in routes_fleets
@@ -441,6 +441,20 @@ def validate_definition(definition: dict) -> list:
     max_rounds = engine.get("combat_max_rounds", 1)
     if combat_model == "rounds" and (not isinstance(max_rounds, int) or max_rounds < 1):
         errors.append("engine.combat_max_rounds must be a positive integer for rounds-based combat")
+
+    # Flags the engine carries but does not yet implement. Only one value of each
+    # is honest; the other would be accepted and then quietly ignored, which is
+    # how a ruleset ends up describing a game it isn't running. Reject rather
+    # than mislead, and delete the check when the mechanism lands.
+    if engine.get("buildings_destructible"):
+        errors.append(
+            "engine.buildings_destructible: not implemented - combat never destroys "
+            "buildings, so only false is honest here")
+    if "ships_always_destroyed" in engine and not engine.get("ships_always_destroyed"):
+        errors.append(
+            "engine.ships_always_destroyed: not implemented - destroyed ships are "
+            "always lost (see rebuild_model/fleet_rebuild_factor for wreck recovery), "
+            "so only true is honest here")
 
     # Check ships have required fields
     ships = definition.get("ships", {})
