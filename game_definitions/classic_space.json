@@ -60,7 +60,7 @@
   },
   "ships": {
     "small_ship_1": {
-      "name": "Small Ship 1",
+      "name": "Needles",
       "desc": "Good fighting unit against unshielded units.",
       "cost": 5,
       "attack": 2,
@@ -77,7 +77,7 @@
       "rounding": 0
     },
     "small_ship_2": {
-      "name": "Small Ship 2",
+      "name": "Wasps",
       "desc": "Good fighting unit against unshielded and low shield units.",
       "cost": 10,
       "attack": 5,
@@ -94,7 +94,7 @@
       "rounding": 0
     },
     "small_ship_3": {
-      "name": "Small Ship 3",
+      "name": "Hornets",
       "desc": "Good fighting unit against unshielded and low shield units.",
       "cost": 30,
       "attack": 10,
@@ -111,7 +111,7 @@
       "rounding": 0
     },
     "small_ship_4": {
-      "name": "Small Ship 4",
+      "name": "Vipers",
       "desc": "Good fighting unit against unshielded and low shield units.",
       "cost": 60,
       "attack": 12,
@@ -129,7 +129,7 @@
       "rounding": 0
     },
     "small_ship_5": {
-      "name": "Small Ship 5",
+      "name": "Pickets",
       "desc": "Very fast unit, good against unshielded units.",
       "cost": 20,
       "attack": 4,
@@ -148,7 +148,7 @@
       "rounding": 0
     },
     "small_ship_6": {
-      "name": "Small Ship 6",
+      "name": "Salvagers",
       "desc": "Can collect debris and convert them into credits.",
       "cost": 30,
       "attack": 2,
@@ -168,7 +168,7 @@
       "can_recycle": true
     },
     "small_ship_7": {
-      "name": "Small Ship 7",
+      "name": "Skirmishers",
       "desc": "Fast unit, good against low shielded units.",
       "cost": 40,
       "attack": 10,
@@ -187,7 +187,7 @@
       "rounding": 0
     },
     "medium_ship_1": {
-      "name": "Medium Ship 1",
+      "name": "Lancers",
       "desc": "Versatile unit, has 4 hangar space.",
       "cost": 80,
       "attack": 12,
@@ -206,7 +206,7 @@
       "rounding": 0
     },
     "medium_ship_2": {
-      "name": "Medium Ship 2",
+      "name": "Pikes",
       "desc": "Versatile unit, has 4 hangar space.",
       "cost": 120,
       "attack": 14,
@@ -226,7 +226,7 @@
       "rounding": 0
     },
     "small_ship_8": {
-      "name": "Small Ship 8",
+      "name": "Pathfinders",
       "desc": "Fast support unit for exploration.",
       "cost": 40,
       "attack": 1,
@@ -244,7 +244,7 @@
       "can_autoscout": true
     },
     "medium_ship_3": {
-      "name": "Medium Ship 3",
+      "name": "Pioneers",
       "desc": "Colonization unit that can found a new base.",
       "cost": 100,
       "attack": 2,
@@ -262,7 +262,7 @@
       "can_colonize": true
     },
     "medium_ship_4": {
-      "name": "Medium Ship 4",
+      "name": "Halberds",
       "desc": "Versatile unit, good for long range action and escort.",
       "cost": 200,
       "attack": 24,
@@ -282,7 +282,7 @@
       "rounding": 1
     },
     "medium_ship_5": {
-      "name": "Medium Ship 5",
+      "name": "Bulwarks",
       "desc": "Unit with 80 hangar spaces.",
       "cost": 400,
       "attack": 12,
@@ -302,7 +302,7 @@
       "rounding": 1
     },
     "medium_ship_6": {
-      "name": "Medium Ship 6",
+      "name": "Wardens",
       "desc": "Strong unit, good against large units.",
       "cost": 500,
       "attack": 48,
@@ -322,7 +322,7 @@
       "rounding": 1
     },
     "large_ship_1": {
-      "name": "Large Ship 1",
+      "name": "Vanguards",
       "desc": "Strong unit, good against large units.",
       "cost": 2000,
       "attack": 160,
@@ -342,7 +342,7 @@
       "rounding": 2
     },
     "large_ship_2": {
-      "name": "Large Ship 2",
+      "name": "Ramparts",
       "desc": "Large support unit with 500 hangar spaces.",
       "cost": 2500,
       "attack": 64,
@@ -362,7 +362,7 @@
       "rounding": 2
     },
     "large_ship_3": {
-      "name": "Large Ship 3",
+      "name": "Colossi",
       "desc": "Heavy large-class combat unit.",
       "cost": 10000,
       "attack": 756,
@@ -382,7 +382,7 @@
       "rounding": 2
     },
     "large_ship_4": {
-      "name": "Large Ship 4",
+      "name": "Juggernauts",
       "desc": "Advanced large-class combat unit.",
       "cost": 50000,
       "attack": 3500,
@@ -402,7 +402,7 @@
       "rounding": 2
     },
     "capital_ship_1": {
-      "name": "Capital Ship 1",
+      "name": "Zeniths",
       "desc": "The flagship class; grants +5% fleet bonus.",
       "cost": 200000,
       "attack": 10000,
@@ -423,7 +423,7 @@
       "fleet_bonus": 0.05
     },
     "capital_ship_2": {
-      "name": "Capital Ship 2",
+      "name": "Eclipses",
       "desc": "Advanced flagship class, grants +10% fleet bonus.",
       "cost": 500000,
       "attack": 28000,
