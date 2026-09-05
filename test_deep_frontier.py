@@ -143,3 +143,32 @@ def test_energy_budget_is_satisfiable(compiled):
     assert per_level_out >= per_level_in, (
         f"the best power plant makes {per_level_out}/level but the hungriest building "
         f"wants {per_level_in}/level, so energy can never keep up")
+
+
+def test_no_research_is_free(compiled):
+    """A zero-cost tech is a gate that does not gate.
+
+    graviton_theory shipped at {"metal": 0} because the ruleset it descends from
+    prices it in energy, which this engine cannot express as a cost. Its only
+    purpose is unlocking the apex hull, so free meant the most expensive ship in
+    the game had no tech barrier at all.
+    """
+    from resources import total_cost_value
+    free = [k for k, v in compiled["research"].items()
+            if total_cost_value(v.get("base_cost")) <= 0]
+    assert not free, f"these techs cost nothing to research: {free}"
+
+
+def test_unlock_gates_cost_something_meaningful(compiled):
+    """A tech whose stated purpose is unlocking a unit should not be trivial."""
+    from resources import total_cost_value
+    for key, spec in compiled["research"].items():
+        gated = [s["name"] for s in compiled["ships"].values()
+                 if key in (s.get("req") or {})]
+        if not gated:
+            continue
+        cost = total_cost_value(spec["base_cost"])
+        cheapest = min(total_cost_value(compiled["ships"][k]["cost"])
+                       for k, s in compiled["ships"].items() if key in (s.get("req") or {}))
+        assert cost > cheapest * 0.01, (
+            f"{key} gates {gated} but costs {cost:,.0f} against a {cheapest:,.0f} hull")

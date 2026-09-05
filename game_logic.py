@@ -551,7 +551,11 @@ def calc_tech_cost(user, db: Session) -> float:
         if r.level <= 0:
             continue
         spec = get_effective_research_spec(db, r.tech_type)
-        base = spec.get("base_cost", 0)
+        # Multi-resource rulesets express costs as {resource: amount}; normalise
+        # to one figure the way every other cost consumer does. Without this the
+        # arithmetic below raises TypeError and takes /api/player/stats and the
+        # leaderboard down with it.
+        base = total_cost_value(spec.get("base_cost", 0))
         mult = spec.get("cost_mult", 1.5)
         if mult == 1:
             total += base * r.level

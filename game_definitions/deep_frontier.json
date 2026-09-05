@@ -967,7 +967,8 @@
     "graviton_theory": {
       "name": "Graviton Theory",
       "base_cost": {
-        "metal": 0
+        "crystal": 250000,
+        "deuterium": 125000
       },
       "cost_mult": 3.0,
       "base_time": 1200,
