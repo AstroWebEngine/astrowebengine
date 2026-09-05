@@ -2,6 +2,8 @@
 
 **A self-hostable engine for browser-based, multiplayer space-strategy games — with no hardcoded ruleset.**
 
+[![tests](https://github.com/AstroWebEngine/astrowebengine/actions/workflows/tests.yml/badge.svg)](https://github.com/AstroWebEngine/astrowebengine/actions/workflows/tests.yml)
+
 Units, structures, research, defenses, combat behavior, the resource model and the
 map topology all live in a **game definition** (JSON). The engine code itself knows
 nothing about any particular game: swap the definition and you get a different game,
