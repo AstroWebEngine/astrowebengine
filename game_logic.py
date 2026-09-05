@@ -544,6 +544,40 @@ def calc_trade_income(base_a, base_b, distance: float, num_players: int,
         income *= SELF_TRADE_BONUS_MULT
     return math.ceil(income)
 
+def unmet_stat_requirements(spec, stats) -> list:
+    """Requirements a spec places on its base's stats, e.g. {"energy": 300000}.
+
+    Some rules gate on the scale of a base rather than on tech levels - a
+    technology that needs an enormous power supply is the classic case. The
+    engine could only express tech prerequisites and building levels, so a
+    ruleset wanting "requires 300,000 energy" had nowhere to put it and ended up
+    approximating the tech as free.
+
+    A stat with a `<stat>_used` counterpart (energy, area) is measured on what is
+    FREE, since that is what a base can actually devote to something new. `pop`
+    is spelled `pop_used` upstream, so population is handled explicitly. Anything
+    else is measured on its raw figure.
+
+    Returns a list of (stat, needed, available) for each unmet requirement, empty
+    when the base qualifies.
+    """
+    used_key = {"population": "pop_used"}
+    unmet = []
+    for stat, needed in (spec.get("stat_req") or {}).items():
+        try:
+            needed = float(needed)
+        except (TypeError, ValueError):
+            continue
+        if needed <= 0:
+            continue
+        total = float(stats.get(stat, 0) or 0)
+        uk = used_key.get(stat, f"{stat}_used")
+        available = total - float(stats.get(uk, 0) or 0) if uk in stats else total
+        if available < needed:
+            unmet.append((stat, needed, available))
+    return unmet
+
+
 def calc_tech_cost(user, db: Session) -> float:
     """Total technology cost invested (geometric series: base_cost * (cost_mult^level - 1) / (cost_mult - 1))."""
     total = 0

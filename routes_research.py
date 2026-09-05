@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 from models import User, Research, ResearchQueue, Colony
 from auth import (get_token_from_header, get_current_user, get_config_float, get_config_int, get_db,
                   get_effective_research_spec, is_research_disabled, get_all_research_specs, log_event, log_credits)
-from game_logic import calc_research_cost, calc_base_stats, get_building_level, get_tech_level, collect_resources
+from game_logic import (calc_research_cost, calc_base_stats, get_building_level, get_tech_level,
+                        collect_resources, project_resources_after_queue, unmet_stat_requirements)
 from resources import can_afford, deduct_cost, add_resources, format_cost, round_cost, total_cost_value
 from config_defaults import *
 from pydantic import BaseModel
@@ -37,12 +38,16 @@ def register_research_routes(app):
             # meant research was impossible in any ruleset that named the
             # building differently.
             base_lab_level = base_stats.get("research_lab_level", 0)
+            base_capacity = project_resources_after_queue(colony, user, [], db)
             is_occupied = bool(colony.occupied_by)
         else:
             # Global view — show max lab capacity across bases (informational)
             base_lab_capacity = max((calc_base_stats(c, user, game_speed).get("research", 0) for c in user.colonies), default=0)
             base_lab_level = max((calc_base_stats(c, user, game_speed).get("research_lab_level", 0)
                                   for c in user.colonies), default=0)
+            # Global view has no single base to measure scale against, so a
+            # stat requirement is reported as unknown rather than falsely met.
+            base_capacity = None
             is_occupied = False
 
         # Get all active research across all bases (for conflict display)
@@ -106,6 +111,9 @@ def register_research_routes(app):
                 "next_cost": round_cost(next_cost, 1),
                 "next_time": round(next_time),
                 "lab_req": spec.get("lab_req", 1),
+                "stat_req": spec.get("stat_req", {}),
+                "stat_req_met": (None if base_capacity is None
+                                 else not unmet_stat_requirements(spec, base_capacity)),
                 "lab_count": base_lab_level,
                 "lab_met": lab_met,
                 "prereqs": spec.get("prereqs", {}),
@@ -180,6 +188,13 @@ def register_research_routes(app):
         # Check lab requirement against THIS base's lab level
         if base_lab_level < spec.get("lab_req", 1):
             raise HTTPException(400, f"This base needs Research Lab level {spec['lab_req']} (has {base_lab_level})")
+
+        # Scale requirements (e.g. a tech needing a large free power supply).
+        # Queue-aware, so a Solar Array already queued counts toward it.
+        capacity = project_resources_after_queue(colony, user, queue, db)
+        for stat, needed, have in unmet_stat_requirements(spec, capacity):
+            raise HTTPException(
+                400, f"This base needs {needed:,.0f} free {stat} (has {have:,.0f})")
 
         base_stats = calc_base_stats(colony, user, game_speed)
         base_lab_capacity = base_stats.get("research", 0)

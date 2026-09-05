@@ -32,6 +32,7 @@ Engine flags that reshape gameplay, set per definition:
 | `combat_model` | `simultaneous` / `rounds` | One exchange, or up to `combat_max_rounds` |
 | `shield_bounce_threshold` | off / fraction | A shot under this fraction of the target's shields is absorbed entirely |
 | `rapid_fire` (per unit) | `{target: shots}` | Hard counters — a hull's shots multiply against the units it answers |
+| `stat_req` (per spec) | `{stat: amount}` | Gate on a base's scale — a tech that needs 300,000 free energy, say |
 | `map_depth` | `4` / `3` | galaxy→region→system→orbit, or galaxy→system→slot |
 | `map_topology` | `hierarchy` / `graph` | Nested coordinates, or systems linked by lanes and wormholes |
 | `galaxy_network` | `ring`, `line`, `tree`, `small_world`, `wormhole_only`, … | How galaxies connect and how travel distance is computed |

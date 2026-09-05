@@ -146,17 +146,17 @@ def test_energy_budget_is_satisfiable(compiled):
 
 
 def test_no_research_is_free(compiled):
-    """A zero-cost tech is a gate that does not gate.
+    """Every tech must impose SOME barrier - resources or scale.
 
-    graviton_theory shipped at {"metal": 0} because the ruleset it descends from
-    prices it in energy, which this engine cannot express as a cost. Its only
-    purpose is unlocking the apex hull, so free meant the most expensive ship in
-    the game had no tech barrier at all.
+    graviton_theory legitimately costs no metal/crystal/deuterium: the reference
+    charges it in energy. That is now expressible as a stat_req, so "free" means
+    neither a resource cost nor a scale requirement, which is a gate that does
+    not gate.
     """
     from resources import total_cost_value
     free = [k for k, v in compiled["research"].items()
-            if total_cost_value(v.get("base_cost")) <= 0]
-    assert not free, f"these techs cost nothing to research: {free}"
+            if total_cost_value(v.get("base_cost")) <= 0 and not v.get("stat_req")]
+    assert not free, f"these techs demand nothing at all: {free}"
 
 
 def test_unlock_gates_cost_something_meaningful(compiled):
@@ -170,5 +170,8 @@ def test_unlock_gates_cost_something_meaningful(compiled):
         cost = total_cost_value(spec["base_cost"])
         cheapest = min(total_cost_value(compiled["ships"][k]["cost"])
                        for k, s in compiled["ships"].items() if key in (s.get("req") or {}))
-        assert cost > cheapest * 0.01, (
-            f"{key} gates {gated} but costs {cost:,.0f} against a {cheapest:,.0f} hull")
+        # The barrier may be resources or scale; a tech gating a hull must be
+        # one or the other, or the hull is effectively ungated.
+        assert cost > cheapest * 0.01 or spec.get("stat_req"), (
+            f"{key} gates {gated} but costs {cost:,.0f} against a {cheapest:,.0f} "
+            f"hull and sets no stat_req")
