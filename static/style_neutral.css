@@ -677,9 +677,15 @@
 }
 [data-theme="neutral"] .awe-tab-bar a:hover { background: var(--bg-hover); background-image: none; }
 [data-theme="neutral"] .awe-tab-bar a.active {
+  /* This overrides the background to the accent, so it MUST also override the
+     colour: the rule it inherits from sets `color: var(--accent)` for accent
+     text on a dark panel. Without this line the active tab was accent-on-accent
+     and its label vanished entirely - a solid blue block where "Structures"
+     should be. */
   background: var(--accent);
   background-image: none;
   border-color: var(--accent);
+  color: var(--bg-dark);
 }
 
 /* Skin swatches — keep the swatch readable but drop the literal cyan/gold. */
