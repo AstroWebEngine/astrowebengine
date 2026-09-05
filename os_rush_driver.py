@@ -5,7 +5,11 @@ Drives 4 existing bot accounts through the optimized Medium Ship 3 rush build
 order from awe_simulator.py (Uriel/MR6 variant).
 
 Usage:
-    python test_os_rush.py [--url http://localhost:8001] [--speed 100]
+    python os_rush_driver.py [--url http://localhost:8001] [--speed 100]
+
+Not a pytest module - this drives a LIVE server and needs `pip install requests`.
+It was named test_* by accident, which made pytest try to import it and fail
+collection on a clean checkout.
 
 The server must already be running with:
   - Admin account: admin / admin@test.com / admin123

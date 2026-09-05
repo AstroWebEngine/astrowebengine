@@ -61,3 +61,20 @@ backups/
 .last_ae_reset_backup
 ae-reset-*/
 ae-faithful-*/
+
+# ── Local working clutter ─────────────────────────────────────────────────
+# Scraped reference material, DB backups, session screenshots and scratch
+# notes. These were committed by accident once via `git add -A`; the public
+# export's leak scan caught it, but ignoring them is the actual fix.
+downloads/
+.playwright-mcp/
+# root-level session screenshots only - deliberately NOT docs/images/
+/*.png
+*.db.backup*
+*.db.corrupt*
+AGENTS.md
+INDEX.md
+START_HERE.md
+SUMMARY.txt
+tmp_*
+test_os_rush_log.json
