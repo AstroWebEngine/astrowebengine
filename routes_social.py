@@ -42,7 +42,14 @@ def register_social_routes(app):
         # can show them with `leaderboard_show_npcs`; they stay badged as NPCs.
         show_npcs = get_config(db, "leaderboard_show_npcs", "false").lower() == "true"
         q = db.query(User).filter(User.is_admin == False)
-        if not show_npcs:
+        if show_npcs:
+            # Simulated players only. Faction accounts (settlers/raiders) are
+            # infrastructure holding hundreds of colonies with no fleet or tech,
+            # so they top the ladder at level 0 - which reads as a broken board
+            # rather than a populated one.
+            from bot_logic import NPC_FACTIONS
+            q = q.filter(~User.bot_strategy.in_(list(NPC_FACTIONS)))
+        else:
             q = q.filter(User.is_bot == False)
         users = q.order_by(User.score.desc()).limit(50).all()
         game_speed = get_config_float(db, "game_speed", 1.0)
