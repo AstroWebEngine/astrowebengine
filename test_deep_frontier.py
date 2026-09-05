@@ -116,3 +116,30 @@ def test_the_cheap_swarm_cannot_hurt_the_apex_hull(compiled):
     assert combat._single_attack_damage(
         swarm["attack"], swarm["weapon"], apex["shield"],
         bounce_threshold=threshold) == 0.0
+
+
+def test_energy_is_actually_consumed(compiled):
+    """A ruleset that ships power plants must have something drawing on them.
+
+    energy_req defaulted to 0 on every building, so Solar Arrays and Fusion
+    Plants produced energy nothing could spend - the mechanic existed on the
+    generation side only. game_logic sums energy_req * level for the used figure.
+    """
+    buildings = compiled["buildings"]
+    producers = [k for k, v in buildings.items()
+                 if "energy" in (v.get("contributions") or {})]
+    consumers = [k for k, v in buildings.items() if v.get("energy_req", 0) > 0]
+    assert producers, "no building produces energy"
+    assert consumers, "energy is produced but nothing consumes it - the plants are decorative"
+
+
+def test_energy_budget_is_satisfiable(compiled):
+    """Producers must be able to outrun consumers, or the economy cannot start."""
+    buildings = compiled["buildings"]
+    per_level_out = max(
+        (v.get("contributions", {}).get("energy", {}).get("per_level", 0) for v in buildings.values()),
+        default=0)
+    per_level_in = max((v.get("energy_req", 0) for v in buildings.values()), default=0)
+    assert per_level_out >= per_level_in, (
+        f"the best power plant makes {per_level_out}/level but the hungriest building "
+        f"wants {per_level_in}/level, so energy can never keep up")
