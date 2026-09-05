@@ -942,8 +942,16 @@ def generate_universe(db: Session):
             db.add(gal)
             db.flush()
             cluster_galaxies[cluster.id].append(gal)
-            # MSS: compute active region range from configurable size (centered in grid)
-            active_size = get_config_int(db, "active_region_size", preset.get("active_region_size", 0))
+            # Active region range: a centred sub-grid, for presets that only fill
+            # part of the galaxy. The admin override applies ONLY when the active
+            # preset actually declares the knob - otherwise a leftover value from
+            # a previous preset silently clips a full-size galaxy to its centre,
+            # which is what happened switching MSS -> standard with the old 4 in
+            # game_config: 16 of 100 regions generated and the rest came out void.
+            if "active_region_size" in preset:
+                active_size = get_config_int(db, "active_region_size", preset["active_region_size"])
+            else:
+                active_size = 0
             if active_size > 0 and active_size < grid_w:
                 offset = (grid_w - active_size) // 2
                 active_cols = list(range(offset, offset + active_size))
