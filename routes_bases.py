@@ -364,7 +364,7 @@ def register_bases_routes(app):
                 "count": q.count,
                 "built": q.built,
                 "position": getattr(q, 'position', 0) or 0,
-                "cost": round(getattr(q, 'cost', 0) or 0, 1),
+                "cost": round_cost(getattr(q, 'cost', 0) or 0),
                 "next_complete": q.next_complete.isoformat() if q.next_complete else None,
                 "total_time": total_time,
             })
@@ -635,7 +635,7 @@ def register_bases_routes(app):
                 "id": q.id, "position": q.position,
                 "category": q.item_category, "type": q.item_type,
                 "name": name, "target_level": q.target_level,
-                "cost": round(q.cost, 1), "build_time": round(q.build_time),
+                "cost": round_cost(q.cost), "build_time": round(q.build_time),
                 "started_at": q.started_at.isoformat() if q.started_at else None,
                 "finish_at": q.finish_at.isoformat() if q.finish_at else None,
             })

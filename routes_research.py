@@ -257,7 +257,7 @@ def register_research_routes(app):
                 "id": q.id, "position": q.position,
                 "tech_type": q.tech_type, "name": name,
                 "target_level": q.target_level,
-                "cost": round(q.cost, 1), "research_time": round(q.research_time),
+                "cost": round_cost(q.cost), "research_time": round(q.research_time),
                 "started_at": q.started_at.isoformat() if q.started_at else None,
                 "finish_at": q.finish_at.isoformat() if q.finish_at else None,
                 "colony_id": q.colony_id,

@@ -286,7 +286,7 @@ def register_fleet_routes(app):
                 "built": q.built,
                 "remaining": q.count - q.built,
                 "position": getattr(q, 'position', 0) or 0,
-                "cost": round(getattr(q, 'cost', 0) or 0, 1),
+                "cost": round_cost(getattr(q, 'cost', 0) or 0),
                 "next_complete": q.next_complete.isoformat() if q.next_complete else None,
                 "started_at": q.started_at.isoformat() if q.started_at else None,
             })
@@ -853,7 +853,7 @@ def register_fleet_routes(app):
                             TradeRoute.is_closing == True,
                         ).all()
                         for tr in pirated_routes:
-                            value = round(tr.cost * 0.5)
+                            value = round(total_cost_value(tr.cost) * 0.5)
                             trade_piracy += value
                             for uid in set(filter(None, [tr.owner_id, tr.partner_id])):
                                 if uid != user.id:
