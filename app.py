@@ -450,7 +450,12 @@ def _migrate_research_queue_colony_ids(db):
     for user_id, items in by_user.items():
         # Find best research base for this user
         colonies = db.query(Colony).filter(Colony.user_id == user_id).all()
-        best = max(colonies, key=lambda c: get_building_level(c, "research_labs"), default=None)
+        # Ruleset-agnostic: pick the base with the most lab levels, however the
+        # active definition names the building that provides them.
+        from game_logic import calc_base_stats as _cbs
+        best = max(colonies,
+                   key=lambda c: _cbs(c, c.user, 1.0).get("research_lab_level", 0),
+                   default=None)
         if best:
             for rq in items:
                 rq.colony_id = best.id

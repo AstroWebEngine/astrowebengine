@@ -32,12 +32,17 @@ def register_research_routes(app):
                 raise HTTPException(404, "Base not found")
             base_stats = calc_base_stats(colony, user, game_speed)
             base_lab_capacity = base_stats.get("research", 0)
-            base_lab_level = get_building_level(colony, "research_labs")
+            # Which building provides lab levels is the ruleset's choice - it
+            # declares a `research_lab_level` contribution. Hardcoding the key
+            # meant research was impossible in any ruleset that named the
+            # building differently.
+            base_lab_level = base_stats.get("research_lab_level", 0)
             is_occupied = bool(colony.occupied_by)
         else:
             # Global view — show max lab capacity across bases (informational)
             base_lab_capacity = max((calc_base_stats(c, user, game_speed).get("research", 0) for c in user.colonies), default=0)
-            base_lab_level = max((get_building_level(c, "research_labs") for c in user.colonies), default=0)
+            base_lab_level = max((calc_base_stats(c, user, game_speed).get("research_lab_level", 0)
+                                  for c in user.colonies), default=0)
             is_occupied = False
 
         # Get all active research across all bases (for conflict display)
@@ -121,9 +126,9 @@ def register_research_routes(app):
         if not colony:
             raise HTTPException(404, "Base not found")
 
-        base_lab_level = get_building_level(colony, "research_labs")
+        base_lab_level = calc_base_stats(colony, user, game_speed).get("research_lab_level", 0)
         if base_lab_level <= 0:
-            raise HTTPException(400, "This base has no Research Labs")
+            raise HTTPException(400, "This base has no research laboratory")
 
         spec = get_effective_research_spec(db, req.tech_type)
         if is_research_disabled(db, req.tech_type):

@@ -730,9 +730,6 @@ class UpgradeBuildingRequest(BaseModel):
     base_id: int
     building_type: str
 
-class ResearchRequest(BaseModel):
-    tech_type: str
-
 class BuildDefenseRequest(BaseModel):
     base_id: int
     defense_type: str
