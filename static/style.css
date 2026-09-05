@@ -307,7 +307,9 @@ a:hover { color: var(--accent-glow); text-decoration: underline; }
 .awe-nav-btn.active { background: linear-gradient(180deg, #254e75 0%, #123351 100%); color: var(--accent); border-color: #6a8fb5; }
 
 .main-header-logo {
-  flex: 0 1 220px;
+  /* Shrinks ~100x faster than the tab strip beside it, so the wordmark gives up
+     room first and a navigation tab is never the thing that gets cut. */
+  flex: 0 100 220px;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
