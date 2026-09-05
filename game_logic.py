@@ -41,6 +41,31 @@ def resolve_base_name(requested: str, planet_name: str) -> str:
     return name or planet_name
 
 
+def _def_section(section: str) -> dict:
+    """The active game definition's `economy` / `fleet` block."""
+    from game_definition import get_game_definition
+    return (get_game_definition().get(section) or {})
+
+
+def econ(key: str, default):
+    """An economy value from the active ruleset, falling back to the engine default.
+
+    These used to read module constants directly, so a definition's `economy`
+    block was inert: a ruleset could declare construction_bonus_base and the
+    engine would keep using its own. The values happened to match in the shipped
+    rulesets, which is why nothing looked wrong - build times simply could not be
+    tuned per ruleset.
+    """
+    v = _def_section("economy").get(key)
+    return default if v is None else v
+
+
+def fleet_cfg(key: str, default):
+    """A fleet value from the active ruleset, falling back to the engine default."""
+    v = _def_section("fleet").get(key)
+    return default if v is None else v
+
+
 def _building_dict(colony) -> dict:
     """Build a {type: level} dict for O(1) lookups. Cached on the colony object per request."""
     cache = getattr(colony, '_blv_cache', None)
@@ -229,7 +254,7 @@ def project_resources_after_queue(colony, user, queue, db=None):
 
     tech_bonuses = evaluate_tech_bonuses(user)
     energy_mult = tech_bonuses["stat_multipliers"].get("energy", 1.0)
-    energy_cap = s.get("energy", 0) + BASE_ENERGY_BONUS
+    energy_cap = s.get("energy", 0) + econ("base_energy_bonus", BASE_ENERGY_BONUS)
     energy_cap = int(energy_cap * energy_mult)
 
     pop_cap = s.get("population", 0)
@@ -327,7 +352,7 @@ def calc_base_stats(colony, user, game_speed=1.0):
     stat_mults = tech_bonuses["stat_multipliers"]
 
     # Energy: building contributions + flat base bonus, scaled by energy tech
-    energy = s.get("energy", 0) + BASE_ENERGY_BONUS
+    energy = s.get("energy", 0) + econ("base_energy_bonus", BASE_ENERGY_BONUS)
     energy = int(energy * stat_mults.get("energy", 1.0))
 
     # Population: directly from contributions (fertility_modifier already applied)
@@ -340,14 +365,14 @@ def calc_base_stats(colony, user, game_speed=1.0):
     industrial = s.get("industrial", 0)
 
     # Construction = industrial + base bonuses
-    construction = industrial + CONSTRUCTION_BONUS_BASE
+    construction = industrial + econ("construction_bonus_base", CONSTRUCTION_BONUS_BASE)
     is_home = getattr(colony, 'is_home_base', False)
     if not is_home:
         user_colony_ids = sorted([c.id for c in user.colonies])
         if user_colony_ids and colony.id == user_colony_ids[0]:
             is_home = True
     if is_home:
-        construction += CONSTRUCTION_BONUS_HOMEWORLD
+        construction += econ("construction_bonus_homeworld", CONSTRUCTION_BONUS_HOMEWORLD)
 
     # Production = industrial + production contributions from buildings (shipyard etc.)
     production = industrial + s.get("production", 0)
@@ -371,7 +396,7 @@ def calc_base_stats(colony, user, game_speed=1.0):
     economy = s.get("economy", 0)
     capital_lv = building_levels.get("capital", 0)
     if capital_lv == 0 and _user_has_capital(user):
-        economy += CAPITAL_EMPIRE_BONUS
+        economy += econ("capital_empire_bonus", CAPITAL_EMPIRE_BONUS)
     economy_penalty = getattr(colony, 'economy_penalty', 0) or 0
     if economy_penalty > 0:
         economy = max(0, economy - economy_penalty)
@@ -436,7 +461,7 @@ def calc_building_cost(db, building_type: str, current_level: int, base_stats: d
     cost_value = total_cost_value(cost)
     build_time = (cost_value / construction_rate) * 3600
     if is_occupied:
-        build_time *= OCCUPATION_TIME_PENALTY  # 30% penalty
+        build_time *= econ("occupation_time_penalty", OCCUPATION_TIME_PENALTY)
     # Anti-Gravity: reduce build time for orbital buildings (area_req == 0)
     if user and spec.get("area_req", 1) == 0:
         tech_bonuses = evaluate_tech_bonuses(user, db)
@@ -448,7 +473,7 @@ def calc_building_cost(db, building_type: str, current_level: int, base_stats: d
         cost = {k: int(math.ceil(v)) for k, v in cost.items()}
     else:
         cost = int(math.ceil(cost))
-    return cost, max(MIN_BUILD_TIME_SECONDS, int(math.ceil(build_time)))
+    return cost, max(econ("min_build_time_seconds", MIN_BUILD_TIME_SECONDS), int(math.ceil(build_time)))
 
 def calc_research_cost(db, tech_type: str, current_level: int, game_speed: float, base_lab_capacity: int, is_occupied: bool = False, colony_id: int = None):
     """Returns (cost, research_time_seconds).
@@ -468,13 +493,13 @@ def calc_research_cost(db, tech_type: str, current_level: int, game_speed: float
     cost_value = total_cost_value(cost)
     research_time = (cost_value / lab_factor) * 3600
     if is_occupied:
-        research_time *= OCCUPATION_TIME_PENALTY
+        research_time *= econ("occupation_time_penalty", OCCUPATION_TIME_PENALTY)
     import math
     if isinstance(cost, dict):
         cost = {k: int(math.ceil(v)) for k, v in cost.items()}
     else:
         cost = int(math.ceil(cost))
-    return cost, max(MIN_RESEARCH_TIME_SECONDS, int(math.ceil(research_time)))
+    return cost, max(econ("min_research_time_seconds", MIN_RESEARCH_TIME_SECONDS), int(math.ceil(research_time)))
 
 def calc_defense_cost(db, defense_type: str, current_level: int, game_speed: float, count: int = 1):
     """Calculate defense build cost.
@@ -666,7 +691,7 @@ def calc_total_production(user, game_speed: float) -> int:
 
 def calc_max_fleet_size(user, game_speed: float) -> int:
     """Fleet size limit: Total Production × 2500"""
-    return calc_total_production(user, game_speed) * FLEET_SIZE_LIMIT_MULTIPLIER
+    return calc_total_production(user, game_speed) * fleet_cfg("size_limit_multiplier", FLEET_SIZE_LIMIT_MULTIPLIER)
 
 
 def calc_max_fleet_count(user, db=None) -> int:
@@ -1208,7 +1233,7 @@ def _ship_build_time(ship_type, colony, user, game_speed, db):
         cost = spec.get("cost", 10)
     stats = calc_base_stats(colony, user, game_speed)
     production = max(1, stats.get("production", 1))
-    occupation_mult = OCCUPATION_TIME_PENALTY if colony.occupied_by else 1.0
+    occupation_mult = econ("occupation_time_penalty", OCCUPATION_TIME_PENALTY) if colony.occupied_by else 1.0
     time_s = (total_cost_value(cost) / production) * 3600 * occupation_mult
     # Production commander bonus: -X% build time per level
     prod_lv = get_commander_level_at_base(db, colony.id, "production")
