@@ -1,0 +1,52 @@
+name: tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.11 is the floor we support; 3.13 is what the engine is developed on.
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run the test suite
+        run: pytest -q
+
+  rulesets:
+    # The shipped rulesets are content, and content breaks quietly: a flag no code
+    # reads, a cost the economy cannot spend, a rapid-fire entry naming a unit that
+    # does not exist. None of those raise at runtime, so they get their own job to
+    # keep the failure legible when it happens.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+      - name: Validate every shipped ruleset
+        run: |
+          pytest -q test_engine_flag_consumption.py test_deep_frontier.py \
+                    test_active_region_size.py test_showcase_mods.py \
+                    test_mod_loader.py test_spec_sync.py

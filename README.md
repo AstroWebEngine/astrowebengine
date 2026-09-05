@@ -106,8 +106,19 @@ mods in `mods/`. See [docs/mod_system_design.md](docs/mod_system_design.md).
 - **Frontend:** vanilla-JS SPA, no build step
 - **Deploy:** Docker Compose, or any ASGI host
 
+## Contributing
+
+Help is wanted — see [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the test
+suite, and a list of good first issues. The short version:
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+pytest -q          # 243 tests, a few seconds, no server or database needed
+```
+
 ## Documentation
 
+- [CONTRIBUTING.md](CONTRIBUTING.md) — how to get set up and where help is wanted
 - [CHANGELOG.md](CHANGELOG.md) — what changed in each release
 - [QUICK_START.md](QUICK_START.md) — install, first launch, first game
 - [DOCKER.md](DOCKER.md) — container deployment
