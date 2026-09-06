@@ -9,7 +9,10 @@ No clone needed. The image carries the engine and its default rulesets; the
 database lives on the mounted volume.
 
 ```bash
-docker run -d --name awe -p 8000:8000 -v awe-data:/data   -e AWE_SECRET_KEY=$(openssl rand -hex 32)   steveng916/astrowebengine
+docker run -d --name awe -p 8000:8000 \
+  -v awe-data:/data \
+  -e AWE_SECRET_KEY=$(openssl rand -hex 32) \
+  astrowebengine/astrowebengine
 ```
 
 Open <http://localhost:8000>. **The first account you register becomes the
