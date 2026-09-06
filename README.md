@@ -62,7 +62,13 @@ Engine flags that reshape gameplay, set per definition:
 
 ## Quick start
 
-**Docker (recommended):**
+**Published image (fastest):**
+
+```bash
+docker run -d -p 8000:8000 -v awe-data:/data   -e AWE_SECRET_KEY=$(openssl rand -hex 32)   steveng916/astrowebengine                    # http://localhost:8000
+```
+
+**Docker Compose (from a clone):**
 
 ```bash
 git clone https://github.com/AstroWebEngine/astrowebengine.git

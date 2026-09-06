@@ -3,6 +3,21 @@
 A self-contained way to host the engine. The default stack is a single container
 backed by SQLite on a persistent volume — no external database required.
 
+## Run the published image
+
+No clone needed. The image carries the engine and its default rulesets; the
+database lives on the mounted volume.
+
+```bash
+docker run -d --name awe -p 8000:8000 -v awe-data:/data   -e AWE_SECRET_KEY=$(openssl rand -hex 32)   steveng916/astrowebengine
+```
+
+Open <http://localhost:8000>. **The first account you register becomes the
+admin.** Tags: `latest` and the release version (e.g. `0.97.0`).
+
+Build from source instead if you are modifying the engine — that is what the
+Compose file below does.
+
 ## Quick start
 
 ```bash
