@@ -18,6 +18,9 @@ docker run -d --name awe -p 8000:8000 \
 Open <http://localhost:8000>. **The first account you register becomes the
 admin.** Tags: `latest` and the release version (e.g. `0.97.0`).
 
+Published for `linux/amd64` and `linux/arm64`, so it runs on a Raspberry Pi,
+Apple Silicon or an ARM cloud instance as well as on x86.
+
 Build from source instead if you are modifying the engine — that is what the
 Compose file below does.
 
