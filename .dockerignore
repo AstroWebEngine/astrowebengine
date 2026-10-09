@@ -33,7 +33,9 @@ universes.json
 test_*.py
 test_*.html
 test_*.log
-docs/
+# docs/ is excluded except the schema reference the MCP tools read at runtime
+docs/*
+!docs/definition_schema.md
 
 # Local env / compose artifacts
 .env

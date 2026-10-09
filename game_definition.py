@@ -387,6 +387,44 @@ def clear_persisted_definition(db):
         pass
 
 
+# ── Mod base ──────────────────────────────────────────────────────────────────
+# Mods are overlays, so composing them onto the live definition can only ever add.
+# The ruleset an admin last activated (import / load-file / AI activate / reset) is
+# recorded here so mods are always composed onto it, and disabling one removes it.
+_MOD_BASE_FILE = str(Path(_ACTIVE_DEFINITION_FILE).parent / "_mod_base_definition.json")
+
+
+def persist_mod_base(definition: dict):
+    """Record `definition` as the base ruleset that enabled mods are composed onto."""
+    save_definition_to_file(definition, _MOD_BASE_FILE)
+
+
+def load_mod_base() -> Optional[dict]:
+    """The recorded mod base, or None if none was recorded (or it is unreadable)."""
+    if not os.path.exists(_MOD_BASE_FILE):
+        return None
+    try:
+        return load_definition_from_file(_MOD_BASE_FILE, compile_extends=False)
+    except Exception:
+        return None
+
+
+def clear_mod_base():
+    try:
+        os.remove(_MOD_BASE_FILE)
+    except OSError:
+        pass
+
+
+def activate_env_definition(path: str) -> dict:
+    """Activate the ruleset named by AWE_GAME_DEFINITION and make it the mod base,
+    so a mod toggle never composes onto an older admin-activated ruleset."""
+    defn = load_definition_from_file(path)
+    set_game_definition(defn)
+    persist_mod_base(defn)
+    return defn
+
+
 def restore_persisted_definition(db):
     """Activate the persisted definition if one is flagged. Returns its name or None."""
     from auth import get_config

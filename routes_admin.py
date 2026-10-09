@@ -14,9 +14,8 @@ from universe import generate_universe, _assign_homeworld, _add_cluster
 from game_logic import calc_base_stats, calc_economy_rate, _fleet_value, get_building_level, _fleet_total_ships, calc_player_level
 from game_definition import (get_game_definition, set_game_definition, build_default_definition,
     validate_definition, load_definition_from_file, save_definition_to_file,
-    export_current_definition, list_available_definitions, check_definition_safety,
-    compile_definition, engine_safety_metadata,
-    persist_active_definition, clear_persisted_definition)
+    export_current_definition, list_available_definitions, engine_safety_metadata,
+    clear_persisted_definition, persist_mod_base)
 from resources import set_user_resources, add_resources
 from bot_logic import (
     create_bot_accounts, create_simulated_bot_accounts, tick_bots, collect_bot_stats,
@@ -997,6 +996,35 @@ def register_admin_routes(app):
         from app import __version__
         return register_sync(db, __version__)
 
+    # ======================== API TOKENS (MCP) ========================
+
+    @app.get("/api/admin/api-tokens")
+    def admin_list_api_tokens(token: str = Depends(get_token_from_header), db: Session = Depends(get_db)):
+        """List this admin's API tokens (never the secrets)."""
+        user = get_current_user(token, db); check_admin(user)
+        import api_tokens
+        return {"tokens": api_tokens.list_tokens(db, user)}
+
+    @app.post("/api/admin/api-tokens")
+    def admin_create_api_token(data: dict, token: str = Depends(get_token_from_header), db: Session = Depends(get_db)):
+        """Create an API token for the MCP endpoint. The secret is returned once."""
+        user = get_current_user(token, db); check_admin(user)
+        import api_tokens
+        try:
+            row, raw = api_tokens.create_token(db, user, str(data.get("name", "")))
+        except ValueError as exc:
+            raise HTTPException(400, str(exc))
+        return {"token": raw, "id": row.id, "name": row.name, "prefix": row.prefix}
+
+    @app.delete("/api/admin/api-tokens/{token_id}")
+    def admin_revoke_api_token(token_id: int, token: str = Depends(get_token_from_header), db: Session = Depends(get_db)):
+        """Revoke one of this admin's API tokens."""
+        user = get_current_user(token, db); check_admin(user)
+        import api_tokens
+        if not api_tokens.revoke_token(db, user, token_id):
+            raise HTTPException(404, "Token not found")
+        return {"ok": True}
+
     # ======================== MODS ========================
 
     @app.get("/api/admin/mods")
@@ -1004,21 +1032,8 @@ def register_admin_routes(app):
         """List discovered mods with kind, validity, enabled state, active ruleset."""
         user = get_current_user(token, db)
         check_admin(user)
-        import mod_loader as ml
-        enabled = set(ml.get_enabled_mod_ids(db))
-        active_ruleset = ml.get_active_ruleset_id(db)
-        mods = []
-        for m in ml.discover_mods():
-            man = m["manifest"]
-            mods.append({
-                "id": m["id"], "name": man.get("name", m["id"]),
-                "version": man.get("version", ""), "author": man.get("author", ""),
-                "kind": man.get("kind", ""), "description": man.get("description", ""),
-                "valid": not m["errors"], "errors": m["errors"],
-                "enabled": m["id"] in enabled,
-                "active_ruleset": m["id"] == active_ruleset,
-            })
-        return {"mods": mods, "active_ruleset": active_ruleset, "enabled": sorted(enabled)}
+        import definition_service as ds
+        return ds.list_mods(db)
 
     @app.post("/api/admin/mods/enable")
     def admin_enable_mod(data: dict, token: str = Depends(get_token_from_header), db: Session = Depends(get_db)):
@@ -1053,12 +1068,8 @@ def register_admin_routes(app):
         """Compose enabled mods into the active game definition (hot-swap). Returns the report."""
         user = get_current_user(token, db)
         check_admin(user)
-        import mod_loader as ml
-        from game_definition import get_game_definition
-        report = ml.apply_active_mods(db, get_game_definition())
-        if not report["errors"]:
-            persist_active_definition(db, get_game_definition())  # survive restart
-        return {"success": not report["errors"], "report": report}
+        import definition_service as ds
+        return ds.apply_mods(db)
 
     # ======================== GRANT ITEMS (TESTING TOOLS) ========================
 
@@ -1544,88 +1555,26 @@ def register_admin_routes(app):
     def compile_game_definition(body: dict, token: str = Depends(get_token_from_header), db: Session = Depends(get_db)):
         """Resolve a fragment-based game definition without applying it."""
         user = get_current_user(token, db); check_admin(user)
+        import definition_service as ds
         try:
-            definition = compile_definition(body.get("definition", body))
-        except Exception as exc:
-            raise HTTPException(400, f"Compile error: {exc}")
-        errors = validate_definition(definition)
-        safety = check_definition_safety(definition, _has_universe(db))
-        return {
-            "ok": len(errors) == 0,
-            "definition": definition,
-            "errors": errors,
-            "warnings": [w["message"] for w in safety if not w.get("blocked")],
-            "blocked": [w["message"] for w in safety if w.get("blocked")],
-        }
+            return ds.check_definition(body.get("definition", body), db)
+        except ds.DefinitionRejected as exc:
+            raise HTTPException(400, exc.message)
 
     @app.get("/api/admin/game-definition/build-options")
     def get_game_build_options(token: str = Depends(get_token_from_header), db: Session = Depends(get_db)):
         """Return available setup-time components for the Build Game screen."""
         user = get_current_user(token, db); check_admin(user)
-        import os
-        defs_dir = os.path.join(os.path.dirname(__file__), "game_definitions")
-        fragments = []
-        fragments_dir = os.path.join(defs_dir, "fragments")
-        if os.path.exists(fragments_dir):
-            for root, _dirs, files in os.walk(fragments_dir):
-                for fname in files:
-                    if not fname.endswith(".json"):
-                        continue
-                    full = os.path.join(root, fname)
-                    rel = os.path.relpath(full, defs_dir)
-                    try:
-                        raw = load_definition_from_file(full, compile_extends=False)
-                        meta = raw.get("meta", {})
-                    except Exception:
-                        meta = {}
-                    fragments.append({
-                        "filename": rel,
-                        "name": meta.get("name", fname),
-                        "description": meta.get("description", ""),
-                        "component_type": meta.get("component_type", "fragment"),
-                    })
-        return {
-            "definitions": list_available_definitions(),
-            "fragments": sorted(fragments, key=lambda x: (x["component_type"], x["filename"])),
-            "safety": engine_safety_metadata(),
-        }
-
-    def _has_universe(db: Session) -> bool:
-        """Check if a universe has been generated (any galaxies exist)."""
-        return db.query(Galaxy).first() is not None
+        import definition_service as ds
+        return ds.list_building_blocks()
 
     def _check_and_apply_definition(definition: dict, db: Session, user, source: str):
         """Validate, safety-check, and apply a game definition. Returns response dict."""
+        import definition_service as ds
         try:
-            definition = compile_definition(definition)
-        except Exception as exc:
-            raise HTTPException(400, f"Compile error: {exc}")
-        errors = validate_definition(definition)
-        if errors:
-            raise HTTPException(400, f"Invalid definition: {'; '.join(errors)}")
-
-        # Safety check: block dangerous changes if universe exists
-        has_uni = _has_universe(db)
-        force = False  # Could add ?force=true param later
-        safety = check_definition_safety(definition, has_uni)
-        blocked = [w for w in safety if w.get("blocked")]
-        warnings = [w for w in safety if not w.get("blocked")]
-
-        if blocked and not force:
-            raise HTTPException(400,
-                "Cannot switch definition — blocked changes: " +
-                "; ".join(w["message"] for w in blocked))
-
-        set_game_definition(definition)
-        persist_active_definition(db, definition)  # survive restart, no env var
-        invalidate_all_online(["specs"], "game_definition_change")
-        log_event(db, user.id, f"game_definition_{source}",
-                  f"{source.title()} game definition: {definition.get('meta', {}).get('name', 'unknown')}")
-
-        result = {"ok": True, "name": definition.get("meta", {}).get("name")}
-        if warnings:
-            result["warnings"] = [w["message"] for w in warnings]
-        return result
+            return ds.apply_definition(definition, db, user, source)
+        except ds.DefinitionRejected as exc:
+            raise HTTPException(400, exc.message)
 
     @app.post("/api/admin/game-definition/import")
     def import_game_definition(body: dict, token: str = Depends(get_token_from_header), db: Session = Depends(get_db)):
@@ -1655,6 +1604,7 @@ def register_admin_routes(app):
         defn = build_default_definition()
         set_game_definition(defn)
         clear_persisted_definition(db)  # restart falls back to env / default
+        persist_mod_base(defn)  # mods now compose onto the default ruleset
         invalidate_all_online(["specs"], "game_definition_reset")
         log_event(db, user.id, "game_definition_reset", "Reset to default game definition")
         return {"ok": True, "name": defn["meta"]["name"]}

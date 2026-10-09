@@ -20,3 +20,48 @@ def _ensure_schema():
 
     ModelBase.metadata.create_all(bind=engine)
     yield
+
+
+def _read_bytes(path):
+    try:
+        with open(path, "rb") as f:
+            return f.read()
+    except OSError:
+        return None
+
+
+def _write_bytes(path, data):
+    if data is None:
+        try:
+            import os
+            os.remove(path)
+        except OSError:
+            pass
+    else:
+        with open(path, "wb") as f:
+            f.write(data)
+
+
+@pytest.fixture
+def mod_state():
+    """Snapshot and restore everything a mod/definition test can change: enabled mods,
+    the active ruleset mod, the persisted definition (flag + file), the recorded mod
+    base, and the in-memory active definition."""
+    import game_definition as gd
+    from auth import get_config, set_config, init_default_configs
+    from database import SessionLocal
+
+    db = SessionLocal(); init_default_configs(db)
+    keys = ("enabled_mods", "active_ruleset_mod", gd._ACTIVE_DEFINITION_FLAG)
+    saved = {k: get_config(db, k, "") or "" for k in keys}
+    files = {p: _read_bytes(p) for p in (gd._ACTIVE_DEFINITION_FILE, gd._MOD_BASE_FILE)}
+    live = gd.get_game_definition()
+    db.close()
+    yield
+    db = SessionLocal()
+    for k, v in saved.items():
+        set_config(db, k, v)
+    db.commit(); db.close()
+    for p, data in files.items():
+        _write_bytes(p, data)
+    gd.set_game_definition(live)

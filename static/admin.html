@@ -55,6 +55,7 @@
         <button class="awe-nav-btn" data-admintab="commanders" onclick="switchAdminTab('commanders',this)">Commander Types</button>
         <button class="awe-nav-btn" data-admintab="universes" onclick="switchAdminTab('universes',this)">Universes</button>
         <button class="awe-nav-btn" data-admintab="gamedefs" onclick="switchAdminTab('gamedefs',this)">Game Definitions</button>
+        <button class="awe-nav-btn" data-admintab="ai" onclick="switchAdminTab('ai',this)">AI Assistant</button>
         <button class="awe-nav-btn" data-admintab="reports" onclick="switchAdminTab('reports',this)">Bug Reports</button>
         <button class="awe-nav-btn" data-admintab="changelog" onclick="switchAdminTab('changelog',this)">Changelog</button>
       </div>
@@ -686,6 +687,41 @@
                 <span id="gamedef-import-status" style="font-size:11px;margin-left:8px;"></span>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-tab-panel" id="admin-tab-ai">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">AI Assistant (MCP)</span></div>
+          <div class="panel-body">
+            <p>Connect Claude or any MCP client to this server so it can help you design your game.
+              It can read the engine schema, check and save game definitions, activate them, and
+              toggle mods. It cannot generate or reset the universe - you still click Launch.</p>
+            <p><a href="/static/ai/awe-game-designer.zip" download>Download the game-designer skill</a>
+              - unzip into <code>~/.claude/skills/</code> (Claude Code) or upload it as a skill in Claude.</p>
+            <div class="card mb-12" style="padding:12px;">
+              <div class="section-title">Create a token</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+                <div class="form-group" style="width:220px;">
+                  <label>Name</label>
+                  <input type="text" id="ai-token-name" placeholder="laptop-claude" maxlength="60" />
+                </div>
+                <button class="btn" onclick="createAiToken()">Generate token</button>
+              </div>
+              <div id="ai-token-new" style="display:none;margin-top:10px;">
+                <p><strong>Copy this now - it will not be shown again.</strong></p>
+                <label>Claude Code</label>
+                <pre id="ai-token-cmd" style="white-space:pre-wrap;word-break:break-all;"></pre>
+                <label>MCP client config (JSON)</label>
+                <pre id="ai-token-json" style="white-space:pre-wrap;word-break:break-all;"></pre>
+              </div>
+            </div>
+            <div class="section-title">Tokens</div>
+            <table class="data-table" style="width:100%;">
+              <thead><tr><th>Name</th><th>Prefix</th><th>Created</th><th>Last used</th><th></th></tr></thead>
+              <tbody id="ai-token-rows"></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1950,8 +1986,50 @@
         else if (tabName === 'reports') { loadBugReports(); }
         else if (tabName === 'universes') { loadUniverses(); }
         else if (tabName === 'gamedefs') { loadGameDefinitions(); }
+        else if (tabName === 'ai') { loadAiTokens(); }
         else if (tabName === 'changelog') { loadChangelogs(); }
       }
+    }
+
+    // ══════════ AI ASSISTANT TAB ══════════
+
+    async function loadAiTokens() {
+      const res = await fetch(`${API}/api/admin/api-tokens`, { headers: headers() });
+      const rows = document.getElementById('ai-token-rows');
+      if (!res.ok) { rows.innerHTML = '<tr><td colspan="5">Could not load tokens</td></tr>'; return; }
+      const { tokens } = await res.json();
+      rows.innerHTML = tokens.length ? tokens.map(t => `
+        <tr>
+          <td>${escHtml(t.name)}</td><td><code>${escHtml(t.prefix)}…</code></td>
+          <td>${t.created_at ? new Date(t.created_at + 'Z').toLocaleString() : ''}</td>
+          <td>${t.last_used_at ? new Date(t.last_used_at + 'Z').toLocaleString() : 'never'}</td>
+          <td>${t.revoked ? 'revoked' : `<button class="btn btn-sm" onclick="revokeAiToken(${t.id})">Revoke</button>`}</td>
+        </tr>`).join('') : '<tr><td colspan="5">No tokens yet - the AI endpoint is off until you create one.</td></tr>';
+    }
+
+    async function createAiToken() {
+      const name = document.getElementById('ai-token-name').value.trim();
+      if (!name) return;
+      const res = await fetch(`${API}/api/admin/api-tokens`, {
+        method: 'POST', headers: { ...headers(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      const body = await res.json();
+      if (!res.ok) { console.warn('[admin] token create failed', body); return; }
+      const url = `${location.origin}/mcp`;
+      document.getElementById('ai-token-cmd').textContent =
+        `claude mcp add --transport http awe ${url} --header "Authorization: Bearer ${body.token}"`;
+      document.getElementById('ai-token-json').textContent = JSON.stringify({
+        mcpServers: { awe: { type: 'http', url, headers: { Authorization: `Bearer ${body.token}` } } },
+      }, null, 2);
+      document.getElementById('ai-token-new').style.display = '';
+      document.getElementById('ai-token-name').value = '';
+      loadAiTokens();
+    }
+
+    async function revokeAiToken(id) {
+      await fetch(`${API}/api/admin/api-tokens/${id}`, { method: 'DELETE', headers: headers() });
+      loadAiTokens();
     }
 
     // ══════════ UNIVERSES TAB ══════════

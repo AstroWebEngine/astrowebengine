@@ -49,8 +49,13 @@ universes.json
 # Private, local-only material — kept on the dev machine, never published.
 _private/
 
-# Per-instance runtime state: the admin-persisted active game definition.
+# Per-instance runtime state: the admin-persisted active game definition and the
+# base ruleset that mods are composed onto.
 _active_definition.json
+_mod_base_definition.json
+
+# Drafts saved by the AI assistant over MCP (mcp_server.save_definition) - local, never committed.
+game_definitions/ai_*.json
 
 # On-server backup/reset artifacts (e.g. from AE-Faithful resets run on the VM).
 # Keep these out of the repo so they never clutter `git status` or block a pull.
@@ -72,7 +77,6 @@ downloads/
 /*.png
 *.db.backup*
 *.db.corrupt*
-AGENTS.md
 INDEX.md
 START_HERE.md
 SUMMARY.txt

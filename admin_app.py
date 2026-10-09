@@ -37,6 +37,8 @@ from routes_admin import register_admin_routes
 
 register_auth_routes(admin_app)
 register_admin_routes(admin_app)
+from mcp_server import mount_mcp
+mount_mcp(admin_app)  # AI assistant endpoint at /mcp (admin API tokens)
 
 # ── Admin-only login: override the register endpoint to block new signups ──
 # The auth routes include register, but on the admin port we want login-only.

@@ -73,3 +73,9 @@ docker compose --profile postgres up -d
 
 All settings are environment variables in `.env` — see `.env.example` for the
 full list (secret key, game definition, game speed, database, optional registry).
+
+### AI assistant drafts
+
+Definitions saved by the AI assistant are written to `/app/game_definitions/ai_<name>.json`, which is not on
+the `/data` volume. They survive restarts but are lost whenever the container is recreated (for example
+`docker compose up` after a config change, or an image pull/upgrade) - export drafts you want to keep.

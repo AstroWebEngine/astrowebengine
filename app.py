@@ -2,7 +2,7 @@
 AstroWebEngine — Entry Point
 Run with: python app.py   (or: uvicorn app:app --host 0.0.0.0 --port 8000)
 """
-__version__ = "0.97.0"
+__version__ = "0.98.0"
 import asyncio
 import logging
 from fastapi import FastAPI
@@ -86,6 +86,8 @@ register_player_routes(app)
 import os as _os
 if not _os.environ.get("AWE_ADMIN_SEPARATE"):
     register_admin_routes(app)
+    from mcp_server import mount_mcp
+    mount_mcp(app)  # AI assistant endpoint at /mcp (admin API tokens)
 else:
     awe_logger.info("Admin routes excluded — running on separate admin port")
 
@@ -550,9 +552,8 @@ async def startup():
     #   3. built-in default
     game_def_path = _os.environ.get("AWE_GAME_DEFINITION")
     if game_def_path and _os.path.exists(game_def_path):
-        from game_definition import load_definition_from_file, set_game_definition
-        defn = load_definition_from_file(game_def_path)
-        set_game_definition(defn)
+        from game_definition import activate_env_definition
+        defn = activate_env_definition(game_def_path)
         awe_logger.info(f"Loaded game definition from env: {defn.get('meta', {}).get('name', game_def_path)}")
     else:
         from game_definition import restore_persisted_definition

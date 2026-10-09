@@ -4,6 +4,16 @@ All notable changes to AstroWebEngine are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from 1.0.0 onward.
 
+## [0.98.0] - 2026-10-08
+
+### Added
+
+- **AI assistant endpoint.** `/mcp` lets a game creator's AI assistant read the definition
+  schema, check and save drafts, activate rulesets (through the same safety gate as the admin Import) and toggle mods (via
+  the admin mod-apply path). Protected by admin API tokens (admin panel → AI Assistant).
+- **Game-designer skill** download and a written game definition schema reference
+  (`docs/definition_schema.md`).
+
 ## [0.97.0] - 2026-09-04
 
 First tagged release. The engine has been running a live public demo since July 2026;

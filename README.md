@@ -97,6 +97,13 @@ or compile a ruleset, then launch the game to generate the universe.
 See [QUICK_START.md](QUICK_START.md) for the full walkthrough and [DOCKER.md](DOCKER.md)
 for deployment options.
 
+## Design your game with AI
+
+Every AWE server has a built-in MCP endpoint. In the admin panel open **AI Assistant**,
+generate a token, and paste the shown command into Claude Code (or the JSON into any MCP
+client). Your assistant can then read the engine schema, draft and check rulesets, and
+activate them when you say so. It cannot generate or reset your universe.
+
 ## Bundled rulesets & mods
 
 | Mod | Type | What it does |

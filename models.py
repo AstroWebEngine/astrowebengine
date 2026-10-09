@@ -671,6 +671,18 @@ class GameConfig(ModelBase):
     key = Column(String(50), unique=True, nullable=False)
     value = Column(String(200))
 
+class ApiToken(ModelBase):
+    """Admin API token for the MCP endpoint. Only the SHA-256 of the secret is stored."""
+    __tablename__ = "api_tokens"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    name = Column(String(60), nullable=False)
+    token_hash = Column(String(64), nullable=False, unique=True, index=True)
+    prefix = Column(String(12), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_used_at = Column(DateTime, nullable=True)
+    revoked_at = Column(DateTime, nullable=True)
+
 class Bookmark(ModelBase):
     __tablename__ = "bookmarks"
     id = Column(Integer, primary_key=True)
