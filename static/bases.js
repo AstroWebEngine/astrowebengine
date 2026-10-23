@@ -224,7 +224,7 @@ function renderBaseOverview(base) {
         </table>
       </div>
       <div class="base-overview-col base-overview-planet">
-        <img src="/static/astros/${base.planet_type}.jpg" class="base-overview-planet-img" alt="${astroName(base.planet_type)}">
+        <img src="${astroImage(base.planet_type, 240)}" onerror="this.onerror=null;this.src='/static/astros/${base.planet_type}.jpg'" class="base-overview-planet-img" alt="${astroName(base.planet_type)}">
       </div>
       <div class="base-overview-col base-overview-info">
         <div class="base-overview-box-title">${t('base.baseInfo')}</div>
@@ -389,7 +389,7 @@ function renderBuildingRow(bl, baseId, queueFull, base) {
     : `<span class="text-bright" style="font-weight:bold;">${nameStr}</span>`;
 
   return `<tr style="${rowStyle}">
-    <td data-cell="name" style="text-align:left;">${nameHtml}${levelStr}${descStr}${reqNote}</td>
+    <td data-cell="name" style="text-align:left;">${specThumbHtml('buildings', bl.type)}${nameHtml}${levelStr}${descStr}${reqNote}</td>
     <td data-label="${t('general.cost')}" style="text-align:right;white-space:nowrap;">${formatResourceCost(bl.next_cost)}</td>
     <td data-label="${t('stat.energy')}" style="text-align:center;">${energyStr}</td>
     <td data-label="${t('general.time')}" style="text-align:right;white-space:nowrap;">${fmtTime(bl.next_time)}</td>
@@ -474,7 +474,7 @@ function renderDefenseRow(d, baseId, queueFull, base) {
     : `<span class="text-bright" style="font-weight:bold;">${nameStr}</span>`;
 
   return `<tr style="${rowStyle}">
-    <td data-cell="name" style="text-align:left;">${nameHtml}${levelStr}${descStr}</td>
+    <td data-cell="name" style="text-align:left;">${specThumbHtml('defenses', d.type)}${nameHtml}${levelStr}${descStr}</td>
     <td data-label="${t('general.cost')}" style="text-align:right;white-space:nowrap;">${formatResourceCost(d.next_cost)}</td>
     <td data-label="Atk/Arm" style="text-align:center;">${statsStr}</td>
     <td data-label="${t('stat.energy')}" style="text-align:center;">${energyStr}</td>
@@ -830,7 +830,7 @@ async function loadShipListForBase(base) {
         : `<span class="text-dim" style="font-size:10px;">ready</span>`;
 
       html += `<tr id="base-prod-row-${base.id}-${type}">
-        <td data-cell="name" style="text-align:left;"><span class="text-bright" style="font-weight:bold;">${nameStr}</span>${availStr}${descStr}</td>
+        <td data-cell="name" style="text-align:left;">${specThumbHtml('ships', type)}<span class="text-bright" style="font-weight:bold;">${nameStr}</span>${availStr}${descStr}</td>
         <td data-label="${t('general.cost')}" style="text-align:right;white-space:nowrap;">${formatResourceCost(unitCost)}</td>
         <td data-label="Atk/Arm" style="text-align:center;">${statsStr}</td>
         <td data-label="${t('general.time')}" style="text-align:right;white-space:nowrap;">${fmtTime(timePerUnit)}</td>
@@ -997,7 +997,7 @@ function renderBaseRightPanel(base) {
 
   let html = `
     <div class="base-planet-img-wrap">
-      <img src="/static/astros/${base.planet_type}.jpg" class="base-planet-img" alt="${astroName(base.planet_type)}">
+      <img src="${astroImage(base.planet_type, 140)}" onerror="this.onerror=null;this.src='/static/astros/${base.planet_type}.jpg'" class="base-planet-img" alt="${astroName(base.planet_type)}">
     </div>
     <div class="base-stats-panel">
       <table class="base-stats-table">

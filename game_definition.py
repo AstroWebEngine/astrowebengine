@@ -16,9 +16,12 @@ Game definitions can be:
 
 import json
 import os
+import re
 from copy import deepcopy
 from pathlib import Path
 from typing import Optional
+
+import data_paths
 
 # The active game definition — loaded at startup, read by all game systems
 _active_definition = None
@@ -344,14 +347,28 @@ def load_definition_from_file(filepath: str, compile_extends: bool = True) -> di
         definition = json.load(f)
     if not compile_extends:
         return definition
+    bundled = data_paths.BUNDLED_DEFINITIONS_DIR.resolve()
+    user_dir = data_paths.user_definitions_dir().resolve()
+    if user_dir != bundled and user_dir in path.parents:
+        # Saved in AWE_DATA_DIR: its extends refer to the bundled definitions and
+        # fragments, which stay next to the code.
+        return compile_definition(definition, base_dir=str(bundled), root_dir=str(bundled))
     root = _definition_root_for(path)
     return compile_definition(definition, base_dir=str(path.parent), root_dir=str(root))
 
 
 def save_definition_to_file(definition: dict, filepath: str):
-    """Save a game definition to a JSON file."""
-    with open(filepath, 'w', encoding='utf-8') as f:
+    """Save a game definition to a JSON file, atomically.
+
+    Writes a temporary file beside the target and renames it over, so a crash or
+    full disk mid-write can't leave a truncated active ruleset behind.
+    """
+    filepath = str(filepath)
+    os.makedirs(os.path.dirname(filepath) or ".", exist_ok=True)
+    tmp = f"{filepath}.tmp"
+    with open(tmp, 'w', encoding='utf-8') as f:
         json.dump(definition, f, indent=2, ensure_ascii=False)
+    os.replace(tmp, filepath)
 
 
 def export_current_definition(filepath: str):
@@ -362,27 +379,37 @@ def export_current_definition(filepath: str):
 # ── Persisted active definition ───────────────────────────────────────────────
 # An admin's Build-Game / import / mod activation should survive a restart
 # without touching env vars. The compiled definition is written to a per-instance
-# runtime file (outside game_definitions/ so it isn't listed as a selectable
-# preset or committed — see .gitignore) and flagged in game_config. Startup
-# resolves: AWE_GAME_DEFINITION env (multi-universe/ops override) → this persisted
-# selection → built-in default.
-_ACTIVE_DEFINITION_FILE = str(Path(__file__).resolve().parent / "_active_definition.json")
+# runtime file in AWE_DATA_DIR (see data_paths; outside game_definitions/ so it
+# isn't listed as a selectable preset or committed) and flagged in game_config.
+# Startup resolves: AWE_GAME_DEFINITION env (multi-universe/ops override) → this
+# persisted selection → built-in default.
 _ACTIVE_DEFINITION_FLAG = "active_definition"  # game_config: "persisted" | ""
+
+
+def _bump_revision(db):
+    """Tell the other server workers the active ruleset changed (runtime_sync)."""
+    import runtime_sync
+    from auth import set_config
+    rev = runtime_sync.new_revision()
+    set_config(db, runtime_sync.REVISION_KEY, rev)
+    runtime_sync.note_local_revision(rev)
 
 
 def persist_active_definition(db, definition: dict):
     """Save `definition` as this instance's active ruleset so restart restores it."""
-    save_definition_to_file(definition, _ACTIVE_DEFINITION_FILE)
+    save_definition_to_file(definition, str(data_paths.active_definition_path()))
     from auth import set_config
     set_config(db, _ACTIVE_DEFINITION_FLAG, "persisted")
+    _bump_revision(db)
 
 
 def clear_persisted_definition(db):
     """Forget any persisted selection (startup falls back to env / default)."""
     from auth import set_config
     set_config(db, _ACTIVE_DEFINITION_FLAG, "")
+    _bump_revision(db)
     try:
-        os.remove(_ACTIVE_DEFINITION_FILE)
+        os.remove(data_paths.active_definition_path())
     except OSError:
         pass
 
@@ -391,27 +418,27 @@ def clear_persisted_definition(db):
 # Mods are overlays, so composing them onto the live definition can only ever add.
 # The ruleset an admin last activated (import / load-file / AI activate / reset) is
 # recorded here so mods are always composed onto it, and disabling one removes it.
-_MOD_BASE_FILE = str(Path(_ACTIVE_DEFINITION_FILE).parent / "_mod_base_definition.json")
 
 
 def persist_mod_base(definition: dict):
     """Record `definition` as the base ruleset that enabled mods are composed onto."""
-    save_definition_to_file(definition, _MOD_BASE_FILE)
+    save_definition_to_file(definition, str(data_paths.mod_base_path()))
 
 
 def load_mod_base() -> Optional[dict]:
     """The recorded mod base, or None if none was recorded (or it is unreadable)."""
-    if not os.path.exists(_MOD_BASE_FILE):
+    path = data_paths.mod_base_path()
+    if not path.exists():
         return None
     try:
-        return load_definition_from_file(_MOD_BASE_FILE, compile_extends=False)
+        return load_definition_from_file(str(path), compile_extends=False)
     except Exception:
         return None
 
 
 def clear_mod_base():
     try:
-        os.remove(_MOD_BASE_FILE)
+        os.remove(data_paths.mod_base_path())
     except OSError:
         pass
 
@@ -430,15 +457,29 @@ def restore_persisted_definition(db):
     from auth import get_config
     if (get_config(db, _ACTIVE_DEFINITION_FLAG, "") or "").strip() != "persisted":
         return None
-    if not os.path.exists(_ACTIVE_DEFINITION_FILE):
+    path = data_paths.active_definition_path()
+    if not path.exists():
         return None
     try:
         # The file is already compiled; don't re-resolve fragments.
-        defn = load_definition_from_file(_ACTIVE_DEFINITION_FILE, compile_extends=False)
+        defn = load_definition_from_file(str(path), compile_extends=False)
     except Exception:
         return None
     set_game_definition(defn)
     return defn.get("meta", {}).get("name")
+
+
+_IMAGE_REF = re.compile(r"(https?://[^\s\"'<>`]+|/?[A-Za-z0-9_][A-Za-z0-9_./-]*)")
+
+
+def image_ref_problem(value):
+    """Why an artwork reference is unusable, or None if it is fine."""
+    if not isinstance(value, str) or not value.strip():
+        return "must be a non-empty string"
+    if not _IMAGE_REF.fullmatch(value) or ".." in value or "//" in value.split("://", 1)[-1]:
+        return ("must be an https:// URL, a /static/... path or a path under /static "
+                "(no quotes, spaces, '..' or other schemes)")
+    return None
 
 
 def validate_definition(definition: dict) -> list:
@@ -536,6 +577,17 @@ def validate_definition(definition: dict) -> list:
         if "shield_passthrough" not in spec:
             errors.append(f"weapon_types.{key} missing shield_passthrough")
 
+    # Optional per-spec artwork: an https URL, a site path ("/static/..."), or a
+    # path under /static ("art/mygame/x.webp"). It ends up in an <img src>, so
+    # anything else (javascript:, data:, .., quotes) is refused here.
+    for section in ("ships", "buildings", "defenses", "research", "terrains"):
+        for key, spec in (definition.get(section) or {}).items():
+            if not isinstance(spec, dict) or "image" not in spec:
+                continue
+            problem = image_ref_problem(spec["image"])
+            if problem:
+                errors.append(f"{section}.{key}.image: {problem}")
+
     # Cross-reference: all ship weapons must exist in weapon_types
     for key, spec in ships.items():
         weapon = spec.get("weapon", "")
@@ -548,11 +600,17 @@ def validate_definition(definition: dict) -> list:
 def list_available_definitions(definitions_dir: str = None) -> list:
     """List all available game definition JSON files."""
     if definitions_dir is None:
-        definitions_dir = os.path.join(os.path.dirname(__file__), "game_definitions")
+        # User copies (AWE_DATA_DIR) first; a same-named bundled file is shadowed.
+        seen, merged = set(), []
+        for d in data_paths.definition_dirs():
+            for item in list_available_definitions(str(d)):
+                if item["filename"] not in seen:
+                    seen.add(item["filename"]); merged.append(item)
+        return merged
     if not os.path.exists(definitions_dir):
         return []
     result = []
-    for fname in os.listdir(definitions_dir):
+    for fname in sorted(os.listdir(definitions_dir)):
         if fname.endswith(".json"):
             filepath = os.path.join(definitions_dir, fname)
             try:

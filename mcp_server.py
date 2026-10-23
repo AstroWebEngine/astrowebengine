@@ -19,8 +19,10 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 
 import api_tokens
+import data_paths
 import definition_service as ds
 import schema_doc
+from game_definition import save_definition_to_file
 from database import SessionLocal
 from models import User
 
@@ -210,7 +212,7 @@ def _save(caller, filename, definition):
         if not _NAME_RE.match(filename or ""):
             raise ValueError("filename must match [a-z0-9_-]{1,64} (no extension, no folders)")
         name = filename if filename.startswith(AI_PREFIX) else AI_PREFIX + filename
-        path = os.path.join(ds.DEFINITIONS_DIR, f"{name}.json")
+        path = str(data_paths.user_definitions_dir() / f"{name}.json")
         if os.path.exists(path):
             try:
                 with open(path, encoding="utf-8") as f:
@@ -229,20 +231,18 @@ def _save(caller, filename, definition):
             raise ValueError("Not saved - invalid definition:\n" + "\n".join(f"- {e}" for e in result["errors"]))
         draft = dict(definition)
         draft["meta"] = {**(definition.get("meta") or {}), "saved_by": AI_MARKER}
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(draft, f, indent=2)
+        save_definition_to_file(draft, path)   # atomic; creates the folder
         log_event(db, user.id, "game_definition_draft_mcp",
                   f"Saved draft {name}.json via AI token '{token_name}'")
         db.commit()
         return {"ok": True, "filename": f"{name}.json", "path": path,
-                "note": f"Saved as {name}.json on the server's disk (ai_ drafts are kept out of git). "
-                        "Activate it with activate_definition(filename). In Docker this folder is "
-                        "not on the data volume - export drafts you want to keep."}
+                "note": f"Saved as {name}.json in the server's data folder (kept out of git). "
+                        "Activate it with activate_definition(filename)."}
 
 
 @mcp.tool()
 async def save_definition(ctx: Context, filename: str, definition: dict) -> dict:
-    """Save a draft as game_definitions/ai_<filename>.json (lowercase letters, digits, - and _;
+    """Save a draft as ai_<filename>.json in the server's definitions folder (lowercase letters, digits, - and _;
     the ai_ prefix is added unless the name already has it). Never overwrites files this
     assistant did not create. Validates first."""
     return await _off_loop(_save, _caller(ctx), filename, definition)
@@ -257,12 +257,11 @@ def _activate(caller, filename, definition):
             name = filename[:-5] if filename.endswith(".json") else filename
             if not _NAME_RE.match(name):
                 raise ValueError("filename must match [a-z0-9_-]{1,64}")
-            path = os.path.join(ds.DEFINITIONS_DIR, f"{name}.json")
-            if not os.path.exists(path):
-                path = os.path.join(ds.DEFINITIONS_DIR, f"{AI_PREFIX}{name}.json")
-            if not os.path.exists(path):
+            path = (data_paths.find_definition_file(f"{name}.json")
+                    or data_paths.find_definition_file(f"{AI_PREFIX}{name}.json"))
+            if path is None:
                 raise ValueError(f"No saved definition '{name}.json' or '{AI_PREFIX}{name}.json'")
-            definition = load_definition_from_file(path)
+            definition = load_definition_from_file(str(path))
         try:
             result = ds.apply_definition(definition, db, user, "mcp", actor_label=token_name)
         except ds.DefinitionRejected as exc:
@@ -311,11 +310,28 @@ def _apply_mod(caller, mod_id, enabled):
 
 @mcp.tool()
 async def apply_mod(ctx: Context, mod_id: str, enabled: bool = True) -> dict:
-    """Enable or disable a content mod and hot-swap the ruleset. Only on the creator's go-ahead.
-    Same safety gate as activate_definition: a mod that would change a setup-only engine flag
-    on a running universe is refused (and stays disabled); explain the blocked list to the
-    creator."""
+    """Enable or disable a content mod and hot-swap the ruleset. Only on the creator's go-ahead -
+    call preview_mod first and show them what changes. Same safety gate as activate_definition:
+    a mod that would change a setup-only engine flag on a running universe is refused (and
+    nothing changes); explain the blocked list to the creator."""
     return await _off_loop(_apply_mod, _caller(ctx), mod_id, enabled)
+
+
+def _preview_mod(caller, mod_id, enabled):
+    import mod_planner
+    with _session(caller) as (db, _u, _t):
+        change = {"enable": [mod_id]} if enabled else {"disable": [mod_id]}
+        plan = mod_planner.plan(db, strict=True, **change)
+        plan.pop("safety", None)
+        return plan
+
+
+@mcp.tool()
+async def preview_mod(ctx: Context, mod_id: str, enabled: bool = True) -> dict:
+    """What enabling (or disabling) a content mod would change, without changing anything:
+    roster entries added/removed, engine settings that change, errors and blocked changes.
+    Show this to the creator before calling apply_mod."""
+    return await _off_loop(_preview_mod, _caller(ctx), mod_id, enabled)
 
 
 # ---------------------------------------------------------------- mounting

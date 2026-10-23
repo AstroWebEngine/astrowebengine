@@ -1063,6 +1063,33 @@ def register_admin_routes(app):
         db.commit()
         return {"success": True, "active_ruleset": ml.get_active_ruleset_id(db)}
 
+    def _plan_args(data: dict) -> dict:
+        args = {"enable": list(data.get("enable") or []), "disable": list(data.get("disable") or [])}
+        if "ruleset" in data:          # absent = keep; "" = clear the ruleset mod
+            args["ruleset"] = str(data.get("ruleset") or "")
+        return args
+
+    @app.post("/api/admin/mods/plan")
+    def admin_plan_mods(data: dict, token: str = Depends(get_token_from_header), db: Session = Depends(get_db)):
+        """Preview a mod selection change without saving anything.
+        Body: {enable: [ids], disable: [ids], ruleset?: id or ""}."""
+        user = get_current_user(token, db)
+        check_admin(user)
+        import mod_planner
+        return mod_planner.plan(db, **_plan_args(data))
+
+    @app.post("/api/admin/mods/apply-plan")
+    def admin_apply_mod_plan(data: dict, token: str = Depends(get_token_from_header), db: Session = Depends(get_db)):
+        """Apply a previewed plan: the same body as /mods/plan plus its plan_id. Refused
+        (409) if anything changed since the preview; nothing is saved on failure."""
+        user = get_current_user(token, db)
+        check_admin(user)
+        import mod_planner
+        try:
+            return mod_planner.apply(db, str(data.get("plan_id") or ""), user=user, **_plan_args(data))
+        except mod_planner.PlanRejected as exc:
+            raise HTTPException(409, exc.message)
+
     @app.post("/api/admin/mods/apply")
     def admin_apply_mods(token: str = Depends(get_token_from_header), db: Session = Depends(get_db)):
         """Compose enabled mods into the active game definition (hot-swap). Returns the report."""
@@ -1537,11 +1564,14 @@ def register_admin_routes(app):
         user = get_current_user(token, db); check_admin(user)
         import os
         defn = get_game_definition()
-        defs_dir = os.path.join(os.path.dirname(__file__), "game_definitions")
-        os.makedirs(defs_dir, exist_ok=True)
+        import data_paths
         name_slug = defn.get("meta", {}).get("name", "export").lower().replace(" ", "_")
-        filepath = os.path.join(defs_dir, f"{name_slug}.json")
-        save_definition_to_file(defn, filepath)
+        # Into the creator folder (AWE_DATA_DIR), never over a bundled definition.
+        filepath = data_paths.user_definitions_dir() / f"{name_slug}.json"
+        if (data_paths.BUNDLED_DEFINITIONS_DIR / f"{name_slug}.json").exists():
+            filepath = filepath.with_name(f"{name_slug}_export.json")
+        save_definition_to_file(defn, str(filepath))
+        name_slug = filepath.stem
         return {"ok": True, "filename": f"{name_slug}.json"}
 
     @app.post("/api/admin/game-definition/validate")
@@ -1590,11 +1620,11 @@ def register_admin_routes(app):
         filename = body.get("filename", "")
         if not filename or ".." in filename or "/" in filename or "\\" in filename:
             raise HTTPException(400, "Invalid filename")
-        import os
-        filepath = os.path.join(os.path.dirname(__file__), "game_definitions", filename)
-        if not os.path.exists(filepath):
+        import data_paths
+        filepath = data_paths.find_definition_file(filename)
+        if filepath is None:
             raise HTTPException(404, f"Definition file not found: {filename}")
-        definition = load_definition_from_file(filepath)
+        definition = load_definition_from_file(str(filepath))
         return _check_and_apply_definition(definition, db, user, "load")
 
     @app.post("/api/admin/game-definition/reset")

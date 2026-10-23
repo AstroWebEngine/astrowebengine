@@ -29,8 +29,10 @@ The server's MCP tools let you read, check, save, and activate definitions.
 7. **Hand back Launch.** If the result says `roster_changed`, tell the creator to click
    **Launch** in the admin panel. You cannot generate or reset the universe.
 
-For quick rule switches, `list_mods()` and `apply_mod(mod_id)` toggle prebuilt mods
-(for example conquest rules) - again only with the creator's go-ahead.
+For quick rule switches, `list_mods()` shows the prebuilt mods (for example conquest
+rules). Call `preview_mod(mod_id)` first and tell the creator what it changes (units
+added or removed, settings that move, anything blocked), then `apply_mod(mod_id)` only
+on their go-ahead. If it fails, nothing changed.
 
 ## Design guidance
 

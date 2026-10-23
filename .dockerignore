@@ -40,3 +40,11 @@ docs/*
 # Local env / compose artifacts
 .env
 docker-compose.override.yml
+
+# Per-instance runtime state (lives in AWE_DATA_DIR, never in the image)
+.secret_key
+_active_definition.json
+_mod_base_definition.json
+game_definitions/ai_*.json
+# Artwork masters (the image ships the built WebP files in static/art/)
+art/awe/

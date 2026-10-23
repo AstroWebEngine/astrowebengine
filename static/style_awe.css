@@ -1,0 +1,226 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   AWE theme — the engine's default presentation
+   "Observatory precision, industrial civilization": charcoal, warm ivory,
+   copper and amber; sharp panels; orbital hairlines; disciplined type.
+
+   Structure comes from style_neutral.css (its rules apply to both
+   [data-theme="neutral"] and [data-theme="awe"]); this file supplies the
+   palette, shape and the few AWE-specific details. Rulesets can opt out with
+   ui.theme = "classic" or "neutral"; a skin the player picked explicitly
+   (data-skin) keeps its own palette.
+   Brand tokens (--awe-*) live in static/brand/tokens.css, shared with the website.
+   ────────────────────────────────────────────────────────────────────────── */
+
+[data-theme="awe"] {
+  /* brand tokens come from static/brand/tokens.css */
+  --font-main: var(--awe-font-main);
+  --font-mono: var(--awe-font-mono);
+
+  /* shape: sharp, instrument-like */
+  --awe-radius: 2px;
+  --awe-row-pad-y: 7px;
+  --awe-card-pad: 14px;
+  --awe-header-height: 52px;
+}
+
+/* Palette — only when the player hasn't picked a skin of their own. */
+[data-theme="awe"]:not([data-skin]) {
+  --bg-dark:       var(--awe-bg);
+  --bg-panel:      var(--awe-panel);
+  --bg-card:       #2a231c;
+  --bg-hover:      #352b21;
+  --bg-header:     #1c1814;
+  --border:        #3d3126;
+  --border-bright: #5a4636;
+
+  --accent:        var(--awe-accent);   /* amber: primary actions, links */
+  --accent-glow:   #f6c895;
+  --accent2:       var(--awe-copper);   /* copper: secondary highlights */
+  --warn:          #e7a13f;
+  --danger:        #e46a59;
+  --success:       #93bf72;
+  --success-dim:   #6f9a54;
+
+  --text:          var(--awe-text);
+  --text-dim:      var(--awe-text-muted);
+  --text-bright:   #fffaf0;
+  --link:          var(--awe-accent);
+
+  --structures:    #a9c48a;   /* sage */
+  --defenses:      #d98c55;   /* copper */
+  --research:      #9cc0cf;   /* pale observatory blue */
+  --production:    #e6dccb;
+  --player-self:   #fffaf0;
+  --player-guild:  #a9c48a;
+  --player-npc:    #d98c55;
+  --row-rule:      color-mix(in srgb, var(--awe-border) 70%, transparent);
+}
+
+/* Orbital backdrop: two faint concentric rings, fixed, behind everything. */
+[data-theme="awe"] body {
+  background-color: var(--bg-dark);
+  background-image:
+    radial-gradient(circle at 88% -10%, transparent 0 279px, color-mix(in srgb, var(--awe-accent) 9%, transparent) 280px 281px, transparent 282px),
+    radial-gradient(circle at 88% -10%, transparent 0 459px, color-mix(in srgb, var(--awe-accent) 6%, transparent) 460px 461px, transparent 462px);
+  background-attachment: fixed;
+  font-family: var(--font-main);
+}
+
+/* Panels: sharp corners, a copper hairline on top like an instrument bezel. */
+[data-theme="awe"] .panel,
+[data-theme="awe"] .card {
+  border-radius: var(--awe-radius);
+  border-top: 1px solid color-mix(in srgb, var(--awe-copper) 55%, var(--border));
+}
+
+/* Section and panel titles read as instrument labels. */
+[data-theme="awe"] .panel-title,
+[data-theme="awe"] .section-title {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--awe-text-muted);
+}
+
+/* Numbers line up and read like readouts. */
+[data-theme="awe"] .data-table td.num,
+[data-theme="awe"] .mono,
+[data-theme="awe"] .timer {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Buttons: flat, sharp, amber primary with dark text. */
+[data-theme="awe"] .btn,
+[data-theme="awe"] button.btn {
+  border-radius: var(--awe-radius);
+}
+[data-theme="awe"] .btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg-dark);
+}
+[data-theme="awe"] .btn-primary:hover { background: var(--accent-glow); border-color: var(--accent-glow); }
+
+/* Focus ring: visible amber outline for keyboard users. */
+[data-theme="awe"] :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Inputs */
+[data-theme="awe"] input,
+[data-theme="awe"] select,
+[data-theme="awe"] textarea {
+  border-radius: var(--awe-radius);
+}
+
+/* Header bar (neutral shell): copper underline instead of a bright bar. */
+[data-theme="awe"] #top-header {
+  border-bottom: 1px solid color-mix(in srgb, var(--awe-copper) 45%, var(--border));
+}
+
+/* Alerts: tinted from the palette instead of fixed cyan / green / red. */
+[data-theme="awe"] .alert { border-radius: var(--awe-radius); }
+[data-theme="awe"] .alert-info {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+}
+[data-theme="awe"] .alert-error {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+  color: var(--danger);
+}
+[data-theme="awe"] .alert-success {
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
+}
+[data-theme="awe"] .alert-warn {
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
+}
+
+/* ── Landing / login (index.html) ── */
+/* Planet limb: amber rim light over a charcoal body. */
+[data-theme="awe"] .horizon-bg {
+  background-image:
+    radial-gradient(115vw 46vh at 50% 121%, transparent 61.5%, color-mix(in srgb, var(--awe-accent) 32%, transparent) 63%, color-mix(in srgb, var(--awe-copper) 8%, transparent) 66%, transparent 72%),
+    radial-gradient(115vw 46vh at 50% 121%, var(--awe-panel) 0%, var(--bg-dark) 62%, transparent 62.6%);
+}
+[data-theme="awe"] .stat-strip {
+  background: color-mix(in srgb, var(--awe-panel) 70%, transparent);
+  border-radius: var(--awe-radius);
+  border-top-color: color-mix(in srgb, var(--awe-copper) 55%, var(--border));
+}
+[data-theme="awe"] .stat-tile { border-left-color: var(--border); }
+[data-theme="awe"] .auth-box {
+  border-radius: var(--awe-radius);
+  border-top: 1px solid color-mix(in srgb, var(--awe-copper) 55%, var(--border));
+}
+[data-theme="awe"] .auth-logo h1 { color: var(--awe-accent); letter-spacing: 0.04em; }
+[data-theme="awe"] .auth-logo p { color: var(--awe-text-muted); }
+[data-theme="awe"] .server-status { border-radius: var(--awe-radius); }
+
+/* Brand mark next to the product name (login, setup, lobby, game and admin headers). */
+.awe-mark { display: inline-block; vertical-align: middle; margin-right: 6px; position: relative; top: -2px; }
+
+/* ── Active states: an amber underline, not a filled block ──
+   Navigation reads like an instrument selector: the chosen item keeps the panel
+   colour and gains an amber rule underneath. Keyboard focus adds the amber
+   outline on top (see :focus-visible above), so focus and selection never look
+   the same. */
+[data-theme="awe"] .awe-tab-bar a.active,
+[data-theme="awe"] .awe-nav-btn.active,
+[data-theme="awe"] .admin-tabs .awe-nav-btn.active,
+[data-theme="awe"] .awe-sidebar-link.active,
+[data-theme="awe"] .account-nav-group .awe-sidebar-link.active,
+[data-theme="awe"] .map-side-tab.active,
+[data-theme="awe"] .galaxy-tab.active {
+  background: var(--bg-hover);
+  background-image: none;
+  color: var(--accent);
+  border-color: var(--border);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+[data-theme="awe"] .awe-sidebar-link.active,
+[data-theme="awe"] .account-nav-group .awe-sidebar-link.active { box-shadow: inset 2px 0 0 var(--accent); }
+
+/* Sharp corners everywhere the shared rules hard-code a rounding. */
+[data-theme="awe"] .awe-struct-table.mobile-cards tr,
+[data-theme="awe"] .awe-struct-table.mobile-cards td[data-cell="action"] .text-accent,
+[data-theme="awe"] .form-group input,
+[data-theme="awe"] .form-group select,
+[data-theme="awe"] .form-group textarea,
+[data-theme="awe"] .base-selector,
+[data-theme="awe"] .ship-count-input,
+[data-theme="awe"] .awe-tools-menu .awe-btn,
+[data-theme="awe"] .building-card,
+[data-theme="awe"] .tech-card,
+[data-theme="awe"] .research-card,
+[data-theme="awe"] .fleet-card,
+[data-theme="awe"] .modal {
+  border-radius: var(--awe-radius);
+}
+
+/* ── Gallery (gallery.html keeps its own layout; AWE squares it off) ── */
+[data-theme="awe"] .grid .card,
+[data-theme="awe"] .submit,
+[data-theme="awe"] .play,
+[data-theme="awe"] .chip,
+[data-theme="awe"] .badge { border-radius: var(--awe-radius); }
+[data-theme="awe"] .grid .card { border-top: 1px solid color-mix(in srgb, var(--awe-copper) 55%, var(--border)); }
+[data-theme="awe"] .galaxy-select-panel {
+  border-radius: var(--awe-radius);
+  border-top: 1px solid color-mix(in srgb, var(--awe-copper) 55%, var(--border));
+}
+[data-theme="awe"] .galaxy-card { border-radius: var(--awe-radius); }
+
+/* Setup: the chosen galaxy is marked in amber (green stays "recommended"). */
+[data-theme="awe"] .galaxy-card.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-card));
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+[data-theme="awe"] .galaxy-card.selected .gname { color: var(--accent); }

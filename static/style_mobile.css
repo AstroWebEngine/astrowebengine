@@ -1035,3 +1035,9 @@
     bottom: calc(68px + env(safe-area-inset-bottom, 0)) !important;
   }
 }
+
+/* Very narrow phones (≈320px): the base list is wider than the screen and its
+   panel clips overflow, which hid the last column entirely. Let it scroll. */
+@media (max-width: 400px) {
+  #bases-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}

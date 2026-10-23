@@ -8,6 +8,7 @@ python-jose[cryptography]>=3.3.0
 pydantic>=2.0.0
 email-validator>=2.0.0
 mcp>=1.26,<2
+packaging>=23  # mod version ranges (mod_loader)
 
 # Optional: Install ONE of these if you want MySQL or PostgreSQL
 # pip install pymysql          # for MySQL (python run.py --mysql user:pass@host/db)

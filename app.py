@@ -2,7 +2,7 @@
 AstroWebEngine — Entry Point
 Run with: python app.py   (or: uvicorn app:app --host 0.0.0.0 --port 8000)
 """
-__version__ = "0.98.0"
+__version__ = "0.99.0"
 import asyncio
 import logging
 from fastapi import FastAPI
@@ -171,6 +171,15 @@ async def _run_in_thread(func, *args):
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(None, func, *args)
 
+async def _leader_job(func, skipped):
+    """Run a game-wide background job only in the worker holding the scheduler
+    lease (scheduler_lease.py); other workers return `skipped` and check again
+    on their next pass. Without this every worker ran every job."""
+    import scheduler_lease
+    if not scheduler_lease.is_leader():
+        return skipped
+    return await _run_in_thread(func)
+
 # ── Background bot tick task ──
 def _bot_tick_sync():
     db = SessionLocal()
@@ -186,7 +195,7 @@ async def _bot_tick_loop():
     """Periodically run bot AI ticks in the background."""
     while True:
         try:
-            bot_interval = await _run_in_thread(_bot_tick_sync)
+            bot_interval = await _leader_job(_bot_tick_sync, 15)
         except Exception as e:
             awe_logger.error(f"[bot-tick] {e}")
             bot_interval = 60
@@ -211,7 +220,7 @@ async def _npc_stability_tick_loop():
             next_tick = (now + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
             wait_secs = max(1, (next_tick - now).total_seconds())
             await asyncio.sleep(wait_secs)
-            result = await _run_in_thread(_npc_stability_tick_sync)
+            result = await _leader_job(_npc_stability_tick_sync, {})
             if result.get("processed") or result.get("disbanded") or result.get("created"):
                 awe_logger.info(
                     f"[npc-stability] Processed {result.get('processed', 0)} Settlers bases, "
@@ -237,7 +246,7 @@ async def _galaxy_reshuffle_tick_loop():
     reshuffle period has begun (no-op for every other topology)."""
     while True:
         try:
-            await _run_in_thread(_galaxy_reshuffle_sync)
+            await _leader_job(_galaxy_reshuffle_sync, None)
         except Exception as e:
             awe_logger.error(f"[galaxy-reshuffle] {e}")
         await asyncio.sleep(300)  # check every 5 min; reshuffles only on epoch rollover
@@ -265,7 +274,7 @@ async def _recycler_tick_loop():
                 next_tick = (now + timedelta(hours=1)).replace(minute=30, second=0, microsecond=0)
             wait_secs = max(1, (next_tick - now).total_seconds())
             await asyncio.sleep(wait_secs)
-            await _run_in_thread(_recycler_tick_sync)
+            await _leader_job(_recycler_tick_sync, None)
             awe_logger.info(f"[recycler-tick] Collected debris at {datetime.utcnow().strftime('%H:%M')}")
         except Exception as e:
             awe_logger.error(f"[recycler-tick] {e}")
@@ -291,7 +300,7 @@ async def _queue_tick_loop():
     """Advance construction and research queues for all players."""
     while True:
         try:
-            interval = await _run_in_thread(_queue_tick_sync)
+            interval = await _leader_job(_queue_tick_sync, 5)
         except Exception as e:
             awe_logger.error(f"[queue-tick] {e}")
             interval = QUEUE_TICK_INTERVAL
@@ -338,7 +347,7 @@ async def _fleet_arrival_tick_loop():
     """Process due fleet arrivals independently of player page loads."""
     while True:
         try:
-            result = await _run_in_thread(_fleet_arrival_tick_sync)
+            result = await _leader_job(_fleet_arrival_tick_sync, {"interval": FLEET_ARRIVAL_TICK_INTERVAL})
             interval = result["interval"]
         except Exception as e:
             awe_logger.error(f"[fleet-arrival-tick] {e}")
@@ -360,7 +369,7 @@ async def _autoscout_tick_loop():
     """Move autoscout fleets through the galaxy."""
     while True:
         try:
-            interval = await _run_in_thread(_autoscout_tick_sync)
+            interval = await _leader_job(_autoscout_tick_sync, 10)
         except Exception as e:
             awe_logger.error(f"[autoscout-tick] {e}")
             interval = AUTOSCOUT_TICK_INTERVAL
@@ -388,7 +397,7 @@ async def _guild_history_tick_loop():
                 next_tick = now.replace(minute=5, second=0, microsecond=0)
             wait_secs = max(1, (next_tick - now).total_seconds())
             await asyncio.sleep(wait_secs)
-            captured = await _run_in_thread(_guild_history_tick_sync)
+            captured = await _leader_job(_guild_history_tick_sync, False)
             if captured:
                 awe_logger.info(f"[guild-history] Captured guild graph snapshot at {datetime.utcnow().strftime('%H:%M')}")
         except Exception as e:
@@ -398,6 +407,7 @@ async def _guild_history_tick_loop():
 def _income_tick_sync():
     db = SessionLocal()
     try:
+        from datetime import datetime
         from game_logic import collect_resources
         game_speed = get_config_float(db, "game_speed", 1.0)
         users = db.query(User).filter(User.is_bot == False).all()
@@ -430,7 +440,7 @@ async def _income_tick_loop():
     while True:
         await asyncio.sleep(300)
         try:
-            result = await _run_in_thread(_income_tick_sync)
+            result = await _leader_job(_income_tick_sync, {"credited_users": 0, "total_earned": 0})
             if result["credited_users"] > 0:
                 awe_logger.info(
                     f"[income-tick] Credited {result['credited_users']} players for {result['total_earned']}"
@@ -510,16 +520,47 @@ async def _registry_heartbeat_loop():
     await asyncio.sleep(15)  # let the server settle before the first ping
     while True:
         try:
-            await _run_in_thread(_registry_sync)
+            await _leader_job(_registry_sync, None)
         except Exception as e:
             awe_logger.error(f"[registry] {e}")
         await asyncio.sleep(3600)  # hourly heartbeat
+
+
+def _runtime_sync():
+    import runtime_sync
+    db = SessionLocal()
+    try:
+        import scheduler_lease
+        was_leader = scheduler_lease.is_leader()
+        if scheduler_lease.renew(db) != was_leader:
+            awe_logger.info(f"[sync] {'now running' if not was_leader else 'stopped running'} "
+                            f"the background jobs (worker {scheduler_lease.WORKER_ID})")
+        result = runtime_sync.sync_once(db)
+        if result["reloaded"]:
+            awe_logger.info("[sync] active ruleset changed in another worker - reloaded")
+    finally:
+        db.close()
+
+async def _runtime_sync_loop():
+    """Pick up admin settings and ruleset activations made through other workers."""
+    import runtime_sync
+    while True:
+        try:
+            await _run_in_thread(_runtime_sync)
+        except Exception as e:
+            awe_logger.error(f"[sync] {e}")
+        await asyncio.sleep(runtime_sync.SYNC_SECONDS)
 
 
 @app.on_event("startup")
 async def startup():
     ModelBase.metadata.create_all(bind=engine)
     _auto_migrate_sqlite()
+    # Runtime state written next to the code by older versions → AWE_DATA_DIR.
+    import data_paths
+    for moved in data_paths.migrate_legacy_runtime_files():
+        awe_logger.info(f"[data] moved {moved}")
+    awe_logger.info(f"[data] runtime state in {data_paths.data_dir()}")
     # SQLite PRAGMAs (WAL, busy_timeout) are set per-connection in database.py
     db = SessionLocal()
     init_default_configs(db)
@@ -575,6 +616,7 @@ async def startup():
     asyncio.create_task(_guild_history_tick_loop())
     asyncio.create_task(_income_tick_loop())
     asyncio.create_task(_registry_heartbeat_loop())
+    asyncio.create_task(_runtime_sync_loop())
 
 if __name__ == "__main__":
     import uvicorn

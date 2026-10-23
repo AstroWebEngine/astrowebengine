@@ -77,6 +77,9 @@ async def admin_startup():
         init_default_configs(db)
     finally:
         db.close()
+    import asyncio
+    from app import _runtime_sync_loop
+    asyncio.create_task(_runtime_sync_loop())   # see changes made by game workers
     logger.info("[admin] Admin server ready")
 
 

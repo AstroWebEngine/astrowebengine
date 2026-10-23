@@ -88,8 +88,9 @@ pip install -r requirements.txt
 python run.py                 # http://localhost:8000
 ```
 
-Without `AWE_SECRET_KEY` set, a random signing key is generated per process, so
-logins don't survive a restart. Set it for anything long-lived.
+Without `AWE_SECRET_KEY` set, AWE generates a signing key once and keeps it in the
+data folder (`AWE_DATA_DIR/.secret_key`), so logins survive restarts. Setting it
+explicitly is still recommended for anything long-lived.
 
 The first registered account becomes the admin/observer. From the admin panel, pick
 or compile a ruleset, then launch the game to generate the universe.

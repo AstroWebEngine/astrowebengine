@@ -135,69 +135,45 @@ def _mod_base() -> dict:
     return base if base is not None else get_game_definition()
 
 
+def _report(plan: dict) -> dict:
+    """The shape the admin UI and older callers expect from a mod apply."""
+    return {"applied": plan["applied"], "errors": plan["errors"], "skipped": [], "conflicts": [],
+            "safety": plan.get("safety", []), "changes": plan.get("changes", {})}
+
+
 def apply_mods(db) -> dict:
+    """Recompose the saved selection and activate it (admin 'apply')."""
+    import mod_planner
+    plan = mod_planner.plan(db)
+    if not plan["ok"]:
+        return {"success": False, "report": _report(plan)}
+    applied = mod_planner.apply(db, plan["plan_id"])
+    return {"success": True, "report": _report(applied)}
+
+
+def set_mod_enabled_and_apply(db, mod_id: str, enabled: bool, strict: bool = False,
+                              user=None, actor_label=None) -> dict:
+    """Toggle one mod and activate the result in one step (nothing is saved if it
+    fails). strict=True (the AI assistant): content mods only, and setup-only
+    changes on a running universe are refused instead of warned."""
     import mod_loader as ml
-    report = ml.apply_active_mods(db, _mod_base())
-    if not report["errors"]:
-        persist_active_definition(db, get_game_definition())  # survive restart
-    return {"success": not report["errors"], "report": report}
-
-
-_NO_MOD_BASE = ("Can't cleanly remove a mod on this server yet: re-activate the base ruleset "
-                "(Game Definitions tab or activate_definition), then apply mods again.")
-
-
-def _apply_mods_strict(db) -> dict:
-    """Like apply_mods, but a setup-only change is blocked (as for activate), not warned."""
-    import mod_loader as ml
-    composed, report = ml.compose_active_definition(db, _mod_base())
-    if report["errors"]:
-        raise DefinitionRejected("Mods did not compose: " + "; ".join(report["errors"]),
-                                 errors=report["errors"])
-    safety = check_definition_safety(composed, has_universe(db))
-    blocked = [w["message"] for w in safety if w.get("blocked")]
-    if blocked:
-        raise DefinitionRejected("Cannot apply mod - blocked changes: " + "; ".join(blocked),
-                                 blocked=blocked)
-    report["safety"] = safety
-    set_game_definition(composed)
-    persist_active_definition(db, composed)  # survive restart
-    return {"success": True, "report": report}
-
-
-def set_mod_enabled_and_apply(db, mod_id: str, enabled: bool, strict: bool = False) -> dict:
-    """Toggle a mod and recompose. strict=True (the AI assistant) only allows content mods
-    and refuses setup-only changes on a running universe instead of warning."""
-    import mod_loader as ml
+    import mod_planner
     mod_id = str(mod_id or "").strip()
-    mod = ml._get_mod(mod_id) if mod_id else None
-    if not mod:
+    if not mod_id or not ml._get_mod(mod_id):
         raise DefinitionRejected("Mod not found")
-    if strict and mod["manifest"].get("kind") != "content":
-        raise DefinitionRejected("Only content mods can be toggled by the AI assistant")
-    enabled = bool(enabled)
-    if (not enabled and load_mod_base() is None
-            and (get_game_definition().get("meta") or {}).get("active_mods")):
-        # Without a recorded base the live definition already contains the mod's overlay,
-        # so recomposing onto it would leave the mod's rules in place.
-        raise DefinitionRejected(_NO_MOD_BASE)
-    was_enabled = mod_id in ml.get_enabled_mod_ids(db)
-    ml.set_mod_enabled(db, mod_id, enabled)
-    db.commit()
-
-    def restore_flag():  # don't leave a flag that didn't apply
-        ml.set_mod_enabled(db, mod_id, was_enabled)
-        db.commit()
-
-    if strict:
-        try:
-            result = _apply_mods_strict(db)
-        except DefinitionRejected:
-            restore_flag()
-            raise
-    else:
-        result = apply_mods(db)
-        if not result["success"]:
-            restore_flag()
-    result["enabled"] = ml.get_enabled_mod_ids(db)
-    return result
+    change = {"enable": [mod_id]} if enabled else {"disable": [mod_id]}
+    plan = mod_planner.plan(db, strict=strict, **change)
+    if mod_planner._NO_MOD_BASE in plan["errors"]:
+        raise DefinitionRejected(mod_planner._NO_MOD_BASE)
+    if not plan["ok"]:
+        if strict or plan["errors"]:
+            msg = "; ".join(plan["errors"] or plan["blocked"])
+            if not strict:
+                return {"success": False, "report": _report(plan),
+                        "enabled": ml.get_enabled_mod_ids(db)}
+            raise DefinitionRejected(
+                ("Cannot apply mod - blocked changes: " if not plan["errors"] else "") + msg,
+                errors=plan["errors"], blocked=plan["blocked"])
+    applied = mod_planner.apply(db, plan["plan_id"], strict=strict, user=user,
+                                actor_label=actor_label, **change)
+    return {"success": True, "report": _report(applied), "enabled": ml.get_enabled_mod_ids(db)}

@@ -1,0 +1,143 @@
+{
+  "assets": {
+    "terrain": {
+      "arid": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "asteroid": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "asteroid_belt": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "craters": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "crystalline": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "earthly": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "gaia": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "gas_giant": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "glacial": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "magma": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "metallic": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "oceanic": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "radioactive": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "rocky": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "toxic": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "tundra": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      },
+      "volcanic": {
+        "active": true,
+        "sizes": [
+          128,
+          256,
+          512
+        ]
+      }
+    }
+  },
+  "version": 1
+}

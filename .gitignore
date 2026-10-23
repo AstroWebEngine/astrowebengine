@@ -53,6 +53,7 @@ _private/
 # base ruleset that mods are composed onto.
 _active_definition.json
 _mod_base_definition.json
+.secret_key
 
 # Drafts saved by the AI assistant over MCP (mcp_server.save_definition) - local, never committed.
 game_definitions/ai_*.json

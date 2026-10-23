@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AstroWebEngine — an open engine for space-strategy games</title>
+<title>AstroWebEngine — Worlds with a maker’s mark</title>
+<link rel="stylesheet" href="brand/tokens.css">
+<link rel="icon" type="image/svg+xml" href="brand/awe-favicon.svg">
 <meta name="description" content="A data-driven, self-hostable engine for browser-based, multiplayer space-strategy games. No hardcoded ruleset — build your own game from a definition, no code required." />
 <style>
   :root{
@@ -122,11 +124,49 @@
     h1{ font-size:30px; }
     nav .btn.primary{ max-width:142px; }
   }
+
+  /* AWE identity: observatory charts, orbital geometry, a visible maker's mark. */
+  :root { --bg:var(--awe-bg); --panel:var(--awe-panel); --panel2:var(--awe-panel-raised); --text:var(--awe-text); --dim:var(--awe-text-muted); --accent:var(--awe-accent); --accent2:var(--awe-copper); --border:var(--awe-border); --radius:3px; }
+  body { background-image:linear-gradient(rgba(236,170,104,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(236,170,104,.035) 1px,transparent 1px); background-size:64px 64px; }
+  body { font-family:var(--awe-font-main); }
+  .eyebrow,.pill,.signature,pre { font-family:var(--awe-font-mono); }
+  a:focus-visible { outline:2px solid var(--accent); outline-offset:5px; }
+  nav { background:rgba(22,19,16,.96); }
+  .logo { display:flex; align-items:center; gap:5px; color:var(--text); }
+  .maker-mark { display:inline-flex; flex-shrink:0; align-items:center; justify-content:center; width:30px; height:30px; margin-right:6px; }
+  .btn, nav .btn.primary { border-radius:3px !important; }
+  .btn.primary { background:var(--accent); color:#21170e; }
+  .pill { border-radius:2px; font-family:Consolas,monospace; letter-spacing:.03em; }
+  header.hero { text-align:left; padding:105px 0 100px; position:relative; isolation:isolate; overflow:hidden; border-bottom:1px solid var(--border); }
+  header.hero::before { content:""; position:absolute; z-index:-1; width:560px; height:560px; right:-110px; top:10px; border:1px solid #896142; border-radius:50%; box-shadow:0 0 0 64px #161310,0 0 0 65px #4c3828,0 0 0 130px #161310,0 0 0 131px #4c3828; background:radial-gradient(circle at 32% 28%,#f1c17c 0%,#a66035 26%,#4d2e1d 50%,#161310 70%); opacity:.5; }
+  header.hero::after { content:"AWE / ORIGIN 001"; position:absolute; right:28px; bottom:24px; font:11px Consolas,monospace; letter-spacing:3px; color:var(--dim); }
+  .badges,.cta { justify-content:flex-start; }
+  h1 { max-width:850px; font-size:clamp(40px,6.6vw,76px); letter-spacing:-2px; }
+  h1 .grad { background:none; color:var(--accent); }
+  .sub { max-width:660px; margin:24px 0 32px; }
+  .manifesto { background:#1c1712; border-bottom:1px solid var(--border); }
+  .manifesto-grid { display:grid; grid-template-columns:1fr 1.3fr; gap:64px; }
+  .manifesto .lead:first-child { margin-top:0; }
+  .signature { display:inline-flex; align-items:center; margin-top:14px; font:12px Consolas,monospace; letter-spacing:1px; color:var(--accent); }
+  .signature > span:last-child { color:var(--dim); margin-left:12px; }
+  .feat { border-radius:3px; border-top:2px solid #92633e; }
+  .feat .ic { background:none; border-radius:0; width:auto; height:auto; justify-content:flex-start; color:var(--accent); font:12px Consolas,monospace; letter-spacing:2px; }
+  .clone,.clone.a,.clone.b { background:var(--panel); border-radius:3px; }
+  .clone .tag { border-radius:2px; }
+  .clone.a .tag { color:#21170e; }
+  .clone.b .tag { background:#c9be8a; color:#282313; }
+  pre { background:#120f0c; }
+  pre .c { color:#a89b89; }
+  pre { border-radius:3px; }
+  footer { background:var(--bg); }
+  @media(max-width:680px) { header.hero { padding:58px 0 70px; } header.hero::before { right:-350px; opacity:.24; } h1 { font-size:42px; letter-spacing:-1px; } h1 br { display:block; } .manifesto-grid { grid-template-columns:1fr; gap:20px; } .signature { flex-wrap:wrap; line-height:2; } .signature > span:last-child { margin-left:0; } }
+  @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .btn { transition:none; } }
+
 </style>
 </head>
 <body>
 <nav><div class="wrap">
-  <div class="logo">Astro<span>WebEngine</span></div>
+  <a class="logo" href="#" aria-label="AstroWebEngine home"><img class="maker-mark" src="brand/awe-mark.svg" alt="" width="30" height="30"> Astro<span>WebEngine</span></a>
   <div class="spacer"></div>
   <a class="navlink" href="#features">Features</a>
   <a class="navlink" href="#games">Games</a>
@@ -140,30 +180,34 @@
   <div class="badges">
     <span class="pill"><b>Open</b> &amp; self-hostable</span>
     <span class="pill">No hardcoded ruleset</span>
-    <span class="pill"><b>No-code</b> game builder</span>
+    <span class="pill">Admin tools + <b>MCP</b></span>
   </div>
-  <h1>Build your own <span class="grad">space-strategy game</span>.<br>No engine code required.</h1>
-  <p class="sub">AstroWebEngine is a data-driven engine for browser-based, multiplayer space-strategy games. Every rule — units, economy, combat, resources, the map itself — lives in a game definition you compose in a GUI. One engine, endlessly different games.</p>
+  <div class="eyebrow">AWE / Worlds with a maker’s mark</div><h1>The engine is ours.<br><span class="grad">The universe is yours.</span></h1>
+  <p class="sub">Build a persistent multiplayer space-strategy game. Shape its economy, fleets, combat and map through the admin tools or an AI assistant connected by MCP. AWE supplies the foundation. You decide what makes your world worth playing.</p>
   <div class="cta">
-    <a class="btn primary" data-link="demo" href="#">▶ Play the demo</a>
-    <a class="btn" data-link="github" href="#">⭐ Source on GitHub</a>
-    <a class="btn" data-link="discord" href="#">💬 Join Discord</a>
-    <a class="btn" data-link="gallery" href="#">🛰 Games made with it</a>
+    <a class="btn primary" data-link="demo" href="#">Play the demo ↗</a>
+    <a class="btn" data-link="github" href="#">Explore the source ↗</a>
+    <a class="btn" data-link="discord" href="#">Meet the community ↗</a>
+    <a class="btn" data-link="gallery" href="#">Made with AWE ↗</a>
   </div>
 </div></header>
 
+<section class="manifesto"><div class="wrap manifesto-grid">
+  <div><div class="eyebrow">The maker matters</div><h2>A foundation.<br>A thousand possible futures.</h2></div>
+  <div><p class="lead">Good games come from decisions: the tension in an economy, the cost of a battle, the reason to return tomorrow. An engine gives those decisions somewhere to live.</p><p class="lead">Use AI to help build your game. Bring your own taste, test your ideas, and listen to your players. The tools are shared. The responsibility—and the character of the world—belong to its maker.</p><span class="signature"><img class="maker-mark" src="brand/awe-mark.svg" alt="" width="30" height="30"> MADE WITH AWE <span>/ SHAPED BY YOU</span></span></div>
+</div></section>
 <section id="features"><div class="wrap">
   <div class="eyebrow">What it is</div>
   <h2>A whole game, defined — not hardcoded</h2>
   <p class="lead">The engine ships with zero baked-in ruleset. Units, buildings, research, defenses, the combat model, the resource economy, and the map layout are all a <b>game definition</b> (JSON or Python) — loaded at startup and hot-swappable at runtime. Compose one in the admin GUI, or author your own.</p>
   <div class="grid">
-    <div class="feat"><div class="ic">🎛️</div><h3>No-code Build Game</h3><p>Pick a base game, snap on rule fragments, edit ship / building / research stats, and activate — all from the admin panel, no code.</p></div>
-    <div class="feat"><div class="ic">🧬</div><h3>Fully data-driven</h3><p>Resource model, combat, defenses, map depth, entire rosters — it's all one definition. Change the game without touching the engine.</p></div>
-    <div class="feat"><div class="ic">🪐</div><h3>One engine, many games</h3><p>Flip single ↔ multi-resource, simultaneous ↔ round combat, level ↔ count defenses, hierarchical ↔ flat maps. Same code, different worlds.</p></div>
-    <div class="feat"><div class="ic">🧩</div><h3>Mods &amp; prebuilt games</h3><p>Package a ruleset as a mod, layer content and behaviour overlays on top, and ship your game for others to run.</p></div>
-    <div class="feat"><div class="ic">🌌</div><h3>Multiplayer &amp; persistent</h3><p>Procedural spiral galaxies, fleets, real combat, trade, and configurable NPC factions in a living, shared universe.</p></div>
-    <div class="feat"><div class="ic">🤖</div><h3>Design with AI</h3><p>Every server has a built-in MCP endpoint. Your AI assistant can read the schema, draft and check rulesets, and activate them when you say so.</p></div>
-    <div class="feat"><div class="ic">⚡</div><h3>Self-host in minutes</h3><p>FastAPI + SQLite, no frontend build step. <code>docker compose up</code> or <code>python run.py</code> and you're live on :8000.</p></div>
+    <div class="feat"><div class="ic" aria-hidden="true">01</div><h3>No-code Build Game</h3><p>Pick a base game, snap on rule fragments, edit ship / building / research stats, and activate — all from the admin panel, no code.</p></div>
+    <div class="feat"><div class="ic" aria-hidden="true">02</div><h3>Fully data-driven</h3><p>Resource model, combat, defenses, map depth, entire rosters — it's all one definition. Change the game without touching the engine.</p></div>
+    <div class="feat"><div class="ic" aria-hidden="true">03</div><h3>One engine, many games</h3><p>Flip single ↔ multi-resource, simultaneous ↔ round combat, level ↔ count defenses, hierarchical ↔ flat maps. Same code, different worlds.</p></div>
+    <div class="feat"><div class="ic" aria-hidden="true">04</div><h3>Mods &amp; prebuilt games</h3><p>Package a ruleset as a mod, layer content and behaviour overlays on top, and ship your game for others to run.</p></div>
+    <div class="feat"><div class="ic" aria-hidden="true">05</div><h3>Multiplayer &amp; persistent</h3><p>Procedural spiral galaxies, fleets, real combat, trade, and configurable NPC factions in a living, shared universe.</p></div>
+    <div class="feat"><div class="ic" aria-hidden="true">06</div><h3>Design with AI</h3><p>Every server has a built-in MCP endpoint. Your AI assistant can read the schema, draft and check rulesets, and activate them when you say so.</p></div>
+    <div class="feat"><div class="ic" aria-hidden="true">07</div><h3>Self-host in minutes</h3><p>FastAPI + SQLite, no frontend build step. <code>docker compose up</code> or <code>python run.py</code> and you're live on :8000.</p></div>
   </div>
 </div></section>
 
@@ -204,8 +248,9 @@
 git clone https://github.com/AstroWebEngine/astrowebengine
 cd astrowebengine
 
-<span class="c"># option A — Docker</span>
-docker compose up
+<span class="c"># option A — Docker (set AWE_SECRET_KEY in .env)</span>
+cp .env.example .env
+docker compose up -d
 
 <span class="c"># option B — Python</span>
 pip install -r requirements.txt
@@ -214,9 +259,9 @@ python run.py
 <span class="c"># then open</span>
 <span class="k">http://localhost:8000</span></pre>
     <div>
-      <p class="lead" style="font-size:15px;">The first account you register is the admin. From there, open <b>Build Game</b> to pick a prebuilt ruleset, tweak the content, and launch a universe — or point the engine at a definition of your own.</p>
+      <p class="lead" style="font-size:15px;">The first account you register is the admin. From there, open <b>Build Game</b> to pick a prebuilt ruleset, tweak the content, and launch a universe — or point the engine at a definition of your own.</p><p class="lead" style="font-size:15px;">To work with AI, open <b>AI Assistant</b> in the admin panel, create a token, and connect your assistant to the server’s <b>MCP endpoint</b>. Read, draft and validate a ruleset before activating it.</p>
       <div class="cta" style="justify-content:flex-start;margin-top:18px;">
-        <a class="btn primary" data-link="github" href="#">⭐ Star on GitHub</a>
+        <a class="btn primary" data-link="github" href="#">Get the engine ↗</a>
         <a class="btn" data-link="demo" href="#">Try the live demo</a>
         <a class="btn" data-link="discord" href="#">Join Discord</a>
       </div>

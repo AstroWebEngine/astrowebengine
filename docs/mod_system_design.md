@@ -152,6 +152,16 @@ mods/
 version (e.g. `1.0`); a mod that needs `^1.0` is rejected on a `2.x` engine with
 a clear message instead of breaking at runtime.
 
+**Version rules (implemented).** `version` must be a version number (`1`, `1.2`,
+`1.2.0`). Requirements — `engine_api` and the `version` of a `requires` entry —
+accept standard specifiers (`">=1.2,<2"`), `^1.2` (at least 1.2, below 2),
+`~1.2` (at least 1.2, below 1.3) or a bare version (`"1.2"` = at least 1.2 within
+major 1). `requires` entries are a mod id (`"core_pack"`) or
+`{"id": "core_pack", "version": ">=1.4"}`. A required mod must be installed,
+enabled and in range; a conflict blocks the pair whichever side declares it; a
+requirement cycle is reported with its path. Any of these, or an enabled mod
+that fails to load, stops the whole activation — no partial game is installed.
+
 ---
 
 ## 5. Loader & lifecycle

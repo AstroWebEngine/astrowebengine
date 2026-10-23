@@ -15,6 +15,9 @@ from game_definition import (build_default_definition, set_game_definition,
 import api_tokens
 import definition_service as ds
 import mcp_server
+import data_paths
+
+USER_DIR = data_paths.user_definitions_dir   # where drafts go (AWE_DATA_DIR-aware)
 
 H = {"Accept": "application/json, text/event-stream", "Content-Type": "application/json"}
 
@@ -48,9 +51,9 @@ def cleanup_files():
     made = []
     yield made
     for name in made:
-        p = os.path.join(ds.DEFINITIONS_DIR, f"{name}.json")
-        if os.path.exists(p):
-            os.remove(p)
+        p = USER_DIR() / f"{name}.json"
+        if p.exists():
+            p.unlink()
 
 
 def call(client, raw, tool, args=None):
@@ -88,7 +91,8 @@ def test_tool_list_has_no_universe_tools(client, admin_token):
                     json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
     names = {t["name"] for t in r.json()["result"]["tools"]}
     assert names == {"get_engine_guide", "get_schema", "list_building_blocks", "get_active_definition",
-                     "check_definition", "save_definition", "activate_definition", "list_mods", "apply_mod"}
+                     "check_definition", "save_definition", "activate_definition", "list_mods", "apply_mod",
+                     "preview_mod"}
 
 
 def test_get_schema_every_section(client, admin_token):
@@ -142,14 +146,15 @@ def test_saved_draft_is_ai_prefixed_and_gitignored(client, admin_token, cleanup_
     stem = f"plain_{uuid.uuid4().hex[:6]}"; cleanup_files.append(f"ai_{stem}")
     err, out = call(client, admin_token[0], "save_definition", {"filename": stem, "definition": _named("Plain")})
     assert not err and out["filename"] == f"ai_{stem}.json"
-    assert os.path.exists(os.path.join(ds.DEFINITIONS_DIR, f"ai_{stem}.json"))
-    assert not os.path.exists(os.path.join(ds.DEFINITIONS_DIR, f"{stem}.json"))
+    assert (USER_DIR() / f"ai_{stem}.json").exists()
+    assert not (USER_DIR() / f"{stem}.json").exists()
     # an already-prefixed name is not doubled
     err, out = call(client, admin_token[0], "save_definition", {"filename": f"ai_{stem}", "definition": _named("Plain")})
     assert not err and out["filename"] == f"ai_{stem}.json"
+    # Without AWE_DATA_DIR the creator folder is the repo's game_definitions/, so
+    # drafts must be git-ignored there.
     repo = os.path.dirname(os.path.abspath(__file__))
-    rel = os.path.relpath(os.path.join(ds.DEFINITIONS_DIR, f"ai_{stem}.json"), repo).replace(os.sep, "/")
-    assert subprocess.run(["git", "check-ignore", "-q", rel], cwd=repo).returncode == 0
+    assert subprocess.run(["git", "check-ignore", "-q", f"game_definitions/ai_{stem}.json"], cwd=repo).returncode == 0
     assert subprocess.run(["git", "check-ignore", "-q", "game_definitions/ai_x.json"], cwd=repo).returncode == 0
 
 
@@ -163,7 +168,8 @@ def test_activate_by_plain_name_finds_ai_draft(client, admin_token, cleanup_file
 
 def test_save_treats_non_dict_json_as_not_owned(client, admin_token, cleanup_files):
     stem = f"ai_list_{uuid.uuid4().hex[:6]}"; cleanup_files.append(stem)
-    with open(os.path.join(ds.DEFINITIONS_DIR, f"{stem}.json"), "w", encoding="utf-8") as f:
+    USER_DIR().mkdir(parents=True, exist_ok=True)
+    with open(USER_DIR() / f"{stem}.json", "w", encoding="utf-8") as f:
         json.dump([1, 2, 3], f)
     err, out = call(client, admin_token[0], "save_definition", {"filename": stem, "definition": _named("X")})
     assert err and "not created by the AI" in out
@@ -179,8 +185,8 @@ def test_save_refuses_invalid(client, admin_token):
     d = _named("Bad"); del d["ships"]
     err, out = call(client, admin_token[0], "save_definition", {"filename": "ai_bad_x", "definition": d})
     assert err and "ships" in out
-    assert not os.path.exists(os.path.join(ds.DEFINITIONS_DIR, "ai_bad_x.json"))
-    assert not os.path.exists(os.path.join(ds.DEFINITIONS_DIR, "ai_ai_bad_x.json"))
+    assert not (USER_DIR() / "ai_bad_x.json").exists()
+    assert not (USER_DIR() / "ai_ai_bad_x.json").exists()
 
 
 def test_activate_needs_exactly_one_source(client, admin_token):
@@ -278,3 +284,26 @@ def test_apply_mod_refuses_non_content_mod(mod_state, client, admin_token):
     mod_id = next(m["id"] for m in ml.discover_mods() if m["manifest"].get("kind") != "content")
     err, out = call(client, admin_token[0], "apply_mod", {"mod_id": mod_id, "enabled": True})
     assert err and "Only content mods" in out
+
+
+def test_drafts_live_in_awe_data_dir(client, admin_token, monkeypatch, tmp_path):
+    """With AWE_DATA_DIR set (Docker: /data), drafts are written to the volume and
+    can still be activated by name - not into the image's code folder."""
+    monkeypatch.setenv("AWE_DATA_DIR", str(tmp_path))
+    raw = admin_token[0]
+    err, saved = call(client, raw, "save_definition", {"filename": "volume_draft", "definition": _named("On Volume")})
+    assert not err, saved
+    assert (tmp_path / "game_definitions" / "ai_volume_draft.json").exists()
+    assert not os.path.exists(os.path.join(ds.DEFINITIONS_DIR, "ai_volume_draft.json"))
+    err, act = call(client, raw, "activate_definition", {"filename": "volume_draft"})
+    assert not err and act["name"] == "On Volume"
+    assert (tmp_path / "_active_definition.json").exists()
+
+
+def test_preview_mod_changes_nothing(client, admin_token, mod_state):
+    import mod_loader as ml
+    content = next(m["id"] for m in ml.discover_mods() if m["manifest"].get("kind") == "content")
+    db = SessionLocal(); before = ml.get_enabled_mod_ids(db); db.close()
+    err, plan = call(client, admin_token[0], "preview_mod", {"mod_id": content})
+    assert not err and "plan_id" in plan and "changes" in plan
+    db = SessionLocal(); assert ml.get_enabled_mod_ids(db) == before; db.close()

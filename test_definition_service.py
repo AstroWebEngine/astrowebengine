@@ -158,7 +158,8 @@ def test_composition_error_restores_enabled_flag(mod_state, db, monkeypatch):
     from game_definition import persist_mod_base
     _clean_mod_slate(db)
     persist_mod_base(_named("Svc Err Base"))
-    monkeypatch.setattr(ml, "apply_active_mods", lambda _db, _base: {"errors": ["boom"]})
+    monkeypatch.setattr(ml, "compose_active_definition",
+                        lambda _db, base, enabled=None, ruleset_id=None: (base, {"applied": [], "errors": ["boom"]}))
     r = ds.set_mod_enabled_and_apply(db, "conquest", True)
     assert r["success"] is False
     assert "conquest" not in ml.get_enabled_mod_ids(db)
@@ -177,6 +178,7 @@ def test_strict_refuses_non_content_mod(mod_state, db):
 
 def test_strict_blocks_setup_only_change_on_running_universe(mod_state, db, monkeypatch):
     import mod_loader as ml
+    import mod_planner
     from game_definition import persist_mod_base
     _clean_mod_slate(db)
     base = _named("Svc Strict Base")
@@ -185,7 +187,7 @@ def test_strict_blocks_setup_only_change_on_running_universe(mod_state, db, monk
     real_load = ml.load_mod_definition
     monkeypatch.setattr(ml, "load_mod_definition", lambda mod: (
         {"engine": {"resource_model": flipped}} if mod["id"] == "hardcore_rules" else real_load(mod)))
-    monkeypatch.setattr(ds, "has_universe", lambda _db: True)
+    monkeypatch.setattr(mod_planner, "has_universe", lambda _db: True)
     with pytest.raises(ds.DefinitionRejected) as exc:
         ds.set_mod_enabled_and_apply(db, "hardcore_rules", True, strict=True)
     assert exc.value.blocked and "resource_model" in exc.value.blocked[0]

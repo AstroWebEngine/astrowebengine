@@ -1,278 +1,140 @@
-# Quick Start Guide - AstroWebEngine Backend
+# Start your first AstroWebEngine game
 
-## Installation
+Run AWE on your computer, create an administrator account and launch a game
+through the browser. Docker supplies Python and the database; no coding or API
+commands are needed.
 
-```bash
-# Install dependencies
-pip install fastapi uvicorn sqlalchemy pydantic[email] passlib[bcrypt] python-jose[cryptography]
+## 1. Install Docker and get AWE
 
-# Navigate to project directory
-cd /sessions/busy-keen-sagan/mnt/outputs/astroclone
+Install and start [Docker Desktop](https://docs.docker.com/get-started/get-docker/).
+On Linux, Docker Engine with the Compose plugin also works.
 
-# Run the server
-python main.py
-```
+On [AWE's GitHub page](https://github.com/AstroWebEngine/astrowebengine), choose
+**Code → Download ZIP** and extract it. Open a terminal in the extracted folder
+containing `docker-compose.yml`. On Windows, open that folder in File Explorer,
+type `powershell` in its address bar and press Enter.
 
-Server will start on `http://localhost:8000`
-
-## First Time Setup
-
-### 1. Create Admin Account
-```bash
-curl -X POST "http://localhost:8000/api/register" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "admin",
-    "email": "admin@game.local",
-    "password": "adminpass123"
-  }'
-```
-
-Response:
-```json
-{
-  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
-  "token_type": "bearer",
-  "username": "admin",
-  "is_admin": true
-}
-```
-
-Save the `access_token` value.
-
-### 2. View Game Configuration
-```bash
-curl -X GET "http://localhost:8000/api/admin/config" \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
-```
-
-### 3. Customize Game Settings (Optional)
-```bash
-curl -X POST "http://localhost:8000/api/admin/config" \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "game_name": "My Private Server",
-    "game_speed": 2.0,
-    "win_condition": "domination",
-    "domination_threshold": 0.5,
-    "num_galaxies": 2,
-    "starting_credits": 5000
-  }'
-```
-
-### 4. Launch the Game
-```bash
-curl -X POST "http://localhost:8000/api/admin/launch" \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
-```
-
-This will:
-- Generate the universe (galaxies, regions, systems, planets)
-- Set game status to "active"
-- Close the registration window
-
-### 5. Players Can Now Register
-Other players can register once the game is launched.
-
-## Key Endpoints
-
-### For Players
-
-**Register/Login**
-- `POST /api/register` - Create account
-- `POST /api/login` - Get access token
-
-**Game Status**
-- `GET /api/game/status` - Current game state
-- `GET /api/leaderboard` - Top 20 players by score
-
-**Bases**
-- `GET /api/bases` - Your bases and production
-- `POST /api/bases/upgrade` - Upgrade a building
-- `POST /api/bases/collect` - Manually collect resources
-
-**Fleets**
-- `GET /api/fleets` - Your fleets
-- `POST /api/fleets/build` - Build ships
-- `POST /api/fleets/send` - Send fleet to target (attack/colonize)
-- `POST /api/fleets/recall` - Recall a moving fleet
-
-**Research**
-- `GET /api/research` - Tech levels
-- `POST /api/research/start` - Begin researching a tech
-
-**Colonization**
-- `POST /api/colonize` - Colonize an unoccupied planet
-
-**Battles**
-- `GET /api/battles` - Battle reports involving you
-
-**Exploration**
-- `GET /api/universe` - All galaxies
-- `GET /api/galaxy/{id}` - Regions in a galaxy
-- `GET /api/region/{id}` - Systems and planets in a region
-
-### For Admins
-
-**Admin Controls**
-- `GET /api/admin/config` - View all settings
-- `POST /api/admin/config` - Update settings
-- `POST /api/admin/launch` - Start the game
-- `POST /api/admin/reset` - Wipe all game data
-- `GET /api/admin/players` - List all players
-- `DELETE /api/admin/players/{id}` - Remove a player
-
-## Game Flow Example
-
-### For Admin
-1. Start server
-2. Register as first user (becomes admin automatically)
-3. Configure game settings as desired
-4. Launch game (POST /api/admin/launch)
-5. Send join links to friends
-
-### For Player
-1. Register account (POST /api/register)
-2. Check game status (GET /api/game/status)
-3. View starting base (GET /api/bases)
-4. Build metal factories and crystal mines
-5. Research technologies (POST /api/research/start)
-6. Build fleets (POST /api/fleets/build)
-7. Explore universe (GET /api/universe, /api/galaxy/{id}, /api/region/{id})
-8. Attack other players or colonize planets
-9. Check progress (GET /api/player/stats, GET /api/leaderboard)
-
-## Important Constants
-
-### Building Types
-```
-orbital_base, metal_factory, crystal_mine, power_plant, research_lab, shipyard
-```
-
-### Research Types
-```
-propulsion, weapons, shielding, energy, mining, armor
-```
-
-### Ship Types
-```
-small_ship_1, small_ship_2, small_ship_7, medium_ship_4, battlecruisers, large_ship_3
-```
-
-### Win Conditions
-```
-domination - Control X% of colonized planets
-annihilation - Last player with bases
-economic - First to reach X credits
-time_limit - Highest score after X hours
-```
-
-## Example Workflow with cURL
+If you use Git instead:
 
 ```bash
-# 1. Register
-TOKEN=$(curl -s -X POST "http://localhost:8000/api/register" \
-  -H "Content-Type: application/json" \
-  -d '{"username":"player1","email":"p1@game.local","password":"pass123"}' \
-  | jq -r '.access_token')
-
-# 2. Get bases
-curl -s "http://localhost:8000/api/bases?token=$TOKEN" | jq .
-
-# 3. Upgrade metal factory
-curl -s -X POST "http://localhost:8000/api/bases/upgrade?token=$TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"base_id":1,"building_type":"metal_factory"}' | jq .
-
-# 4. Check research
-curl -s "http://localhost:8000/api/research?token=$TOKEN" | jq .
-
-# 5. Start weapons research
-curl -s -X POST "http://localhost:8000/api/research/start?token=$TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"tech_type":"weapons"}' | jq .
-
-# 6. Build ships
-curl -s -X POST "http://localhost:8000/api/fleets/build?token=$TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"base_id":1,"ship_type":"small_ship_1","count":10}' | jq .
-
-# 7. Get fleets
-curl -s "http://localhost:8000/api/fleets?token=$TOKEN" | jq .
-
-# 8. View leaderboard
-curl -s "http://localhost:8000/api/leaderboard" | jq .
+git clone https://github.com/AstroWebEngine/astrowebengine.git
+cd astrowebengine
 ```
 
-## Configuration Options
+## 2. Set your server key
 
-All values in `/api/admin/config`:
+Copy `.env.example` to `.env` in that folder using your file manager. Make sure
+the new name is `.env`, not `.env.txt`. Build the container, then generate a
+random key with its bundled Python:
 
-```json
-{
-  "game_name": "Private Server",
-  "game_status": "setup|active|finished",
-  "game_speed": 1.0,
-  "num_galaxies": 4,
-  "regions_per_galaxy": 16,
-  "systems_per_region": 6,
-  "planets_per_system_min": 2,
-  "planets_per_system_max": 6,
-  "starting_credits": 2000,
-  "colonize_cost": 5000,
-  "win_condition": "domination|annihilation|economic|time_limit",
-  "domination_threshold": 0.75,
-  "economic_target": 1000000,
-  "time_limit_hours": 72,
-  "max_players": 20,
-  "registration_open": true,
-  "winner": null
-}
+```bash
+docker compose build app
+docker compose run --rm --no-deps app python -c "import secrets; print(secrets.token_hex(32))"
 ```
+
+Open `.env` in a text editor. Replace the example value after `AWE_SECRET_KEY=`
+with the generated 64-character value and save. Keep the key private and retain
+it across restarts so player logins remain valid. Leave other settings at their
+defaults for your first trial.
+
+If `AWE_SECRET_KEY` is unset, AWE generates a key once and stores it in
+`AWE_DATA_DIR/.secret_key`. It survives restarts when that directory is retained.
+An explicit key is still recommended for hosted servers. Replacing an existing
+key signs players out; keep it with your private server configuration.
+
+## 3. Start the server
+
+```bash
+docker compose up -d
+```
+
+Open [http://localhost:8000](http://localhost:8000). Startup may take a moment.
+Docker keeps the server running after you close the terminal.
+
+## 4. Register and launch
+
+Choose **Register** and create your account. The first account becomes the
+administrator, so register before making your server public.
+
+Open [the admin panel](http://localhost:8000/admin) while logged in. In **Game
+Definitions**, choose a packaged ruleset or use **Build Game**, then apply your
+selection. Rulesets supply the buildings, units, resources and rules.
+
+Review **Universe & Game Configuration**, including speed and universe size.
+Keep the first trial small. Click **Launch Game & Generate Universe**, confirm
+and wait for generation to finish.
+
+The administrator manages the game. To play, return to the login page and create
+a separate player account. Follow its homeworld setup screen to establish a base.
+Buildings, research and units depend on your selected game.
+
+Setup-only rules such as universe size need a fresh universe to change fully.
+Use another trial instance for experimenting; the admin reset removes game progress.
+
+## Optional: design with AI
+
+Open **AI Assistant** in admin, generate a token and follow the displayed MCP
+connection instructions. Copy the command or configuration into your MCP client.
+The same tab offers a downloadable game-designer skill.
+
+Your assistant can inspect the schema, draft/check rulesets and apply permitted
+changes. You still launch or reset the universe yourself. Treat the token like
+a password and revoke it when finished.
+
+## Stop, restart and share
+
+From the same source folder:
+
+```bash
+docker compose stop app
+docker compose start app
+docker compose logs --tail 100 app
+```
+
+Stopping retains saved data. Read [Docker hosting and backups](DOCKER.md) before
+updating or moving your server. Removing the data volume deletes the saved game.
+`localhost` works only on your computer; friends need a reachable server address.
+For public hosting, set up HTTPS as described in that guide.
 
 ## Troubleshooting
 
-**"Database locked" error**
-- SQLite doesn't support concurrent writes well
-- For multiple players, consider migrating to PostgreSQL
-- Edit `DATABASE_URL` in main.py to: `"postgresql://user:pass@localhost/astroclone"`
+| Problem | Action |
+| --- | --- |
+| `docker` is not recognized | Install Docker, reopen your terminal and start Docker Desktop. |
+| Cannot connect to Docker | Wait for Docker Desktop to finish starting. |
+| Compose cannot find its configuration | Open your terminal in the folder containing `docker-compose.yml`. |
+| Port 8000 is already used | Change the mapping to `"8002:8000"` in `docker-compose.yml`, run `docker compose up -d` and open `http://localhost:8002`. |
+| Browser cannot connect | Check `docker compose ps` and `docker compose logs --tail 100 app`. |
+| Game is waiting for launch | Log in as the first account, open `/admin` and launch the universe. |
 
-**Changes not appearing**
-- Most endpoints use lazy evaluation (check timestamps)
-- Building/research complete when you query, not in background
-- Always collect resources first: `POST /api/bases/collect`
+## Alternative: Python
 
-**Fleet stuck in transit**
-- Check `arrival_time` in fleet data
-- Can recall with `POST /api/fleets/recall`
-- Will return to origin base
+Use Python 3.11–3.13, the versions covered by CI. In the source folder:
 
-**Can't build ships**
-- Check shipyard level: `GET /api/bases`
-- Ship requires: `shipyard_level >= ship.requires_shipyard`
-- Small Ship 1 require shipyard level 1, large_ship_3 require level 8
-
-## Database
-
-Database file: `astroclone.db` (created automatically)
-
-Reset entire game:
 ```bash
-curl -X POST "http://localhost:8000/api/admin/reset" \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+python -m venv .venv
 ```
 
-Or manually:
-```bash
-rm astroclone.db
-# Restart the server - will recreate with defaults
+Generate a private key with `python -c "import secrets; print(secrets.token_hex(32))"`.
+Save it privately and reuse it each time. On Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+$env:AWE_SECRET_KEY = Read-Host "Paste your private server key"
+.\.venv\Scripts\python.exe run.py --host 127.0.0.1
 ```
 
-## API Documentation
+On macOS or Linux:
 
-After starting server, visit:
-- `http://localhost:8000/docs` - Interactive Swagger UI
-- `http://localhost:8000/redoc` - ReDoc documentation
+```bash
+.venv/bin/python -m pip install -r requirements.txt
+export AWE_SECRET_KEY="$(.venv/bin/python -c 'import secrets; print(secrets.token_hex(32))')"
+.venv/bin/python run.py --host 127.0.0.1
+```
 
-All endpoints documented with request/response schemas.
+The direct launcher reads environment variables; copying `.env` alone does not
+load them. The default worker count is sufficient for a first trial; see
+[worker coordination](DOCKER.md#worker-coordination) before scaling. Open
+`http://localhost:8000` and follow
+the registration/launch steps above. Ctrl+C stops the server. SQLite is created
+automatically. Developers can open `/docs` for the interactive API reference.

@@ -645,10 +645,13 @@ function applyRulesetShell() {
   const ui = (window.AWE_CONFIG && window.AWE_CONFIG.ui) || {};
   const root = document.documentElement;
   const resolve = (overrideKey, defVal) => localStorage.getItem(overrideKey) || defVal || '';
-  const theme = resolve('awe_theme', ui.theme);
-  const shell = resolve('awe_shell', ui.shell);
-  if (theme) { root.setAttribute('data-theme', theme); localStorage.setItem('awe_theme_applied', theme); }
-  else { root.removeAttribute('data-theme'); localStorage.removeItem('awe_theme_applied'); }
+  // AWE is the default look; a ruleset opts out with ui.theme = "classic" (or "neutral").
+  const theme = resolve('awe_theme', ui.theme) || 'awe';
+  const shell = resolve('awe_shell', ui.shell) || (theme === 'awe' ? 'neutral' : '');
+  // 'classic' is cached too, so the pre-paint script doesn't flash the AWE look first.
+  localStorage.setItem('awe_theme_applied', theme);
+  if (theme !== 'classic') root.setAttribute('data-theme', theme);
+  else root.removeAttribute('data-theme');
   if (shell) { root.setAttribute('data-shell', shell); localStorage.setItem('awe_shell_applied', shell); }
   else { root.removeAttribute('data-shell'); localStorage.removeItem('awe_shell_applied'); }
 }
@@ -863,6 +866,56 @@ function defenseName(key, fallback) { return catalogName('defenses', key, fallba
 function buildingName(key, fallback) { return catalogName('buildings', key, fallback); }
 function researchName(key, fallback) { return catalogName('research', key, fallback); }
 function astroName(key, fallback) { return catalogName('astros', key, fallback); }
+
+// ── Artwork ──
+// Where a picture for a catalog entry comes from, first match wins:
+//   1. the spec's own `image` (creator-supplied art, validated server-side)
+//   2. the AWE default set (static/art/awe/index.json), only assets marked
+//      active — unless the ruleset sets ui.art = "none"
+//   3. planets only: the classic /static/astros/<type>.jpg
+//   4. none (callers keep their text-only layout)
+// Set localStorage awe_art_preview=1 to see built-but-inactive AWE art for review.
+const ART_KIND = { ships: 'ships', buildings: 'buildings', defenses: 'defenses',
+                   research: 'research', astros: 'terrain' };
+let _artIndex = { assets: {} };
+fetch('/static/art/awe/index.json', { cache: 'no-cache' })
+  .then(r => (r.ok ? r.json() : null))
+  .then(j => { if (j && j.assets) _artIndex = j; })
+  .catch(() => {});
+
+function _artUrl(ref) {
+  if (/^https?:\/\//.test(ref) || ref.startsWith('/')) return ref;
+  return '/static/' + ref;
+}
+
+function catalogImage(kind, key, cssPx) {
+  const spec = catalogSpec(kind, key);
+  if (spec && typeof spec.image === 'string' && spec.image) return _artUrl(spec.image);
+  const ui = (window.AWE_CONFIG && window.AWE_CONFIG.ui) || {};
+  if (ui.art !== 'none') {
+    const artKind = ART_KIND[kind];
+    const asset = (((_artIndex.assets || {})[artKind]) || {})[key];
+    let preview = false;
+    try { preview = localStorage.getItem('awe_art_preview') === '1'; } catch (e) {}
+    if (asset && (asset.active || preview) && asset.sizes && asset.sizes.length) {
+      const want = (cssPx || 48) * (window.devicePixelRatio || 1);
+      const px = asset.sizes.find(s => s >= want) || asset.sizes[asset.sizes.length - 1];
+      return `/static/art/awe/${artKind}/${asset.file || key}-${px}.webp`;
+    }
+  }
+  return kind === 'astros' ? `/static/astros/${key}.jpg` : null;
+}
+
+function astroImage(type, cssPx) { return catalogImage('astros', type, cssPx); }
+
+// <img> for a unit/structure row, or '' when there is no art (keeps text-only rows).
+function specThumbHtml(kind, key, cssPx) {
+  const src = catalogImage(kind, key, cssPx || 48);
+  if (!src) return '';
+  const px = cssPx || 48;
+  const safe = String(src).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  return `<img class="spec-thumb" src="${safe}" width="${px}" height="${px}" alt="" loading="lazy" decoding="async" onerror="this.remove()">`;
+}
 
 fetchCatalog();
 setInterval(() => fetchCatalog({ force: true }), 5 * 60 * 1000);

@@ -71,6 +71,7 @@ else:
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=engine)
 ModelBase = declarative_base()
 
-SECRET_KEY = os.environ.get("AWE_SECRET_KEY", secrets.token_hex(32))
+import data_paths
+SECRET_KEY = data_paths.load_or_create_secret_key()   # env, else persisted in AWE_DATA_DIR
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 72

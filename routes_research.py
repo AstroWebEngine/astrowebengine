@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from models import User, Research, ResearchQueue, Colony
 from auth import (get_token_from_header, get_current_user, get_config_float, get_config_int, get_db,
                   get_effective_research_spec, is_research_disabled, get_all_research_specs, log_event, log_credits)
-from game_logic import (calc_research_cost, calc_base_stats, get_building_level, get_tech_level,
+from game_logic import (calc_research_cost, max_queued_research_levels, calc_base_stats, get_building_level, get_tech_level,
                         collect_resources, project_resources_after_queue, unmet_stat_requirements)
 from resources import can_afford, deduct_cost, add_resources, format_cost, round_cost, total_cost_value
 from config_defaults import *
@@ -59,6 +59,7 @@ def register_research_routes(app):
         active_tech_map = {r[0]: r[1] for r in active_research}
 
         result = []
+        queued_levels = max_queued_research_levels(db, user.id)   # one query, not one per tech
         for tech_type, spec in get_all_research_specs(db).items():
             if is_research_disabled(db, tech_type):
                 continue
@@ -69,12 +70,8 @@ def register_research_routes(app):
 
             # Effective level includes queued research for this tech across ALL bases
             effective_level = current_level
-            all_queued = (db.query(ResearchQueue)
-                         .filter(ResearchQueue.user_id == user.id,
-                                 ResearchQueue.tech_type == tech_type)
-                         .order_by(ResearchQueue.target_level.desc()).first())
-            if all_queued:
-                effective_level = all_queued.target_level
+            if tech_type in queued_levels:
+                effective_level = queued_levels[tech_type]
 
             next_cost, next_time = calc_research_cost(
                 db, tech_type, effective_level, game_speed, base_lab_capacity,

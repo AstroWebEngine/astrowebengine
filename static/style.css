@@ -34,6 +34,16 @@
   --game-shell-width: 1050px;
   --font-main: verdana, arial, sans-serif;
   --font-mono: 'Courier New', courier, monospace;
+  /* main nav buttons (classic look) */
+  --nav-btn-top: #143352;
+  --nav-btn-bottom: #0b2135;
+  --nav-btn-border: #355777;
+  --nav-btn-hover-top: #194267;
+  --nav-btn-hover-bottom: #0d2841;
+  --nav-btn-active-top: #254e75;
+  --nav-btn-active-bottom: #123351;
+  --nav-btn-active-border: #6a8fb5;
+  --row-rule: rgba(73, 121, 168, 0.18);   /* hairline between table rows */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -295,16 +305,16 @@ a:hover { color: var(--accent-glow); text-decoration: underline; }
   font-family: var(--font-main);
   font-weight: 600;
   cursor: pointer;
-  background: linear-gradient(180deg, #143352 0%, #0b2135 100%);
-  border: 1px solid #355777;
+  background: linear-gradient(180deg, var(--nav-btn-top) 0%, var(--nav-btn-bottom) 100%);
+  border: 1px solid var(--nav-btn-border);
   border-radius: 0;
   transition: all 0.12s;
   white-space: nowrap;
   text-shadow: #000 1px 1px 1px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 }
-.awe-nav-btn:hover { background: linear-gradient(180deg, #194267 0%, #0d2841 100%); color: var(--text); }
-.awe-nav-btn.active { background: linear-gradient(180deg, #254e75 0%, #123351 100%); color: var(--accent); border-color: #6a8fb5; }
+.awe-nav-btn:hover { background: linear-gradient(180deg, var(--nav-btn-hover-top) 0%, var(--nav-btn-hover-bottom) 100%); color: var(--text); }
+.awe-nav-btn.active { background: linear-gradient(180deg, var(--nav-btn-active-top) 0%, var(--nav-btn-active-bottom) 100%); color: var(--accent); border-color: var(--nav-btn-active-border); }
 
 .main-header-logo {
   /* Shrinks ~100x faster than the tab strip beside it, so the wordmark gives up
@@ -2939,3 +2949,36 @@ body.map-sidebar-dragging {
 .flatmap-astro { display: flex; align-items: center; gap: 6px; text-transform: capitalize; color: #cfe2f5; }
 .flatmap-astro img { border-radius: 3px; vertical-align: middle; }
 .flatmap-coord { color: #7a96ad; }
+
+/* ── Spec artwork thumbnails (structures, defenses, units) ── */
+.spec-thumb {
+  float: left;
+  width: 48px;
+  height: 48px;
+  margin: 0 10px 2px 0;
+  object-fit: contain;
+}
+@media (max-width: 640px) {
+  .spec-thumb { width: 40px; height: 40px; margin-right: 8px; }
+}
+
+/* ── AWE terrain art ──
+   The AWE planets are transparent cutouts (and asteroid fields aren't round),
+   so they are shown whole: no circular crop, frame or blue glow — those suited
+   the classic square JPEGs. Keyed on the image path so creator art and the
+   classic pictures keep their existing treatment. */
+img[src*="/static/art/awe/terrain/"] {
+  border: none !important;
+  border-radius: 0 !important;
+  object-fit: contain !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+}
+img[src*="/static/art/awe/terrain/"].fogged,
+img[src*="/static/art/awe/terrain/"].map-system-astro-img.fogged {
+  filter: grayscale(1) brightness(0.45) contrast(1.05) saturate(0.2);
+}
+.astro-orb:has(img[src*="/static/art/awe/terrain/"]) { overflow: visible; }
+.base-overview-planet:has(img[src*="/static/art/awe/terrain/"]),
+.base-planet-img-wrap:has(img[src*="/static/art/awe/terrain/"]) { background: transparent; }

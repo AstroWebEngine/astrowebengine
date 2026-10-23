@@ -41,7 +41,7 @@
     "shield_bounce_threshold": 0.01
   },
   "ui": {
-    "theme": "neutral",
+    "theme": "awe",
     "shell": "neutral",
     "labels": {
       "nav.bases": "Planets",

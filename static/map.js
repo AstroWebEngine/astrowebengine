@@ -449,7 +449,7 @@ function renderGalaxyTable() {
     else if (p.is_colonized) owner = `<span class="${p.is_mine ? 'map-system-owner-mine' : 'map-system-owner-other'}">${escStr(p.owner || '')}</span>`;
     else owner = '<span class="map-system-empty-label">- empty -</span>';
     const onclick = (p.is_colonized && p.base_id) ? `openBaseDetail(${p.base_id})` : `openPlanetDetail(${p.id})`;
-    const sprite = `/static/astros/${p.fog ? 'rocky' : p.type}.jpg`;
+    const sprite = p.fog ? astroImage('rocky', 22) : astroImage(p.type, 22);
     rows += `<tr class="flatmap-row${p.is_mine ? ' mine' : ''}${p.is_colonized && !p.is_mine ? ' enemy' : ''}" onclick="${onclick}">
       <td class="flatmap-pos">${posCoord}</td>
       <td class="flatmap-astro"><img src="${sprite}" width="22" height="22" onerror="this.style.visibility='hidden'"> ${escStr(astroName(p.type) || '')}</td>
@@ -955,12 +955,12 @@ function renderPlanetDetail(planets) {
   const rowY = { 0: 0, 1: 120, 2: 200, 3: 260 };
   const fogSpriteFor = (planet) => {
     const type = String(planet?.type || '').toLowerCase();
-    if (type === 'gas_giant') return '/static/astros/gas_giant.jpg';
-    if (type === 'asteroid_belt') return '/static/astros/asteroid_belt.jpg';
-    if (type === 'asteroid') return '/static/astros/asteroid.jpg';
+    if (type === 'gas_giant') return astroImage('gas_giant', 70);
+    if (type === 'asteroid_belt') return astroImage('asteroid_belt', 70);
+    if (type === 'asteroid') return astroImage('asteroid', 70);
     const category = String(planet?.category || '').toLowerCase();
-    if (category === 'moon') return '/static/astros/craters.jpg';
-    return '/static/astros/rocky.jpg';
+    if (category === 'moon') return astroImage('craters', 70);
+    return astroImage('rocky', 70);
   };
   const astroHtml = [...planets]
     .sort((a, b) => (a.orbit - b.orbit) || ((a.orbit_row || 0) - (b.orbit_row || 0)))
@@ -974,7 +974,7 @@ function renderPlanetDetail(planets) {
         ? 'small'
         : (p.category === 'Asteroid' ? 'micro' : (p.category === 'Moon' ? 'micro' : 'small'));
       const action = p.is_colonized && p.base_id ? `openBaseDetail(${p.base_id})` : `openPlanetDetail(${p.id})`;
-      const spriteSrc = p.fog ? fogSpriteFor(p) : `/static/astros/${p.type}.jpg`;
+      const spriteSrc = p.fog ? fogSpriteFor(p) : astroImage(p.type, 70);
       const ownerText = p.fog
         ? '<span class="map-system-empty-label">- unexplored -</span>'
         : (p.is_colonized
@@ -1024,7 +1024,7 @@ function renderAstroCard(p) {
   if (p.is_colonized && p.is_mine) borderCol = '#22cc66';
   else if (p.is_colonized) borderCol = '#cc4444';
   else if (p.has_wormhole) borderCol = 'var(--accent)';
-  const spriteUrl = `/static/astros/${p.type}.jpg`;
+  const spriteUrl = astroImage(p.type, 40);
   const detailClick = p.is_colonized && p.base_id
     ? `openBaseDetail(${p.base_id})`
     : `openPlanetDetail(${p.id})`;
@@ -1276,7 +1276,7 @@ function renderBaseDetail(d) {
   </div>`;
 
   html += `<div class="bd-planet-image">
-    <img src="/static/astros/${p.type}.jpg" alt="${astroName(p.type)}" class="bd-astro-img" />
+    <img src="${astroImage(p.type, 140)}" alt="${astroName(p.type)}" class="bd-astro-img" />
   </div>`;
 
   // Wormhole indicator
@@ -1376,13 +1376,13 @@ function renderUncolonizedPlanetDetail(d) {
   const detailSprite = isFogged
     ? (() => {
         const type = String(d.type || '').toLowerCase();
-        if (type === 'gas_giant') return '/static/astros/gas_giant.jpg';
-        if (type === 'asteroid_belt') return '/static/astros/asteroid_belt.jpg';
-        if (type === 'asteroid') return '/static/astros/asteroid.jpg';
-        if (String(d.category || '').toLowerCase() === 'moon') return '/static/astros/craters.jpg';
-        return '/static/astros/rocky.jpg';
+        if (type === 'gas_giant') return astroImage('gas_giant', 70);
+        if (type === 'asteroid_belt') return astroImage('asteroid_belt', 70);
+        if (type === 'asteroid') return astroImage('asteroid', 70);
+        if (String(d.category || '').toLowerCase() === 'moon') return astroImage('craters', 70);
+        return astroImage('rocky', 70);
       })()
-    : `/static/astros/${d.type}.jpg`;
+    : astroImage(d.type, 140);
   const terrainText = isFogged && !['gas_giant', 'asteroid', 'asteroid_belt'].includes(String(d.type || '').toLowerCase())
     ? 'Unexplored'
     : astroName(d.type);

@@ -4,6 +4,40 @@ All notable changes to AstroWebEngine are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html) from 1.0.0 onward.
 
+## [0.99.0] - 2026-10-23
+
+### Added
+
+- **AWE look.** A new default theme (charcoal, warm ivory, copper, amber) for the game,
+  admin and setup screens, a brand mark and favicon, and shared brand tokens with the
+  website. Rulesets can opt out with `ui.theme`; a skin a player picked keeps its colours.
+- **Artwork pipeline and planet art.** Specs may set their own `image`; `art/build_art.py`
+  builds sized WebP files from masters; 17 original AWE planet types replace the old
+  pictures. Creator artwork always wins.
+- **Mod preview.** Mods change through one preview-then-apply planner: the admin panel and
+  the AI assistant (new `preview_mod` tool) see what changes before anything is saved, and
+  a failed or out-of-date change saves nothing.
+
+### Changed
+
+- **Runtime state lives in `AWE_DATA_DIR`** (`/data` in Docker): the active ruleset, the
+  mod base and saved definitions survive image updates. Older files are moved once at startup.
+- **Mod validation** checks version ranges, required mods (installed, enabled, in range),
+  conflicts in both directions and dependency cycles; activation is all or nothing.
+- **Faster pages:** the bases list and research page no longer repeat a lookup per row
+  (45 -> 23 and 28 -> 12 queries for a one-base player).
+
+### Fixed
+
+- **Several server workers** now share settings and ruleset changes, and only one runs the
+  background jobs (NPC bots used to act once per worker).
+- **Logins survive restarts** when `AWE_SECRET_KEY` isn't set: the generated key is kept in
+  the data folder.
+- **Disabling a mod** really removes its rules; **admin export** no longer overwrites a
+  bundled definition of the same name.
+- **Conquest capture never ran:** the income tick raised a NameError before reaching the
+  occupation-capture sweep, so occupied bases were never captured in conquest games.
+
 ## [0.98.0] - 2026-10-08
 
 ### Added

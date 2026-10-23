@@ -54,7 +54,8 @@ def mod_state():
     db = SessionLocal(); init_default_configs(db)
     keys = ("enabled_mods", "active_ruleset_mod", gd._ACTIVE_DEFINITION_FLAG)
     saved = {k: get_config(db, k, "") or "" for k in keys}
-    files = {p: _read_bytes(p) for p in (gd._ACTIVE_DEFINITION_FILE, gd._MOD_BASE_FILE)}
+    import data_paths
+    files = {str(p): _read_bytes(str(p)) for p in (data_paths.active_definition_path(), data_paths.mod_base_path())}
     live = gd.get_game_definition()
     db.close()
     yield

@@ -77,35 +77,48 @@ def test_discovery_reports_bad_manifest_and_ignores_missing_manifest():
         assert "no_manifest" not in found
 
 
-def test_missing_definition_file_is_skipped_not_fatal():
+def test_enabled_mod_with_missing_definition_blocks_composition():
+    """An enabled mod that can't load must fail the plan, not silently vanish -
+    otherwise 'enabled' claims rules the running game doesn't have."""
     with TemporaryDirectory() as root:
         _write_mod(root, "missing_def", {
             "name": "Missing Definition", "version": "1", "kind": "content",
             "definition": "definition.json", "engine_api": "1.0",
         })
         defn, report = _compose_with_temp_mods(root, enabled=["missing_def"])
-        assert report["errors"] == [], report
+        assert any("missing_def" in e for e in report["errors"]), report
         assert report["applied"] == []
-        assert report["skipped"] and report["skipped"][0]["id"] == "missing_def"
-        assert defn["meta"]["name"] == "Classic Space"
 
 
-def test_declared_conflict_skips_later_mod():
+def _conflict_pair(root, declared_by):
+    for mid, order, val in (("alpha", 10, 2), ("beta", 20, 99)):
+        manifest = {"name": mid.title(), "version": "1", "kind": "content",
+                    "definition": "definition.json", "engine_api": "1.0", "load_order": order}
+        if mid == declared_by:
+            manifest["conflicts"] = ["beta" if mid == "alpha" else "alpha"]
+        _write_mod(root, mid, manifest, {"engine": {"construction_queue_max": val}})
+
+
+def test_conflict_declared_by_earlier_mod_is_an_error():
     with TemporaryDirectory() as root:
-        _write_mod(root, "alpha", {
-            "name": "Alpha", "version": "1", "kind": "content",
-            "definition": "definition.json", "engine_api": "1.0",
-            "conflicts": ["beta"], "load_order": 10,
-        }, {"engine": {"construction_queue_max": 2}})
-        _write_mod(root, "beta", {
-            "name": "Beta", "version": "1", "kind": "content",
-            "definition": "definition.json", "engine_api": "1.0",
-            "load_order": 20,
-        }, {"engine": {"construction_queue_max": 99}})
+        _conflict_pair(root, declared_by="alpha")
         defn, report = _compose_with_temp_mods(root, enabled=["alpha", "beta"])
-        assert report["applied"] == ["alpha"]
-        assert report["conflicts"] == ["beta"]
-        assert defn["engine"]["construction_queue_max"] == 2
+        assert any("alpha" in e and "beta" in e and "conflict" in e for e in report["errors"]), report
+
+
+def test_conflict_declared_by_later_mod_is_also_an_error():
+    """Conflicts are symmetric: it doesn't matter which side declares it."""
+    with TemporaryDirectory() as root:
+        _conflict_pair(root, declared_by="beta")
+        defn, report = _compose_with_temp_mods(root, enabled=["alpha", "beta"])
+        assert any("conflict" in e for e in report["errors"]), report
+
+
+def test_conflicting_mod_that_is_not_enabled_is_fine():
+    with TemporaryDirectory() as root:
+        _conflict_pair(root, declared_by="alpha")
+        defn, report = _compose_with_temp_mods(root, enabled=["alpha"])
+        assert report["errors"] == [] and report["applied"] == ["alpha"]
 
 
 def test_load_order_ties_resolve_by_mod_id():
@@ -153,8 +166,13 @@ def test_invalid_composed_definition_reports_errors_and_does_not_install():
 
 
 def test_api_compatibility():
-    assert ml._api_compatible("1.0") and ml._api_compatible("^1.2") and ml._api_compatible("")
+    # current engine API is 1.0
+    assert ml._api_compatible("1.0") and ml._api_compatible("") and ml._api_compatible("^1.0")
+    assert ml._api_compatible(">=1.0,<2") and ml._api_compatible("~1.0")
     assert not ml._api_compatible("2.0")
+    assert not ml._api_compatible("1.99"), "a mod needing API 1.99 must not load on 1.0"
+    assert not ml._api_compatible("^1.2") and not ml._api_compatible(">=1.1")
+    assert not ml._api_compatible("banana")
 
 
 def test_discovery_finds_sample_mods():
@@ -214,3 +232,99 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print(" ALL MOD-LOADER TESTS PASSED!")
     print("=" * 60)
+
+
+# -- Dependencies, ordering, identity, containment ----------------------------
+
+def _content(root, mod_id, requires=(), order=100, version="1.0", value=None, **extra):
+    manifest = {"name": mod_id, "version": version, "kind": "content",
+                "definition": "definition.json", "engine_api": "1.0",
+                "load_order": order, "requires": list(requires), **extra}
+    _write_mod(root, mod_id, manifest, {"combat": {"loot_percent": value if value is not None else 0.5}})
+
+
+def test_missing_required_mod_is_an_error():
+    with TemporaryDirectory() as root:
+        _content(root, "needs_core", requires=["core_pack"])
+        defn, report = _compose_with_temp_mods(root, enabled=["needs_core"])
+        assert any("needs_core" in e and "core_pack" in e for e in report["errors"]), report
+
+
+def test_required_mod_installed_but_not_enabled_is_an_error():
+    with TemporaryDirectory() as root:
+        _content(root, "core_pack")
+        _content(root, "needs_core", requires=["core_pack"])
+        defn, report = _compose_with_temp_mods(root, enabled=["needs_core"])
+        assert any("core_pack" in e and "not enabled" in e for e in report["errors"]), report
+
+
+def test_required_version_range_is_checked():
+    with TemporaryDirectory() as root:
+        _content(root, "core_pack", version="1.4")
+        _content(root, "needs_new", requires=[{"id": "core_pack", "version": ">=2.0"}])
+        defn, report = _compose_with_temp_mods(root, enabled=["core_pack", "needs_new"])
+        assert any("core_pack" in e and ">=2.0" in e for e in report["errors"]), report
+
+
+def test_dependencies_apply_before_dependants_regardless_of_load_order():
+    with TemporaryDirectory() as root:
+        _content(root, "base_rules", order=500, value=0.1)
+        _content(root, "tweak", requires=["base_rules"], order=10, value=0.9)
+        defn, report = _compose_with_temp_mods(root, enabled=["tweak", "base_rules"])
+        assert report["errors"] == [], report
+        assert report["applied"] == ["base_rules", "tweak"]
+        assert defn["combat"]["loot_percent"] == 0.9
+
+
+def test_dependency_cycle_is_reported_with_its_path():
+    with TemporaryDirectory() as root:
+        _content(root, "a_mod", requires=["b_mod"])
+        _content(root, "b_mod", requires=["a_mod"])
+        defn, report = _compose_with_temp_mods(root, enabled=["a_mod", "b_mod"])
+        assert any("cycle" in e and "a_mod" in e and "b_mod" in e for e in report["errors"]), report
+
+
+def test_ruleset_satisfies_a_requirement():
+    with TemporaryDirectory() as root:
+        _write_mod(root, "my_rules", {"name": "R", "version": "1.0", "kind": "ruleset",
+                                      "definition": "definition.json", "engine_api": "1.0"},
+                   load_definition_from_file("game_definitions/classic_space.json"))
+        _content(root, "addon", requires=["my_rules"])
+        defn, report = _compose_with_temp_mods(root, enabled=["addon"], ruleset="my_rules")
+        assert report["errors"] == [], report
+
+
+def test_duplicate_ids_are_rejected_at_discovery():
+    with TemporaryDirectory() as root:
+        _content(root, "first_dir")
+        _write_mod(root, "second_dir", {"id": "first_dir", "name": "Copy", "version": "1",
+                                        "kind": "content", "definition": "definition.json",
+                                        "engine_api": "1.0"}, {"combat": {}})
+        old = ml.MODS_DIR; ml.MODS_DIR = root
+        try:
+            found = [m for m in ml.discover_mods() if m["id"] == "first_dir"]
+        finally:
+            ml.MODS_DIR = old
+        assert len(found) == 2 and all(any("duplicate" in e for e in m["errors"]) for m in found)
+
+
+def test_definition_cannot_escape_into_a_sibling_with_a_shared_prefix():
+    """mods/abc must not be able to load mods/abc_evil/definition.json."""
+    with TemporaryDirectory() as root:
+        _write_mod(root, "abc_evil", {"name": "E", "version": "1", "kind": "content",
+                                      "definition": "definition.json", "engine_api": "1.0"},
+                   {"combat": {"loot_percent": 1}})
+        _write_mod(root, "abc", {"name": "A", "version": "1", "kind": "content",
+                                 "definition": "../abc_evil/definition.json", "engine_api": "1.0"})
+        defn, report = _compose_with_temp_mods(root, enabled=["abc"])
+        assert any("escapes" in e for e in report["errors"]), report
+        assert report["applied"] == []
+
+
+def test_requires_entries_are_validated_in_the_manifest():
+    base = {"id": "x", "name": "X", "version": "1", "kind": "content", "definition": "d.json"}
+    assert ml.validate_manifest({**base, "requires": ["ok_id", {"id": "other", "version": ">=1"}]}) == []
+    assert ml.validate_manifest({**base, "requires": [{"version": ">=1"}]})
+    assert ml.validate_manifest({**base, "requires": [{"id": "y", "version": "lots"}]})
+    assert ml.validate_manifest({**base, "requires": "not_a_list"})
+    assert ml.validate_manifest({**base, "version": "one point oh"})

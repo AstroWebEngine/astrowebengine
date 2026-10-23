@@ -7,9 +7,11 @@ import json
 import math
 import random
 from datetime import datetime, timedelta
+from sqlalchemy import event, func
 from sqlalchemy.orm import Session
 
 import mod_hooks
+import formulas
 from database import SessionLocal
 from models import (
     User, Colony, Building, Defense, Research, Fleet, ShipQueue,
@@ -194,17 +196,51 @@ def get_commander_bonus(db, skill_type):
     return COMMANDER_BONUS_PER_LEVEL
 
 
+# Per-request lookup cache. Pages price every building of every base, and each
+# price used to ask the database for the base's commander again (25 of the
+# bases list's 45 queries for a one-base player). Cached on the session
+# (Session.info), so it lives for one request, and dropped on every flush so a
+# request that changes commanders never reads a stale value.
+_CACHE_KEY = "awe_lookup_cache"
+
+
+def _session_cache(db) -> dict:
+    return db.info.setdefault(_CACHE_KEY, {})
+
+
+@event.listens_for(Session, "after_flush")
+def _drop_lookup_cache(session, _flush_context):
+    session.info.pop(_CACHE_KEY, None)
+
+
+def _base_commander_levels(db, colony_id) -> dict:
+    """{skill_type: level} for the commanders assigned (and present) at a base."""
+    cache = _session_cache(db).setdefault("base_commanders", {})
+    if colony_id not in cache:
+        rows = db.query(Commander.skill_type, Commander.level).filter(
+            Commander.colony_id == colony_id,
+            Commander.is_assigned == True,
+            Commander.is_traveling == False,
+        ).all()
+        levels = {}
+        for skill, level in rows:
+            levels[skill] = max(levels.get(skill, 0), level or 0)
+        cache[colony_id] = levels
+    return cache[colony_id]
+
+
 def get_commander_level_at_base(db, colony_id, skill_type):
     """Get level of the assigned Base Commander with given skill at a base. Returns 0 if none."""
     if not colony_id:
         return 0
-    cmdr = db.query(Commander).filter(
-        Commander.colony_id == colony_id,
-        Commander.is_assigned == True,
-        Commander.skill_type == skill_type,
-        Commander.is_traveling == False,
-    ).first()
-    return cmdr.level if cmdr else 0
+    return _base_commander_levels(db, colony_id).get(skill_type, 0)
+
+
+def max_queued_research_levels(db, user_id) -> dict:
+    """{tech_type: highest target_level queued} for a player, in one query."""
+    rows = db.query(ResearchQueue.tech_type, func.max(ResearchQueue.target_level)).filter(
+        ResearchQueue.user_id == user_id).group_by(ResearchQueue.tech_type).all()
+    return {tech: level for tech, level in rows}
 
 
 def get_best_commander_level(db, user_id, skill_type):
@@ -451,7 +487,7 @@ def calc_building_cost(db, building_type: str, current_level: int, base_stats: d
     from resources import scale_cost, total_cost_value
     spec = get_effective_building_spec(db, building_type)
     base_cost = spec["base_cost"]  # scalar or dict
-    cost = scale_cost(base_cost, spec["cost_mult"] ** current_level)
+    cost = formulas.level_cost(base_cost, spec["cost_mult"], current_level)
     # Construction commander reduces cost; time follows since time = cost / rate
     if colony_id:
         cc_lv = get_commander_level_at_base(db, colony_id, "construction")
@@ -483,7 +519,7 @@ def calc_research_cost(db, tech_type: str, current_level: int, game_speed: float
     from resources import scale_cost, total_cost_value
     spec = get_effective_research_spec(db, tech_type)
     base_cost = spec["base_cost"]  # scalar or dict
-    cost = scale_cost(base_cost, spec["cost_mult"] ** current_level)
+    cost = formulas.level_cost(base_cost, spec["cost_mult"], current_level)
     # Research commander at this base reduces cost; time follows since time = cost / rate
     if colony_id:
         rc_lv = get_commander_level_at_base(db, colony_id, "research")
@@ -523,7 +559,7 @@ def calc_defense_cost(db, defense_type: str, current_level: int, game_speed: flo
         units_built = count
     else:
         cost_mult = dspec.get("cost_mult", 1.5)
-        cost = scale_cost(dspec["cost"], cost_mult ** current_level)
+        cost = formulas.level_cost(dspec["cost"], cost_mult, current_level)
         cost_value = total_cost_value(cost)
         build_time = (cost_value * 5 / game_speed)
         units_built = 1
@@ -614,12 +650,8 @@ def calc_tech_cost(user, db: Session) -> float:
         # to one figure the way every other cost consumer does. Without this the
         # arithmetic below raises TypeError and takes /api/player/stats and the
         # leaderboard down with it.
-        base = total_cost_value(spec.get("base_cost", 0))
-        mult = spec.get("cost_mult", 1.5)
-        if mult == 1:
-            total += base * r.level
-        else:
-            total += base * (mult ** r.level - 1) / (mult - 1)
+        total += formulas.invested_level_value(
+            spec.get("base_cost", 0), spec.get("cost_mult", 1.5), r.level)
     return total
 
 def calc_player_level(user, db: Session, game_speed: float) -> float:
@@ -678,7 +710,7 @@ def structure_refund_value(db, kind: str, type_key: str, from_level: int, to_lev
         cost_mult = spec.get("cost_mult", 1.5)
     total = 0.0
     for lvl in range(to_level + 1, from_level + 1):  # cost of each level removed (level lvl built at exponent lvl-1)
-        total += total_cost_value(scale_cost(base_cost, cost_mult ** (lvl - 1)))
+        total += total_cost_value(formulas.level_cost(base_cost, cost_mult, lvl - 1))
     return total * STRUCTURE_DOWNGRADE_REFUND_PERCENT
 
 def calc_total_production(user, game_speed: float) -> int:

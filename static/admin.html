@@ -3,14 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/static/brand/awe-favicon.svg" type="image/svg+xml" />
   <title>Admin Panel — AstroWebEngine</title>
   <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/brand/tokens.css?v=1" />
+  <link rel="stylesheet" href="/static/style_neutral.css?v=6" />
+  <link rel="stylesheet" href="/static/style_awe.css?v=9" />
+  <script src="/static/theme_boot.js?v=2" data-surface="engine"></script>
 </head>
 <body>
   <div id="admin-page">
 
     <div class="admin-header">
-      <span class="admin-title">⚙ AstroWebEngine · Admin Panel</span>
+      <span class="admin-title"><img class="awe-mark" src="/static/brand/awe-mark.svg" width="22" height="22" alt="" /> AstroWebEngine · Admin Panel</span>
       <div style="margin-left:auto; display:flex; gap:10px; align-items:center;">
         <span id="admin-username" class="text-dim" style="font-size:13px;"></span>
         <button class="btn btn-ghost btn-sm" onclick="goToGame()">▶ Game View</button>
@@ -2323,40 +2328,63 @@
       } catch (e) { el.innerHTML = '<span class="text-danger">Error: ' + esc(e.message) + '</span>'; }
     }
 
-    async function activateRulesetMod(modId) {
-      if (!confirm(`Switch the active game to "${modId}"? Setup-only rule changes (e.g. resource model) take full effect on a freshly generated universe.`)) return;
+    // Mods change through one preview-then-apply path (/mods/plan -> /mods/apply-plan):
+    // nothing is saved until the operator confirms the preview, and a failed or stale
+    // apply changes nothing.
+    function describeModPlan(plan) {
+      const lines = [];
+      const ch = plan.changes || {};
+      if (ch.name) lines.push(`Game: ${ch.name.old} -> ${ch.name.new}`);
+      for (const section of ['ships', 'buildings', 'defenses', 'research']) {
+        const c = ch[section]; if (!c) continue;
+        if (c.added.length) lines.push(`+ ${section}: ${c.added.join(', ')}`);
+        if (c.removed.length) lines.push(`- ${section}: ${c.removed.join(', ')}`);
+      }
+      for (const [flag, v] of Object.entries(ch.engine || {})) {
+        lines.push(`${flag}: ${JSON.stringify(v.old)} -> ${JSON.stringify(v.new)}`);
+      }
+      if (!lines.length) lines.push('No rule changes.');
+      if ((plan.blocked || []).length) {
+        lines.push('', 'Only on a freshly generated universe:', ...plan.blocked.map(b => '* ' + b));
+      }
+      if ((plan.warnings || []).length) lines.push('', ...plan.warnings.map(w => '! ' + w));
+      return lines.join('\n');
+    }
+
+    async function planAndApplyMods(body, label) {
       const status = document.getElementById('mods-status');
-      if (status) status.innerHTML = '<span class="text-dim">Switching…</span>';
+      const redraw = () => { _adminTabLoaded['gamedefs'] = false; loadGameDefinitions(); };
+      if (status) status.innerHTML = '<span class="text-dim">Checking…</span>';
       try {
-        let res = await fetch(`${API}/api/admin/mods/ruleset`, { method: 'POST', headers: headers(), body: JSON.stringify({ mod_id: modId }) });
-        let data = await res.json();
-        if (!res.ok) { if (status) status.innerHTML = `<span class="text-danger">${esc(data.detail || 'Failed to set ruleset')}</span>`; return; }
-        res = await fetch(`${API}/api/admin/mods/apply`, { method: 'POST', headers: headers() });
-        data = await res.json();
-        const rep = data.report || {};
-        const safety = (rep.safety || []).filter(s => s && s.flag);
-        if (data.success && safety.length) {
-          const flags = safety.map(s => `• ${s.flag}: ${JSON.stringify(s.current)} → ${JSON.stringify(s.new)}`).join('\n');
-          showAdminAlert(`Activated ${modId}. These setup-only rules only take full effect on a fresh universe:\n${flags}\n\nUse the “Regenerate fresh universe on active ruleset” button.`, 'warn');
-        } else if (data.success) {
-          showAdminAlert(`Activated prebuilt game: ${modId}`, 'success');
-        } else {
-          showAdminAlert('Applied with issues: ' + esc(JSON.stringify(rep.errors || rep)), 'warn');
+        const post = (url, b) => fetch(`${API}${url}`, { method: 'POST', headers: headers(), body: JSON.stringify(b) });
+        let res = await post('/api/admin/mods/plan', body);
+        const plan = await res.json();
+        if (!res.ok) { if (status) status.innerHTML = `<span class="text-danger">${esc(plan.detail || 'Preview failed')}</span>`; return; }
+        if (!plan.ok) {
+          if (status) status.innerHTML = '';
+          showAdminAlert(`Can't ${label}:\n` + (plan.errors || []).join('\n'), 'danger');
+          redraw();   // put a toggled checkbox back
+          return;
         }
-        _adminTabLoaded['gamedefs'] = false;
-        loadGameDefinitions();
+        if (!confirm(`${label}?\n\n${describeModPlan(plan)}`)) { if (status) status.innerHTML = ''; redraw(); return; }
+        res = await post('/api/admin/mods/apply-plan', { ...body, plan_id: plan.plan_id });
+        const data = await res.json();
+        if (!res.ok) { if (status) status.innerHTML = `<span class="text-danger">${esc(data.detail || 'Apply failed')}</span>`; redraw(); return; }
+        if (status) status.innerHTML = '';
+        showAdminAlert(`${label}: done.` + ((plan.blocked || []).length
+          ? '\nSome rules only take full effect on a fresh universe - use “Regenerate fresh universe on active ruleset”.' : ''),
+          (plan.blocked || []).length ? 'warn' : 'success');
+        redraw();
       } catch (e) { if (status) status.innerHTML = '<span class="text-danger">Error: ' + esc(e.message) + '</span>'; }
     }
 
-    async function toggleContentMod(modId, enabled) {
-      try {
-        await fetch(`${API}/api/admin/mods/enable`, { method: 'POST', headers: headers(), body: JSON.stringify({ mod_id: modId, enabled }) });
-        const res = await fetch(`${API}/api/admin/mods/apply`, { method: 'POST', headers: headers() });
-        const data = await res.json();
-        showAdminAlert(`${enabled ? 'Enabled' : 'Disabled'} mod: ${modId}`, data.success ? 'success' : 'warn');
-        _adminTabLoaded['gamedefs'] = false;
-        loadGameDefinitions();
-      } catch (e) { showAdminAlert('Error: ' + e.message, 'danger'); }
+    function activateRulesetMod(modId) {
+      return planAndApplyMods({ ruleset: modId }, `Switch the game to "${modId}"`);
+    }
+
+    function toggleContentMod(modId, enabled) {
+      return planAndApplyMods(enabled ? { enable: [modId] } : { disable: [modId] },
+                              `${enabled ? 'Enable' : 'Disable'} mod "${modId}"`);
     }
 
     async function regenerateUniverseForRuleset() {

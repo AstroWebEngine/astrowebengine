@@ -14,7 +14,7 @@ A game definition is a single JSON object that holds every rule of a game: resou
 | `meta` | object | yes | Name, version, author, description | `{"name": "My Game"}` |
 | `extends` | string or list | no | Fragment files merged underneath this definition | `["fragments/combat/six_rounds.json"]` |
 | `engine` | object | yes | Mode switches and tuning flags | `{"resource_model": "single"}` |
-| `ui` | object | no | Theme, shell and label overrides | `{"theme": "neutral"}` |
+| `ui` | object | no | Theme, shell and label overrides | `{"theme": "awe"}` |
 | `economy` | object | no | Build-speed and bonus constants | `{"min_build_time_seconds": 5}` |
 | `combat` | object | no | Damage allocation, loot, debris | `{"loot_percent": 0.2}` |
 | `fleet` | object | no | Fleet-size constant | `{"size_limit_multiplier": 2500}` |
@@ -170,12 +170,13 @@ Optional presentation hints returned to the client with the engine config. The c
 
 | Field | Type | Required | Meaning | Example |
 |---|---|---|---|---|
-| `theme` | string | no | Visual theme id applied to the page. The bundled stylesheet defines `neutral`. | `"neutral"` |
-| `shell` | string | no | Layout shell id applied to the page. The bundled stylesheet defines `neutral`. | `"neutral"` |
+| `theme` | string | no | Visual theme. Omitted means `awe`, the AstroWebEngine default (charcoal, ivory, copper, amber). Bundled alternatives: `neutral` (slate and blue) and `classic` (the original blue-and-gold look, no theme attribute). | `"awe"` |
+| `shell` | string | no | Layout shell. Omitted means `neutral` (flat single app bar) under the `awe` theme, and the classic layout otherwise. The bundled stylesheet defines `neutral`. | `"neutral"` |
 | `labels` | object | no | Overrides for navigation text by translation key. Keys the client knows: `nav.bases`, `nav.galaxy`, `nav.fleets`, `nav.empire`, `nav.commanders`, `nav.guild`, `nav.messages`, `nav.ranks`, `nav.report`, `nav.tables`, `nav.help`, `nav.account`, `nav.more`. | `{"nav.bases": "Planets"}` |
+| `art` | string | no | Default artwork. Omitted means `awe` (the engine's AWE art set, for keys it covers); `none` turns the default set off. A spec's own `image` always wins. | `"none"` |
 
 ```json
-"ui": {"theme": "neutral", "shell": "neutral",
+"ui": {"theme": "awe", "shell": "neutral",
        "labels": {"nav.bases": "Planets", "nav.fleets": "Fleet"}}
 ```
 
@@ -307,6 +308,15 @@ Gotchas
 - `tier` appears in the built-in default roster but no engine code reads it; it is informational.
 - Total fleet value is capped by production (`fleet.size_limit_multiplier`).
 
+
+### Artwork (`image`)
+
+Any ship, building, defense, research or terrain spec may set `image` to its own
+artwork. It wins over the AWE default set and the classic planet pictures.
+
+| Field | Type | Required | Meaning | Example |
+|---|---|---|---|---|
+| `image` | string | no | An `https://` URL, a site path (`/static/...`) or a path under `/static` (`art/mygame/cruiser.webp`). Quotes, spaces, `..` and other schemes are rejected. Square images work best; units are shown at 48 px, planets up to 240 px. | `"art/mygame/cruiser.webp"` |
 ## buildings
 
 Structures built per base, keyed by internal id. Required: `name`, `base_cost`, `cost_mult`. Everything a building does comes from its `contributions`.

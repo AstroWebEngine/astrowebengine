@@ -671,6 +671,14 @@ class GameConfig(ModelBase):
     key = Column(String(50), unique=True, nullable=False)
     value = Column(String(200))
 
+
+class SchedulerLease(ModelBase):
+    """Which server worker currently runs the background jobs (scheduler_lease.py)."""
+    __tablename__ = "scheduler_leases"
+    name = Column(String(50), primary_key=True)
+    owner = Column(String(100), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+
 class ApiToken(ModelBase):
     """Admin API token for the MCP endpoint. Only the SHA-256 of the secret is stored."""
     __tablename__ = "api_tokens"

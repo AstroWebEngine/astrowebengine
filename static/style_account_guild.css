@@ -160,7 +160,7 @@
 }
 .account-stat-table td {
   padding: 4px 0;
-  border-bottom: 1px solid rgba(73, 121, 168, 0.18);
+  border-bottom: 1px solid var(--row-rule);
 }
 .account-stat-table tr:last-child td {
   border-bottom: none;
@@ -194,7 +194,7 @@
 .account-server-foot {
   margin-top: 8px;
   padding-top: 6px;
-  border-top: 1px solid rgba(73, 121, 168, 0.18);
+  border-top: 1px solid var(--row-rule);
   color: var(--text-dim);
   font-size: 11px;
   text-align: center;

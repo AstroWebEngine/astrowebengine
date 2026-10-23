@@ -7,7 +7,10 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     # Persist the database on the mounted volume, not in the image layer.
     # Four slashes = absolute path. WAL/-shm sidecar files land in /data too.
-    DATABASE_URL=sqlite:////data/astroclone.db
+    DATABASE_URL=sqlite:////data/astroclone.db \
+    # Runtime state (active ruleset, mod base, saved definitions) on the volume
+    # too, so an image update doesn't revert the game's rules. See data_paths.py.
+    AWE_DATA_DIR=/data
 
 WORKDIR /app
 

@@ -1,6 +1,7 @@
 from fastapi import HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
+from formulas import level_cost
 from models import (User, Colony, Building, Defense, Fleet, ShipQueue, Planet,
                     ConstructionQueue, ResearchQueue, TradeRoute, GuildMember, Guild)
 from auth import (get_token_from_header, get_current_user, get_config_float, get_config_int, get_db,
@@ -227,7 +228,7 @@ def register_bases_routes(app):
 
                 # Use effective level for next cost calc
                 d_eff_level = effective_def_levels.get(d.defense_type, d.level)
-                next_cost = round_cost(scale_cost(dspec.get("cost", 0), cost_mult ** d_eff_level))
+                next_cost = round_cost(level_cost(dspec.get("cost", 0), cost_mult, d_eff_level))
                 next_time = round(total_cost_value(next_cost) * 5 / game_speed)  # defense build time in seconds
 
                 # Check if player can build this defense

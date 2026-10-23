@@ -1,0 +1,16 @@
+/* AstroWebEngine brand tokens — the canonical source.
+   Shared by the game (static/style_awe.css) and the website. Change a value
+   here and both follow. Names are agreed with the website side; add, don't rename. */
+:root {
+  --awe-bg:           #161310;
+  --awe-panel:        #211c17;
+  --awe-panel-raised: #30271e;
+  --awe-text:         #f4ecdc;
+  --awe-text-muted:   #bcaf9e;
+  --awe-accent:       #ecaa68;
+  --awe-border:       #4c3c2e;
+  --awe-copper:       #c47b4b;   /* secondary accent: hairlines, rules */
+
+  --awe-font-main: "Segoe UI", system-ui, sans-serif;
+  --awe-font-mono: Consolas, "Liberation Mono", monospace;
+}
